@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .db import row_to_dict
+from .vehicles import classify as classify_vehicle_rules
 
 
 class ToolError(Exception):
@@ -43,6 +44,8 @@ class ShopConfig:
     open_hour: int = int(os.environ.get("SHOP_OPEN_HOUR", "8"))
     close_hour: int = int(os.environ.get("SHOP_CLOSE_HOUR", "17"))
     bays: int = int(os.environ.get("SHOP_BAYS", "3"))
+    # Every booking reserves a bay for this long, whatever the job.
+    booking_hours: float = float(os.environ.get("SHOP_BOOKING_HOURS", "2"))
     # Monday=0 ... Sunday=6
     open_days: tuple[int, ...] = field(default=(0, 1, 2, 3, 4, 5))
     invoice_dir: Path = Path(os.environ.get("SHOP_INVOICE_DIR", "invoices"))
@@ -184,14 +187,14 @@ class ShopTools:
         )
         self._add(
             "check_availability",
-            "List free appointment start times on a date (YYYY-MM-DD) for a job of duration_hours.",
+            "List free appointment start times on a date (YYYY-MM-DD). duration_hours defaults to the shop's booking length (2 h).",
             _obj({"date": S, "duration_hours": N}, ["date"]),
             self.check_availability,
         )
         self._add(
             "book_appointment",
-            "Book an appointment. start is ISO local time like 2026-12-01T09:00. "
-            "Check availability first.",
+            "Book an appointment. start is ISO local time like 2026-12-01T09:00. duration_hours "
+            "defaults to the shop's booking length (2 h). Check availability first.",
             _obj({"customer_id": I, "vehicle_id": I, "start": S, "duration_hours": N, "service": S},
                  ["customer_id", "start", "service"]),
             self.book_appointment,
@@ -278,6 +281,14 @@ class ShopTools:
             self.lookup_prices,
         )
         self._add(
+            "classify_vehicle",
+            "Work out which standard service price applies to a vehicle from its make and model "
+            "(e.g. Toyota LandCruiser -> very big cars). Use this instead of asking the customer "
+            "which size their car is.",
+            _obj({"make": S, "model": S}, ["make", "model"]),
+            self.classify_vehicle,
+        )
+        self._add(
             "shop_info",
             "Shop name, hours, labor rate and tax settings.",
             _obj({}, []),
@@ -348,7 +359,8 @@ class ShopTools:
         ).fetchone()
         return row[0]
 
-    def check_availability(self, date: str, duration_hours: float = 1) -> dict:
+    def check_availability(self, date: str, duration_hours: float | None = None) -> dict:
+        duration_hours = duration_hours or self.cfg.booking_hours
         day = _parse_dt(date)
         if day.weekday() not in self.cfg.open_days:
             return {"date": date, "open": False, "free_slots": []}
@@ -363,7 +375,8 @@ class ShopTools:
         return {"date": date, "open": True, "duration_hours": duration_hours, "free_slots": slots}
 
     def book_appointment(self, customer_id: int, start: str, service: str,
-                         vehicle_id: int | None = None, duration_hours: float = 1) -> dict:
+                         vehicle_id: int | None = None, duration_hours: float | None = None) -> dict:
+        duration_hours = duration_hours or self.cfg.booking_hours
         self._require("customers", customer_id)
         if vehicle_id is not None:
             v = self._require("vehicles", vehicle_id)
@@ -568,6 +581,13 @@ class ShopTools:
             "note": None if results else "Not on the price list: take details and log a follow_up for a quote.",
         }
 
+    def classify_vehicle(self, make: str, model: str) -> dict:
+        result = classify_vehicle_rules(make, model)
+        item = next((x for x in self._price_list()["services"] if x["name"] == result["tier"]), None)
+        result["quote"] = _quote(item) if item else None
+        result["confirmed"] = bool(item and item.get("confirmed"))
+        return result
+
     def shop_info(self) -> dict:
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         return {
@@ -579,6 +599,7 @@ class ShopTools:
                    + ("included in prices" if self.cfg.tax_inclusive else "added on top of prices"),
             "tax_applies_to_labor": self.cfg.tax_labor,
             "bays": self.cfg.bays,
+            "booking_length_hours": self.cfg.booking_hours,
         }
 
     def _render_invoice(self, invoice_id: int, wo: dict) -> Path:

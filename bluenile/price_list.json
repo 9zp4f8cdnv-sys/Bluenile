@@ -1,6 +1,6 @@
 {
   "as_of": "2026-11-20",
-  "note": "Edit this file to change prices. notes is for staff and the agent; description and web_note are shown on the public website. hours is how long online bookings reserve a bay (default 1). Set \"confirmed\": true once a price has been checked against the original list. price_min/price_max are dollars; null means not known.",
+  "note": "Edit this file to change prices. notes is for staff and the agent; description and web_note are shown on the public website. Set \"confirmed\": true once a price has been checked against the original list. price_min/price_max are dollars; null means not known.",
   "services": [
     {
       "category": "Vehicle service",
@@ -8,8 +8,7 @@
       "price_min": 249,
       "price_max": 249,
       "confirmed": true,
-      "description": "Our standard service for hatchbacks, sedans and small SUVs.",
-      "hours": 2
+      "description": "Our standard service for hatchbacks, sedans and small SUVs."
     },
     {
       "category": "Vehicle service",
@@ -17,8 +16,7 @@
       "price_min": 299,
       "price_max": 299,
       "confirmed": true,
-      "description": "Our standard service for large cars and European makes.",
-      "hours": 2
+      "description": "Our standard service for large cars and European makes."
     },
     {
       "category": "Vehicle service",
@@ -26,8 +24,7 @@
       "price_min": 329,
       "price_max": 329,
       "confirmed": true,
-      "description": "Our standard service for 4WDs, utes, vans and people movers.",
-      "hours": 2
+      "description": "Our standard service for 4WDs, utes, vans and people movers."
     },
     {
       "category": "Essential services",
@@ -67,8 +64,7 @@
       "price_min": 100,
       "price_max": 150,
       "confirmed": true,
-      "description": "A thorough check of a car before you buy it, or straight after.",
-      "hours": 2
+      "description": "A thorough check of a car before you buy it, or straight after."
     },
     {
       "category": "Essential services",
@@ -181,8 +177,7 @@
       "price_max": 700,
       "confirmed": false,
       "notes": "Range unclear",
-      "description": "A service for your transmission.",
-      "hours": 2
+      "description": "A service for your transmission."
     },
     {
       "category": "Flushes and fluids",

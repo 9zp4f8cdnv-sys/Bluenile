@@ -22,17 +22,15 @@ from html import escape as e
 from pathlib import Path
 
 from .tools import ShopConfig
+from .vehicles import load_rules
 from .web import fixed_price_cents
 
 TEMPLATE = Path(__file__).with_name("site_template.html")
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
-# Public names for the service tiers on the price list.
-TIER_LABELS = {
-    "Standard service - normal cars": ("Normal cars", "Hatchbacks, sedans and small SUVs"),
-    "Standard service - large cars and EU": ("Large & European cars", "Large sedans, wagons, SUVs and European makes"),
-    "Standard service - very big cars": ("Very big cars", "4WDs, utes, vans and people movers"),
-}
+# The standard service rows on the price list. Customers never pick one: the price is
+# chosen from their car's make and model (bluenile/vehicle_classes.json).
+TIER_CATEGORY = "Vehicle service"
 
 GROUPS = {  # price list category -> (tab key, tab label)
     "Essential services": ("essentials", "Essentials"),
@@ -47,6 +45,14 @@ SHORT_NAMES = {
 }
 
 DEFAULT_QTY = {"Cheap wipers": 2, "Expensive wipers": 2}
+
+# Suggestions for the "Make" box (customers can still type anything).
+COMMON_MAKES = [
+    "Toyota", "Mazda", "Hyundai", "Kia", "Ford", "Mitsubishi", "Nissan", "Subaru", "Volkswagen", "Holden",
+    "Honda", "Isuzu", "MG", "Suzuki", "BYD", "Tesla", "GWM", "LDV", "Mercedes-Benz", "BMW", "Audi", "Lexus",
+    "Jeep", "Volvo", "Land Rover", "Skoda", "Peugeot", "Renault", "Mini", "RAM", "Chery", "SsangYong",
+    "Porsche", "Jaguar", "Fiat", "Alfa Romeo", "Cupra", "Citroen", "Chrysler", "Chevrolet", "Genesis", "Polestar",
+]
 
 
 def _dollars(v: float) -> str:
@@ -113,11 +119,11 @@ def public_service(s: dict) -> dict:
     from_cents = None
     if fixed is None and label and s.get("price_min") is not None:
         from_cents = round(s["price_min"] * 100)
-    tier = TIER_LABELS.get(s["name"])
+    is_tier = s["category"] == TIER_CATEGORY
     group, group_label = GROUPS.get(s["category"], ("extras", s["category"]))
     return {
         "name": s["name"],
-        "display": f"Standard service ({tier[0]})" if tier else s["name"],
+        "display": "Standard service" if is_tier else s["name"],
         "short": SHORT_NAMES.get(s["name"]),
         "group": group,
         "group_label": group_label,
@@ -127,9 +133,7 @@ def public_service(s: dict) -> dict:
         "from_cents": from_cents,
         "price_label": None if fixed is not None else label,
         "unit": s.get("unit"),
-        "hours": s.get("hours", 1),
-        "tier": tier[0] if tier else None,
-        "tier_blurb": tier[1] if tier else None,
+        "tier": is_tier,
         "default_qty": DEFAULT_QTY.get(s["name"], 1),
     }
 
@@ -143,9 +147,8 @@ def _faq(cfg: ShopConfig, services: dict) -> list[list[str]]:
     faq += [
         ["What does “Price on quote” mean?",
          "Some jobs depend on your car. Add them to your booking and we'll call you with the price before we start."],
-        ["Which standard service size is my car?",
-         " ".join(f"{t}: {b.lower()}." for t, b in TIER_LABELS.values())
-         + " If you're not sure, pick the closest and we'll check when you drop it off."],
+        ["How is the standard service price worked out?",
+         "From your car's make and model. Enter them and you'll see the price for your car straight away."],
         ["How do I get a price for tyres?",
          "Choose your tyre size in the Tyres section and add it to your booking. We'll call you with a fitted price."],
         ["My job isn't listed. Can I still book?",
@@ -157,17 +160,17 @@ def _faq(cfg: ShopConfig, services: dict) -> list[list[str]]:
     return faq
 
 
-def render(cfg: ShopConfig, prices: dict, api_base: str | None = None) -> str:
+def render(cfg: ShopConfig, prices: dict, api_base: str | None = None, rego_lookup: bool = False) -> str:
     services = prices["services"]
     by_name = {s["name"]: s for s in services}
-    tiers = [s for s in services if s["name"] in TIER_LABELS]
+    tiers = [s for s in services if s["category"] == TIER_CATEGORY]
     from_cents = min((fixed_price_cents(s) for s in tiers if fixed_price_cents(s) is not None), default=None)
     gst_line = (f"All prices include {cfg.tax_name}." if cfg.tax_inclusive
                 else f"{cfg.tax_name} is added to these prices.")
     as_of = date.fromisoformat(prices["as_of"]).strftime("%-d %B %Y") if prices.get("as_of") else ""
     seen_groups = []
     for s in services:
-        if s["name"] not in TIER_LABELS:
+        if s["category"] != TIER_CATEGORY:
             g = GROUPS.get(s["category"], ("extras", s["category"]))
             if g not in seen_groups:
                 seen_groups.append(g)
@@ -179,7 +182,11 @@ def render(cfg: ShopConfig, prices: dict, api_base: str | None = None) -> str:
             "tax_name": cfg.tax_name, "labour_cents": cfg.labor_rate_cents,
             "hours": opening_hours(cfg), "days_open": _days_open(cfg),
             "price_note": f"incl. {cfg.tax_name}" if cfg.tax_inclusive else f"+ {cfg.tax_name}",
+            "booking_hours": cfg.booking_hours,
         },
+        "vehicle_rules": load_rules(),
+        "makes": COMMON_MAKES,
+        "rego_lookup": rego_lookup,
         "as_of": as_of,
         "api": (api_base if api_base is not None else os.environ.get("SHOP_BOOKING_API", "")).rstrip("/"),
         "groups": [{"key": k, "label": label} for k, label in seen_groups],

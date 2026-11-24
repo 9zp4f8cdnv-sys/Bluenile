@@ -24,7 +24,8 @@ def test_web_price_rules():
 def test_public_data_has_confirmed_prices_only():
     s = services(render(ShopConfig(), prices()))
     assert s["Standard service - normal cars"]["fixed_cents"] == 24900
-    assert s["Standard service - large cars and EU"]["display"] == "Standard service (Large & European cars)"
+    assert s["Standard service - large cars and EU"]["display"] == "Standard service"
+    assert s["Standard service - large cars and EU"]["tier"] is True
     assert s["RWC (roadworthy certificate)"]["fixed_cents"] == 9700
     assert s["Diagnostic / labour"]["fixed_cents"] == 13000
     # ranges show a label and a "from" amount, never a fixed price
@@ -69,3 +70,13 @@ def test_opening_hours_grouping():
     assert opening_hours(ShopConfig()) == [("Monday – Saturday", "8:00am – 5:00pm"), ("Sunday", "Closed")]
     weekdays = ShopConfig(open_days=(0, 1, 2, 3, 4), open_hour=7, close_hour=18)
     assert opening_hours(weekdays) == [("Monday – Friday", "7:00am – 6:00pm"), ("Saturday – Sunday", "Closed")]
+
+
+def test_page_carries_vehicle_rules_and_no_size_labels():
+    page = render(ShopConfig(), prices())
+    data = page_data(page)
+    assert data["vehicle_rules"]["default"] == "Standard service - normal cars"
+    assert data["shop"]["booking_hours"] == 2
+    assert "Toyota" in data["makes"]
+    for label in ["Large &amp; European cars", "Large & European cars", "Pick your car size"]:
+        assert label not in page

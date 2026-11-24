@@ -47,7 +47,8 @@ The public website is a booking storefront built from the same data the agent
 uses (the price list and `SHOP_*` settings), so the two always agree on prices.
 
 - **Shop-style browsing:** service cards with prices, category tabs and
-  search, a car-size picker for the standard service, and a tyre finder by size.
+  search, a standard-service price finder (enter make and model, see the price
+  for that car), and a tyre finder by size.
 - **Booking cart:** customers add services, see the total incl. GST (and the
   GST amount), then check out: car → live time slot → contact details.
 - **Straight into the workshop:** a confirmed booking creates (or matches, by
@@ -59,8 +60,23 @@ uses (the price list and `SHOP_*` settings), so the two always agree on prices.
   and free bays, rejects bookings less than an hour away or more than 60 days
   out, and has a spam trap and a per-connection rate limit.
 - Only confirmed prices are published; only `description` and `web_note` from
-  the price list are public (`notes` stays internal). `hours` in the price list
-  sets how long a booking reserves a bay (default 1).
+  the price list are public (`notes` stays internal).
+- Every booking reserves a bay for 2 hours (`SHOP_BOOKING_HOURS`).
+
+### Standard service price by vehicle
+
+Customers never pick a size. The standard service price ($249 / $299 / $329)
+is chosen from the car's make and model using `bluenile/vehicle_classes.json`:
+rules checked top to bottom, first match wins (e.g. Toyota LandCruiser, Ford
+Ranger, vans and people movers → $329; European makes and large sedans such as
+Falcon and Commodore → $299; everything else → $249). The website, the booking
+server and the agent (`classify_vehicle` tool) all use the same rules, and the
+server re-checks the price at booking time. Edit the file to change which cars
+go where; rebuild the website afterwards.
+
+Number-plate lookup needs a paid rego-data provider. `create_web_app(...,
+rego_lookup=...)` takes a function `(rego, state) -> {"make", "model", "year"}`;
+when one is set, the site shows a rego box that fills in the car for the customer.
 
 ```bash
 python build_website.py   # builds website/index.html; lists any missing contact details
@@ -90,6 +106,7 @@ Shop settings come from environment variables:
 | `SHOP_TAX_INCLUSIVE` (`1`: prices include GST; `0`: tax added on top) | `1` |
 | `SHOP_TAX_LABOR` (`0` to exempt labour from tax) | `1` |
 | `SHOP_OPEN_HOUR`, `SHOP_CLOSE_HOUR`, `SHOP_BAYS` | `8`, `17`, `3` (open Mon–Sat) |
+| `SHOP_BOOKING_HOURS` (how long every booking reserves a bay) | `2` |
 | `BLUENILE_DB`, `SHOP_INVOICE_DIR` | `shop.db`, `invoices` |
 
 To change the prompt or tools, edit `bluenile/agent_config.py` / `bluenile/tools.py`

@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bluenile Auto Repair | Car servicing, tyres &amp; online booking</title>
+<meta name="description" content="Bluenile Auto Repair: book car servicing online from $249. Roadworthies, wheel alignments, A/C regas, tyres, flushes and more. All prices include GST.">
+<meta name="theme-color" content="#0b1b33">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f6fb; --surface: #ffffff; --surface-2: #eef2f8; --ink: #0d1726; --muted: #5b6b80; --line: #e3e8f0;
+  --brand: #1f5fe0; --brand-2: #00a3c4; --brand-soft: #e6eefc; --brand-ink: #ffffff;
+  --cta: #ffb020; --cta-ink: #1d1300; --ok: #12805c; --ok-soft: #e3f5ee; --warn: #9a5b00; --warn-soft: #fff3dc;
+  --hero-1: #0b1b33; --hero-2: #12325f; --shadow: 0 1px 2px rgba(13,23,38,.06), 0 8px 24px rgba(13,23,38,.06);
+  --radius: 16px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a111c; --surface: #111b2a; --surface-2: #172335; --ink: #e8eef6; --muted: #98a8bd; --line: #223047;
+    --brand: #5b93ff; --brand-2: #3cc6e0; --brand-soft: #16284a; --brand-ink: #06101f;
+    --cta: #ffbb3d; --cta-ink: #1d1300; --ok: #4fd1a1; --ok-soft: #0f2a22; --warn: #ffc566; --warn-soft: #2d2410;
+    --hero-1: #060d18; --hero-2: #0f2546; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+  }
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+a { color: var(--brand); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--brand-2); outline-offset: 2px; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Header */
+.top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 20px; height: 68px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
+.logo-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+.top nav { display: flex; gap: 22px; margin-left: 12px; }
+.top nav a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: .95rem; }
+.top nav a:hover { color: var(--ink); }
+.top-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+.top-phone { font-weight: 700; text-decoration: none; white-space: nowrap; color: var(--ink); }
+.cart-btn { position: relative; display: inline-flex; align-items: center; gap: 8px; border: 0; border-radius: 999px;
+  padding: 10px 16px; background: var(--ink); color: var(--bg); font-weight: 700; }
+.cart-count { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--cta); color: var(--cta-ink);
+  font-size: .8rem; display: inline-grid; place-items: center; }
+
+/* Hero */
+.hero { background: radial-gradient(1200px 500px at 85% -10%, rgba(0,163,196,.35), transparent 60%),
+  linear-gradient(160deg, var(--hero-1), var(--hero-2)); color: #fff; padding: 64px 0 72px; overflow: hidden; }
+.hero .wrap { display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center; }
+.eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); font-size: .85rem; font-weight: 600; }
+.hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.04; letter-spacing: -.035em; margin: 18px 0 16px; }
+.hero h1 em { font-style: normal; background: linear-gradient(90deg, #8fd8ff, #ffd27a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero p.lead { font-size: 1.15rem; color: #c7d4e6; margin: 0 0 26px; max-width: 48ch; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 20px; border-radius: 12px;
+  font-weight: 700; text-decoration: none; border: 0; }
+.btn-cta { background: var(--cta); color: var(--cta-ink); }
+.btn-cta:hover { filter: brightness(1.05); }
+.btn-ghost { background: transparent; color: inherit; border: 1.5px solid currentColor; }
+.btn-dark { background: var(--ink); color: var(--bg); }
+.btn-block { width: 100%; }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.chips-row { display: flex; flex-wrap: wrap; gap: 10px 18px; margin-top: 26px; color: #c7d4e6; font-size: .92rem; font-weight: 500; }
+.chips-row span { display: inline-flex; align-items: center; gap: 6px; }
+.chips-row svg { color: #6ee7b7; }
+.quick { background: var(--surface); color: var(--ink); border-radius: 20px; padding: 24px; box-shadow: 0 30px 60px rgba(0,0,0,.25); }
+.quick h2 { font-size: 1.15rem; margin: 0 0 4px; }
+.quick p { margin: 0 0 16px; color: var(--muted); font-size: .92rem; }
+.quick-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.quick-item { text-align: left; border: 1px solid var(--line); background: var(--surface-2); border-radius: 12px; padding: 12px 14px; }
+.quick-item:hover { border-color: var(--brand); }
+.quick-item b { display: block; font-size: .95rem; }
+.quick-item small { color: var(--muted); font-weight: 600; }
+
+/* Sections */
+section { padding: 64px 0; }
+.section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
+.section-head h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -.025em; margin: 0; }
+.section-head p { margin: 6px 0 0; color: var(--muted); }
+
+/* Standard service picker */
+.service-hero { display: grid; grid-template-columns: 1fr 1.1fr; gap: 0; background: var(--surface); border-radius: 22px;
+  box-shadow: var(--shadow); overflow: hidden; border: 1px solid var(--line); }
+.service-hero .left { padding: 30px; background: linear-gradient(160deg, var(--brand-soft), transparent); }
+.service-hero .left h3 { font-size: 1.5rem; margin: 10px 0 8px; letter-spacing: -.02em; }
+.service-hero .left p { color: var(--muted); margin: 0; }
+.tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--ok-soft); color: var(--ok); }
+.tag.warn { background: var(--warn-soft); color: var(--warn); }
+.service-hero .right { padding: 26px 30px; display: grid; gap: 12px; align-content: center; }
+.size-opt { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 14px 16px;
+  border: 1.5px solid var(--line); border-radius: 14px; cursor: pointer; }
+.size-opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
+.size-opt input { accent-color: var(--brand); width: 18px; height: 18px; }
+.size-opt b { display: block; }
+.size-opt small { color: var(--muted); }
+.size-opt .p { font-size: 1.35rem; font-weight: 800; }
+
+/* Catalogue */
+.toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 20px; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+.tab { white-space: nowrap; border: 1px solid var(--line); background: var(--surface); padding: 9px 16px; border-radius: 999px; font-weight: 600; color: var(--muted); }
+.tab[aria-selected="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.search { margin-left: auto; position: relative; flex: 0 1 280px; }
+.search input { width: 100%; padding: 10px 14px 10px 38px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); }
+.search svg { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; display: flex; flex-direction: column;
+  box-shadow: var(--shadow); transition: transform .15s ease, border-color .15s ease; }
+.card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); }
+.card-top { display: flex; justify-content: space-between; align-items: start; gap: 10px; margin-bottom: 10px; }
+.icon { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--brand-soft); color: var(--brand); flex: none; }
+.card h3 { font-size: 1.02rem; margin: 0 0 6px; letter-spacing: -.01em; }
+.card p { margin: 0 0 6px; color: var(--muted); font-size: .9rem; flex: 1; }
+.card .note { font-size: .8rem; color: var(--muted); font-style: italic; }
+.card-foot { display: flex; align-items: end; justify-content: space-between; gap: 10px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.price { font-size: 1.35rem; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.price small { display: block; font-size: .75rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.price.quote { font-size: 1rem; color: var(--muted); }
+.add { border: 0; border-radius: 10px; padding: 10px 14px; font-weight: 700; background: var(--brand); color: var(--brand-ink); white-space: nowrap; }
+.add.in { background: var(--ok-soft); color: var(--ok); }
+.empty { padding: 40px; text-align: center; color: var(--muted); grid-column: 1 / -1; }
+
+/* Tyres */
+.tyre-box { display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; box-shadow: var(--shadow); }
+.tyre-fields { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 18px 0; }
+label.f { display: grid; gap: 6px; font-size: .85rem; font-weight: 600; color: var(--muted); }
+.f select, .f input, .f textarea { width: 100%; padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); }
+.tyre-size { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 1.6rem; font-weight: 700; letter-spacing: .02em; }
+.tyre-help { background: var(--surface-2); border-radius: 16px; padding: 20px; }
+.tyre-help h3 { margin: 0 0 8px; font-size: 1rem; }
+.tyre-help ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: .92rem; }
+.suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-size: .85rem; font-weight: 600; }
+
+/* Steps, FAQ, visit */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.step .n { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--ink); color: var(--bg); font-weight: 800; margin-bottom: 12px; }
+.step h3 { margin: 0 0 6px; font-size: 1.05rem; }
+.step p { margin: 0; color: var(--muted); font-size: .93rem; }
+.faq { display: grid; gap: 10px; max-width: 820px; }
+.faq details { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px 20px; }
+.faq summary { font-weight: 700; cursor: pointer; }
+.faq p { color: var(--muted); margin: 10px 0 0; }
+.visit { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+.panel h3 { margin: 0 0 12px; }
+.rows { width: 100%; border-collapse: collapse; }
+.rows td, .rows th { padding: 10px 0; border-top: 1px solid var(--line); text-align: left; font-weight: 500; }
+.rows th { color: var(--muted); }
+footer { padding: 30px 0 110px; color: var(--muted); font-size: .9rem; border-top: 1px solid var(--line); }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+
+/* Cart drawer */
+.scrim { position: fixed; inset: 0; background: rgba(5,10,20,.5); opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 40; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; right: 0; height: 100%; width: min(440px, 100%); background: var(--surface); z-index: 50;
+  transform: translateX(100%); transition: transform .25s ease; display: flex; flex-direction: column; box-shadow: -20px 0 60px rgba(0,0,0,.2); }
+.drawer.open { transform: none; }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.drawer-head h2 { margin: 0; font-size: 1.2rem; }
+.x { border: 0; background: var(--surface-2); width: 36px; height: 36px; border-radius: 10px; font-size: 1.2rem; }
+.drawer-body { flex: 1; overflow-y: auto; padding: 8px 20px; }
+.line { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.line b { font-size: .95rem; }
+.line .lp { font-weight: 700; text-align: right; }
+.line .lp.q { color: var(--warn); font-weight: 600; font-size: .85rem; }
+.qty { display: inline-flex; justify-self: start; align-items: center; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.qty button { border: 0; background: var(--surface-2); width: 30px; height: 30px; }
+.qty span { min-width: 30px; text-align: center; font-weight: 700; }
+.rm { border: 0; background: none; color: var(--muted); font-size: .85rem; text-decoration: underline; justify-self: end; }
+.drawer-foot { padding: 18px 20px; border-top: 1px solid var(--line); background: var(--surface-2); }
+.tot { display: flex; justify-content: space-between; align-items: baseline; }
+.tot b { font-size: 1.6rem; letter-spacing: -.02em; }
+.tot-sub { color: var(--muted); font-size: .85rem; margin: 4px 0 14px; }
+.callout { background: var(--warn-soft); color: var(--warn); border-radius: 12px; padding: 10px 12px; font-size: .85rem; font-weight: 600; margin: 12px 0; }
+
+/* Mobile cart bar */
+.cartbar { position: fixed; left: 12px; right: 12px; bottom: 12px; z-index: 35; display: none; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 12px 12px 12px 18px; border-radius: 16px; background: var(--ink); color: var(--bg); box-shadow: 0 14px 40px rgba(0,0,0,.3); }
+.cartbar.show { display: flex; }
+.cartbar small { display: block; opacity: .75; }
+
+/* Checkout */
+dialog { border: 0; border-radius: 22px; padding: 0; width: min(560px, calc(100% - 24px)); max-height: calc(100% - 24px);
+  background: var(--surface); color: var(--ink); box-shadow: 0 40px 100px rgba(0,0,0,.35); }
+dialog::backdrop { background: rgba(5,10,20,.55); }
+.co-head { padding: 20px 22px 0; display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.co-head h2 { margin: 0; font-size: 1.3rem; }
+.progress { display: flex; gap: 6px; padding: 14px 22px 0; }
+.progress i { flex: 1; height: 5px; border-radius: 5px; background: var(--line); }
+.progress i.on { background: var(--brand); }
+.co-body { padding: 18px 22px; display: grid; gap: 14px; overflow-y: auto; max-height: 60vh; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.slots { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 8px; }
+.slot { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 0; font-weight: 700; }
+.slot[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); }
+.co-foot { padding: 16px 22px 22px; display: flex; gap: 10px; justify-content: space-between; border-top: 1px solid var(--line); }
+.err { color: #c62828; font-weight: 600; font-size: .9rem; min-height: 1.2em; margin: 0; }
+@media (prefers-color-scheme: dark) { .err { color: #ff8a80; } }
+.summary { background: var(--surface-2); border-radius: 14px; padding: 14px 16px; font-size: .92rem; }
+.summary div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.done { text-align: center; padding: 10px 0; }
+.done .tick { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin: 0 auto 12px; background: var(--ok-soft); color: var(--ok); }
+.hp { position: absolute; left: -9999px; }
+
+@media (max-width: 960px) {
+  .hero .wrap, .service-hero, .tyre-box { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr; }
+  .top nav { display: none; }
+}
+@media (max-width: 640px) {
+  .top-phone, .cart-btn .lbl { display: none; }
+  .hero { padding: 40px 0 48px; }
+  section { padding: 44px 0; }
+  .search { margin-left: 0; flex: 1 1 100%; }
+  .tyre-fields { grid-template-columns: 1fr 1fr; }
+  .two { grid-template-columns: 1fr; }
+  .service-hero .left, .service-hero .right, .tyre-box { padding: 20px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+</style>
+</head>
+<body>
+<script type="application/json" id="shop-data">{"shop": {"name": "Bluenile Auto Repair", "phone": "", "tel": "", "email": "", "address": "", "abn": "", "gst_line": "All prices include GST.", "tax_inclusive": true, "tax_name": "GST", "labour_cents": 13000, "hours": [["Monday – Saturday", "8:00am – 5:00pm"], ["Sunday", "Closed"]], "days_open": "Open Mon–Sat", "price_note": "incl. GST"}, "as_of": "20 November 2026", "api": "", "groups": [{"key": "essentials", "label": "Essentials"}, {"key": "fluids", "label": "Flushes & fluids"}, {"key": "extras", "label": "Filters, wipers & extras"}], "services": [{"name": "Standard service - normal cars", "display": "Standard service (Normal cars)", "short": null, "group": "extras", "group_label": "Vehicle service", "description": "Our standard service for hatchbacks, sedans and small SUVs.", "web_note": null, "fixed_cents": 24900, "from_cents": null, "price_label": null, "unit": null, "hours": 2, "tier": "Normal cars", "tier_blurb": "Hatchbacks, sedans and small SUVs", "default_qty": 1}, {"name": "Standard service - large cars and EU", "display": "Standard service (Large & European cars)", "short": null, "group": "extras", "group_label": "Vehicle service", "description": "Our standard service for large cars and European makes.", "web_note": null, "fixed_cents": 29900, "from_cents": null, "price_label": null, "unit": null, "hours": 2, "tier": "Large & European cars", "tier_blurb": "Large sedans, wagons, SUVs and European makes", "default_qty": 1}, {"name": "Standard service - very big cars", "display": "Standard service (Very big cars)", "short": null, "group": "extras", "group_label": "Vehicle service", "description": "Our standard service for 4WDs, utes, vans and people movers.", "web_note": null, "fixed_cents": 32900, "from_cents": null, "price_label": null, "unit": null, "hours": 2, "tier": "Very big cars", "tier_blurb": "4WDs, utes, vans and people movers", "default_qty": 1}, {"name": "Puncture repair", "display": "Puncture repair", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Fix a puncture in your tyre's tread.", "web_note": null, "fixed_cents": 5000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Wheel alignment", "display": "Wheel alignment", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Set your wheel angles so the car tracks straight and tyres wear evenly.", "web_note": null, "fixed_cents": 9000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "RWC (roadworthy certificate)", "display": "RWC (roadworthy certificate)", "short": "Roadworthy (RWC)", "group": "essentials", "group_label": "Essentials", "description": "Roadworthy inspection and certificate for selling or re-registering a car.", "web_note": null, "fixed_cents": 9700, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Rotate and balance tyres", "display": "Rotate and balance tyres", "short": "Rotate & balance", "group": "essentials", "group_label": "Essentials", "description": "Swap tyre positions and balance the wheels for even wear and a smooth ride.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Pre / post purchase inspection", "display": "Pre / post purchase inspection", "short": "Pre-purchase inspection", "group": "essentials", "group_label": "Essentials", "description": "A thorough check of a car before you buy it, or straight after.", "web_note": null, "fixed_cents": null, "from_cents": 10000, "price_label": "$100–$150", "unit": null, "hours": 2, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "A/C regas", "display": "A/C regas", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Recharge your air conditioning refrigerant so it blows cold again.", "web_note": null, "fixed_cents": 15000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Headlight polish", "display": "Headlight polish", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Restore cloudy or yellowed headlight lenses.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Diagnostic / labour", "display": "Diagnostic / labour", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Fault-finding and general labour, charged by the hour.", "web_note": null, "fixed_cents": 13000, "from_cents": null, "price_label": null, "unit": "per hour", "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Brake service", "display": "Brake service", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Inspect and service your brakes.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Brake pads machining", "display": "Brake pads machining", "short": null, "group": "essentials", "group_label": "Essentials", "description": "Brake machining as part of your brake work.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Power steering flush", "display": "Power steering flush", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Replace old power steering fluid.", "web_note": null, "fixed_cents": 9700, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Brake fluid flush", "display": "Brake fluid flush", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Replace brake fluid, which absorbs moisture over time.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Coolant flush", "display": "Coolant flush", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Drain and refill your cooling system with fresh coolant.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Differential flush - normal cars", "display": "Differential flush - normal cars", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Replace the oil in your differential.", "web_note": null, "fixed_cents": 15000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Engine flush", "display": "Engine flush", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Clean out engine sludge before fresh oil goes in.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "CO2 test (coolant pressure test)", "display": "CO2 test (coolant pressure test)", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Test your cooling system for leaks.", "web_note": null, "fixed_cents": 6500, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Transmission flush", "display": "Transmission flush", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Replace your automatic transmission fluid.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Transmission service", "display": "Transmission service", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "A service for your transmission.", "web_note": null, "fixed_cents": null, "from_cents": null, "price_label": null, "unit": null, "hours": 2, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "VW transmission flush", "display": "VW transmission flush", "short": null, "group": "fluids", "group_label": "Flushes & fluids", "description": "Transmission fluid flush for Volkswagens.", "web_note": "Flush only. We don't offer a transmission service for VW.", "fixed_cents": 80000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Cheap wipers", "display": "Cheap wipers", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Replacement wiper blades, priced each.", "web_note": null, "fixed_cents": 2500, "from_cents": null, "price_label": null, "unit": "each ($50 a pair)", "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 2}, {"name": "Expensive wipers", "display": "Expensive wipers", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Premium replacement wiper blades, priced each.", "web_note": null, "fixed_cents": 4000, "from_cents": null, "price_label": null, "unit": "each ($80 a pair)", "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 2}, {"name": "Light (globe)", "display": "Light (globe)", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Replace a blown bulb.", "web_note": null, "fixed_cents": 4000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "MAF (mass air flow sensor)", "display": "MAF (mass air flow sensor)", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Mass air flow sensor work.", "web_note": null, "fixed_cents": 6000, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "A/C sanitiser", "display": "A/C sanitiser", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Freshen your air conditioning and clear out odours.", "web_note": null, "fixed_cents": 6500, "from_cents": null, "price_label": null, "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Cabin filter", "display": "Cabin filter", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Replace the filter that cleans air coming into the cabin.", "web_note": "Most vehicles", "fixed_cents": null, "from_cents": 4900, "price_label": "$49–$69", "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}, {"name": "Air filter", "display": "Air filter", "short": null, "group": "extras", "group_label": "Filters, wipers & extras", "description": "Replace your engine's air filter.", "web_note": "Most vehicles", "fixed_cents": null, "from_cents": 4900, "price_label": "$49–$69", "unit": null, "hours": 1, "tier": null, "tier_blurb": null, "default_qty": 1}], "tyre_suggest": ["Wheel alignment", "Rotate and balance tyres", "Puncture repair"], "faq": [["Do your prices include GST?", "Yes. Every price on this site includes GST."], ["What does “Price on quote” mean?", "Some jobs depend on your car. Add them to your booking and we'll call you with the price before we start."], ["Which standard service size is my car?", "Normal cars: hatchbacks, sedans and small suvs. Large & European cars: large sedans, wagons, suvs and european makes. Very big cars: 4wds, utes, vans and people movers. If you're not sure, pick the closest and we'll check when you drop it off."], ["How do I get a price for tyres?", "Choose your tyre size in the Tyres section and add it to your booking. We'll call you with a fitted price."], ["My job isn't listed. Can I still book?", "Yes. Add Diagnostic / labour ($130 per hour) and tell us what's wrong in the notes, or give us a call."], ["Can I change or cancel my booking?", "Yes, just call us."]]}</script>
+
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="Home">
+      <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span>
+      <span id="shop-name">Bluenile Auto Repair</span>
+    </a>
+    <nav aria-label="Main">
+      <a href="#servicing">Servicing</a><a href="#shop">All services</a><a href="#tyres">Tyres</a><a href="#visit">Contact</a>
+    </nav>
+    <div class="top-right">
+      <a class="top-phone" id="top-phone" hidden></a>
+      <button class="cart-btn" id="open-cart" aria-label="Open booking cart">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span class="lbl">Booking</span><span class="cart-count" id="cart-count">0</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">Book online · Upfront prices</span>
+        <h1>Car servicing, <em>sorted in a few taps.</em></h1>
+        <p class="lead" id="hero-lead"></p>
+        <div class="btns">
+          <a class="btn btn-cta" href="#servicing">Book a service</a>
+          <a class="btn btn-ghost" href="#shop">Browse all prices</a>
+        </div>
+        <div class="chips-row" id="hero-chips"></div>
+      </div>
+      <div class="quick" aria-labelledby="quick-h">
+        <h2 id="quick-h">What does your car need?</h2>
+        <p>Tap to add it to your booking.</p>
+        <div class="quick-grid" id="quick-grid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="servicing">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>Standard service</h2><p>One fixed price, set by the size of your car.</p></div>
+      </div>
+      <div class="service-hero">
+        <div class="left">
+          <span class="tag" id="gst-tag">GST included</span>
+          <h3>Pick your car size</h3>
+          <p>Not sure which size? Choose the closest, and we'll check when you drop it off.</p>
+        </div>
+        <form class="right" id="size-form">
+          <div id="size-opts" role="radiogroup" aria-label="Car size"></div>
+          <button class="btn btn-cta btn-block" type="submit" id="size-add">Add service to booking</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="shop" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>All services &amp; prices</h2><p id="shop-sub"></p></div>
+      </div>
+      <div class="toolbar">
+        <div class="tabs" role="tablist" id="tabs"></div>
+        <label class="search"><span class="sr">Search services</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="q" type="search" placeholder="Search e.g. alignment, wipers">
+        </label>
+      </div>
+      <div class="grid" id="grid" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section id="tyres" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head">
+        <div><h2>Tyres</h2><p>Tell us your tyre size and we'll come back with a fitted price.</p></div>
+      </div>
+      <div class="tyre-box">
+        <form id="tyre-form">
+          <span class="tag warn">Quote on request</span>
+          <div class="tyre-fields">
+            <label class="f">Width<select id="t-width"></select></label>
+            <label class="f">Profile<select id="t-profile"></select></label>
+            <label class="f">Rim<select id="t-rim"></select></label>
+            <label class="f">How many<select id="t-qty"><option>1</option><option selected>2</option><option>4</option><option>5</option></select></label>
+          </div>
+          <div class="tyre-size" id="t-show">205/55 R16</div>
+          <div class="btns" style="margin-top:16px"><button class="btn btn-cta" type="submit">Add tyre quote to booking</button></div>
+          <div class="suggest" id="t-suggest"></div>
+        </form>
+        <div class="tyre-help">
+          <h3>Where to find your tyre size</h3>
+          <ol>
+            <li>Look at the sidewall of a tyre for a code like <b>205/55 R16</b>.</li>
+            <li>205 is the width, 55 the profile, 16 the rim size.</li>
+            <li>Not sure? Add the quote anyway and put your rego in the booking. We'll look it up.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head"><div><h2>How booking works</h2></div></div>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h3>Choose your services</h3><p>Fixed prices go straight into your booking. Anything that needs a quote is marked, and we'll call you with the price.</p></div>
+        <div class="step"><div class="n">2</div><h3>Pick a time</h3><p>See our live free times and choose the one that suits you.</p></div>
+        <div class="step"><div class="n">3</div><h3>Drop your car off</h3><p>Your booking is in our workshop system the moment you confirm.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0" id="faq">
+    <div class="wrap">
+      <div class="section-head"><div><h2>Questions</h2></div></div>
+      <div class="faq" id="faq-list"></div>
+    </div>
+  </section>
+
+  <section id="visit" style="padding-top:0">
+    <div class="wrap">
+      <div class="section-head"><div><h2>Hours &amp; contact</h2></div></div>
+      <div class="visit">
+        <div class="panel"><h3>Opening hours</h3><table class="rows"><tbody id="hours"></tbody></table></div>
+        <div class="panel"><h3>Get in touch</h3><table class="rows"><tbody id="contact"></tbody></table><div class="btns" id="contact-btns" style="margin-top:14px"></div></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span id="foot-left"></span><span id="foot-right"></span></div></footer>
+
+<div class="cartbar" id="cartbar"><div><b id="cb-count"></b><small id="cb-total"></small></div><button class="btn btn-cta" id="cb-open">View booking</button></div>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Your booking" aria-hidden="true">
+  <div class="drawer-head"><h2>Your booking</h2><button class="x" id="close-cart" aria-label="Close">×</button></div>
+  <div class="drawer-body" id="lines"></div>
+  <div class="drawer-foot">
+    <div class="tot"><span>Total</span><b id="tot">$0</b></div>
+    <div class="tot-sub" id="tot-sub"></div>
+    <button class="btn btn-cta btn-block" id="checkout">Choose a time</button>
+  </div>
+</aside>
+
+<dialog id="co" aria-labelledby="co-title">
+  <form method="dialog" id="co-form" novalidate>
+    <div class="co-head"><h2 id="co-title">Book your car in</h2><button class="x" value="cancel" aria-label="Close">×</button></div>
+    <div class="progress" id="co-progress"><i></i><i></i><i></i></div>
+    <div class="co-body" id="co-body"></div>
+    <div class="co-foot"><button type="button" class="btn btn-ghost" id="co-back">Back</button><button type="button" class="btn btn-cta" id="co-next">Next</button></div>
+  </form>
+</dialog>
+
+<noscript><p style="padding:20px;text-align:center">Turn on JavaScript to book online, or call us to book.</p></noscript>
+
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('shop-data').textContent);
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const money = c => '$' + (c / 100).toLocaleString('en-AU', { minimumFractionDigits: c % 100 ? 2 : 0, maximumFractionDigits: 2 });
+  const byName = Object.fromEntries(D.services.map(s => [s.name, s]));
+  const ICONS = {
+    service: '<path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/>',
+    essentials: '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
+    fluids: '<path d="M12 2.7s6 6.6 6 11.3a6 6 0 0 1-12 0c0-4.7 6-11.3 6-11.3z"/>',
+    extras: '<path d="M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8"/>',
+    tyres: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5"/>',
+  };
+  const icon = k => `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[k] || ICONS.extras}</svg>`;
+  const check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>';
+
+  // ---------- cart state (kept in this browser only) ----------
+  const KEY = 'bluenile-booking-v1';
+  let cart = { items: [], tyres: null };
+  try { const saved = JSON.parse(localStorage.getItem(KEY)); if (saved && Array.isArray(saved.items)) cart = saved; } catch (e) {}
+  cart.items = cart.items.filter(i => byName[i.name]);
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} };
+  const inCart = n => cart.items.some(i => i.name === n);
+  const tiers = D.services.filter(s => s.tier);
+  function add(name) {
+    const s = byName[name]; if (!s) return;
+    if (s.tier) cart.items = cart.items.filter(i => !byName[i.name].tier); // one service size at a time
+    const it = cart.items.find(i => i.name === name);
+    if (it) it.qty = Math.min(it.qty + 1, 4); else cart.items.push({ name, qty: s.default_qty || 1 });
+    save(); renderAll(); pulse();
+  }
+  function totals() {
+    let fixed = 0, from = 0, quotes = 0, n = 0;
+    for (const i of cart.items) {
+      const s = byName[i.name]; n += 1;
+      if (s.fixed_cents != null) fixed += s.fixed_cents * i.qty;
+      else if (s.from_cents != null) { from += s.from_cents * i.qty; quotes++; }
+      else quotes++;
+    }
+    if (cart.tyres) { n++; quotes++; }
+    return { fixed, from, quotes, n };
+  }
+  const dn = n => (byName[n] && byName[n].display) || n;
+  const priceLabel = s => s.fixed_cents != null ? money(s.fixed_cents) + (s.unit ? ' ' + s.unit : '')
+    : s.price_label ? s.price_label : 'Price on quote';
+
+  // ---------- static content ----------
+  function renderStatic() {
+    document.title = D.shop.name + ' | Car servicing, tyres & online booking';
+    if (D.shop.phone) { const a = $('#top-phone'); a.hidden = false; a.href = 'tel:' + D.shop.tel; a.textContent = D.shop.phone; }
+    const cheapest = Math.min(...tiers.filter(t => t.fixed_cents != null).map(t => t.fixed_cents));
+    $('#hero-lead').innerHTML = `Pick your services, see the price and lock in a time online. Standard service from <b style="color:#ffd27a">${money(cheapest)}</b>. ${esc(D.shop.gst_line)}`;
+    $('#hero-chips').innerHTML = [D.shop.gst_line.replace(/\.$/, ''), 'Live booking times', `Labour ${money(D.shop.labour_cents)}/hr`, D.shop.days_open]
+      .map(t => `<span>${check}${esc(t)}</span>`).join('');
+    $('#gst-tag').textContent = D.shop.tax_inclusive ? D.shop.tax_name + ' included' : D.shop.tax_name + ' added at checkout';
+    $('#shop-sub').textContent = D.shop.gst_line + ' Prices as of ' + D.as_of + '.';
+    // quick picks
+    const quick = [['Service', '#servicing'], ['RWC (roadworthy certificate)'], ['Wheel alignment'], ['A/C regas'], ['Tyres', '#tyres'], ['Pre / post purchase inspection']];
+    $('#quick-grid').innerHTML = quick.map(([n, href]) => {
+      if (href) return `<a class="quick-item" style="text-decoration:none;color:inherit" href="${href}"><b>${esc(n === 'Service' ? 'Standard service' : 'Tyres')}</b><small>${n === 'Service' ? 'from ' + money(cheapest) : 'Get a fitted price'}</small></a>`;
+      const s = byName[n]; if (!s) return '';
+      return `<button class="quick-item" data-add="${esc(n)}"><b>${esc(s.short || s.name)}</b><small>${esc(priceLabel(s))}</small></button>`;
+    }).join('');
+    // tiers
+    $('#size-opts').innerHTML = tiers.map((t, i) => `
+      <label class="size-opt"><input type="radio" name="size" value="${esc(t.name)}" ${i === 0 ? 'checked' : ''}>
+        <span><b>${esc(t.tier)}</b><small>${esc(t.tier_blurb)}</small></span><span class="p">${esc(priceLabel(t))}</span></label>`).join('');
+    // tyres
+    const opt = (arr, sel) => arr.map(v => `<option ${v == sel ? 'selected' : ''}>${v}</option>`).join('');
+    const range = (a, b, st) => Array.from({ length: Math.floor((b - a) / st) + 1 }, (_, i) => a + i * st);
+    $('#t-width').innerHTML = opt(range(155, 325, 10), 205);
+    $('#t-profile').innerHTML = opt(range(30, 80, 5), 55);
+    $('#t-rim').innerHTML = opt(range(13, 22, 1), 16);
+    $('#t-suggest').innerHTML = (D.tyre_suggest || []).filter(n => byName[n]).map(n =>
+      `<button type="button" class="pill" data-add="${esc(n)}">+ ${esc(byName[n].short || n)} · ${esc(priceLabel(byName[n]))}</button>`).join('');
+    // FAQ
+    $('#faq-list').innerHTML = D.faq.map(([q, a]) => `<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join('');
+    // visit
+    $('#hours').innerHTML = D.shop.hours.map(([d, h]) => `<tr><th>${esc(d)}</th><td>${esc(h)}</td></tr>`).join('');
+    const c = [];
+    if (D.shop.phone) c.push(['Phone', `<a href="tel:${esc(D.shop.tel)}">${esc(D.shop.phone)}</a>`]);
+    if (D.shop.email) c.push(['Email', `<a href="mailto:${esc(D.shop.email)}">${esc(D.shop.email)}</a>`]);
+    if (D.shop.address) c.push(['Address', esc(D.shop.address)]);
+    $('#contact').innerHTML = c.length ? c.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('') : '<tr><td>Contact details coming soon.</td></tr>';
+    $('#contact-btns').innerHTML = (D.shop.phone ? `<a class="btn btn-dark" href="tel:${esc(D.shop.tel)}">Call us</a>` : '') +
+      (D.shop.address ? `<a class="btn btn-ghost" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(D.shop.address)}" target="_blank" rel="noopener">Directions</a>` : '');
+    $('#foot-left').textContent = `© ${new Date().getFullYear()} ${D.shop.name}` + (D.shop.abn ? ` · ABN ${D.shop.abn}` : '');
+    $('#foot-right').textContent = D.shop.gst_line;
+  }
+
+  // ---------- catalogue ----------
+  let tab = 'all';
+  function renderTabs() {
+    const tabs = [['all', 'All']].concat(D.groups.map(g => [g.key, g.label])).concat([['tyres', 'Tyres']]);
+    $('#tabs').innerHTML = tabs.map(([k, l]) => `<button class="tab" role="tab" aria-selected="${k === tab}" data-tab="${k}">${esc(l)}</button>`).join('');
+  }
+  function renderGrid() {
+    if (tab === 'tyres') { location.hash = '#tyres'; tab = 'all'; renderTabs(); }
+    const q = $('#q').value.trim().toLowerCase();
+    const list = D.services.filter(s => !s.tier && (tab === 'all' || s.group === tab) &&
+      (!q || (s.name + ' ' + (s.description || '') + ' ' + s.group_label).toLowerCase().includes(q)));
+    $('#grid').innerHTML = list.length ? list.map(s => {
+      const has = inCart(s.name);
+      const price = s.fixed_cents != null
+        ? `<div class="price">${money(s.fixed_cents)}<small>${esc(s.unit || D.shop.price_note)}</small></div>`
+        : s.price_label ? `<div class="price">${esc(s.price_label)}<small>Exact price on quote</small></div>`
+        : `<div class="price quote">Price on quote<small>We'll call you</small></div>`;
+      return `<article class="card">
+        <div class="card-top"><span class="icon">${icon(s.group)}</span>${s.fixed_cents == null ? '<span class="tag warn">Quote</span>' : ''}</div>
+        <h3>${esc(s.name)}</h3><p>${esc(s.description || '')}</p>${s.web_note ? `<span class="note">${esc(s.web_note)}</span>` : ''}
+        <div class="card-foot">${price}<button class="add ${has ? 'in' : ''}" data-add="${esc(s.name)}" aria-label="Add ${esc(s.name)} to booking">${has ? '✓ Added' : 'Add'}</button></div>
+      </article>`;
+    }).join('') : '<div class="empty">Nothing matches. Try another word, or add <b>Diagnostic / labour</b> and tell us what\'s wrong.</div>';
+  }
+
+  // ---------- cart drawer ----------
+  function renderCart() {
+    const t = totals();
+    $('#cart-count').textContent = t.n;
+    const lines = cart.items.map(i => {
+      const s = byName[i.name];
+      const lp = s.fixed_cents != null ? `<span class="lp">${money(s.fixed_cents * i.qty)}</span>` : `<span class="lp q">${esc(s.price_label || 'On quote')}</span>`;
+      const qty = s.tier ? '<span></span>' : `<span class="qty"><button type="button" data-dec="${esc(i.name)}" aria-label="Fewer">−</button><span>${i.qty}</span><button type="button" data-inc="${esc(i.name)}" aria-label="More">+</button></span>`;
+      return `<div class="line"><b>${esc(dn(s.name))}</b>${lp}${qty}<button class="rm" data-rm="${esc(i.name)}">Remove</button></div>`;
+    });
+    if (cart.tyres) {
+      const y = cart.tyres;
+      lines.push(`<div class="line"><b>${y.qty} × tyres ${y.width}/${y.profile} R${y.rim}</b><span class="lp q">On quote</span><span></span><button class="rm" data-rm-tyres>Remove</button></div>`);
+    }
+    $('#lines').innerHTML = lines.length ? lines.join('') : '<div class="empty">Nothing here yet.<br>Add a service to get started.</div>';
+    $('#tot').textContent = money(t.fixed + t.from) + (t.from ? '+' : '');
+    const gst = D.shop.tax_inclusive ? `Includes ${D.shop.tax_name} of ${money(Math.round((t.fixed + t.from) / 11))}.` : '';
+    $('#tot-sub').innerHTML = (t.quotes ? `<div class="callout">${t.quotes} item${t.quotes > 1 ? 's need' : ' needs'} a quote. We'll call you with the price before we start.</div>` : '') + esc(gst);
+    $('#checkout').disabled = !t.n;
+    const bar = $('#cartbar');
+    bar.classList.toggle('show', t.n > 0 && !$('#drawer').classList.contains('open'));
+    $('#cb-count').textContent = `${t.n} item${t.n === 1 ? '' : 's'} in your booking`;
+    $('#cb-total').textContent = money(t.fixed + t.from) + (t.from || t.quotes ? ' + quotes' : '') + (D.shop.tax_inclusive ? ' incl. ' + D.shop.tax_name : '');
+  }
+  function renderAll() { renderGrid(); renderCart(); renderQuick(); }
+  function renderQuick() { document.querySelectorAll('.quick-item[data-add]').forEach(b => b.style.borderColor = inCart(b.dataset.add) ? 'var(--ok)' : ''); }
+  function pulse() { const c = $('#cart-count'); c.animate?.([{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 300 }); }
+  function openCart(open) {
+    $('#drawer').classList.toggle('open', open); $('#scrim').classList.toggle('open', open);
+    $('#drawer').setAttribute('aria-hidden', String(!open)); renderCart();
+    if (open) $('#close-cart').focus();
+  }
+
+  // ---------- checkout ----------
+  const co = { step: 0, date: '', slot: '', slots: [], vehicle: {}, customer: {}, notes: '', offline: false, result: null };
+  const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  const plusDays = n => { const d = new Date(); d.setDate(d.getDate() + n); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+  const hours = () => Math.max(1, ...cart.items.map(i => byName[i.name].hours || 1));
+  const fmtSlot = s => new Date(s).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' });
+  const fmtDate = d => new Date(d + 'T00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
+  const field = (id, label, val, attrs = '') => `<label class="f">${label}<input id="${id}" value="${esc(val || '')}" ${attrs}></label>`;
+  function coRender() {
+    const body = $('#co-body'), next = $('#co-next'), back = $('#co-back');
+    document.querySelectorAll('#co-progress i').forEach((el, i) => el.classList.toggle('on', i <= co.step));
+    back.hidden = co.step === 0 || co.step === 3;
+    if (co.step === 0) {
+      $('#co-title').textContent = 'Your car';
+      body.innerHTML = field('v-rego', 'Rego (optional)', co.vehicle.rego, 'autocomplete="off" style="text-transform:uppercase"') +
+        `<div class="two">${field('v-make', 'Make', co.vehicle.make, 'placeholder="e.g. Toyota" required')}${field('v-model', 'Model', co.vehicle.model, 'placeholder="e.g. Corolla" required')}</div>` +
+        field('v-year', 'Year (optional)', co.vehicle.year, 'inputmode="numeric" maxlength="4"') + '<p class="err" id="co-err"></p>';
+      next.textContent = 'Next';
+    } else if (co.step === 1) {
+      $('#co-title').textContent = 'Pick a time';
+      body.innerHTML = `<label class="f">Date<input type="date" id="c-date" min="${today()}" max="${plusDays(60)}" value="${co.date || ''}"></label>
+        <div id="slot-area">${co.date ? '' : '<p style="color:var(--muted);margin:0">Choose a date to see free times.</p>'}</div><p class="err" id="co-err"></p>`;
+      next.textContent = 'Next';
+      $('#c-date').addEventListener('change', e => { co.date = e.target.value; co.slot = ''; loadSlots(); });
+      if (co.date) loadSlots();
+    } else if (co.step === 2) {
+      $('#co-title').textContent = 'Your details';
+      const t = totals();
+      const sum = cart.items.map(i => { const s = byName[i.name]; return `<div><span>${esc(dn(s.name))}${i.qty > 1 ? ' × ' + i.qty : ''}</span><span>${s.fixed_cents != null ? money(s.fixed_cents * i.qty) : 'Quote'}</span></div>`; }).join('') +
+        (cart.tyres ? `<div><span>${cart.tyres.qty} × tyres ${cart.tyres.width}/${cart.tyres.profile} R${cart.tyres.rim}</span><span>Quote</span></div>` : '') +
+        `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><b>${esc(fmtDate(co.date))}, ${esc(fmtSlot(co.slot))}</b><b>${money(t.fixed)}${t.quotes ? ' + quotes' : ''}</b></div>`;
+      body.innerHTML = `<div class="summary">${sum}</div>` + field('c-name', 'Name', co.customer.name, 'autocomplete="name" required') +
+        `<div class="two">${field('c-phone', 'Mobile', co.customer.phone, 'type="tel" autocomplete="tel" required')}${field('c-email', 'Email (optional)', co.customer.email, 'type="email" autocomplete="email"')}</div>` +
+        `<label class="f">Anything we should know? (optional)<textarea id="c-notes" rows="3" maxlength="1000">${esc(co.notes)}</textarea></label>` +
+        `<label class="hp" aria-hidden="true">Company<input id="c-company" tabindex="-1" autocomplete="off"></label><p class="err" id="co-err"></p>`;
+      next.textContent = 'Confirm booking';
+    } else {
+      $('#co-title').textContent = 'You\'re booked in';
+      const r = co.result;
+      body.innerHTML = `<div class="done"><div class="tick">${check.replace(/16/g, '30')}</div>
+        <h3 style="margin:0 0 6px">Booking #${r.booking_id}</h3><p style="margin:0;color:var(--muted)">${esc(fmtDate(r.start.slice(0, 10)))} at ${esc(fmtSlot(r.start))}</p></div>
+        <div class="summary">${r.priced_items.map(p => `<div><span>${esc(dn(p.name))}${p.qty > 1 ? ' × ' + p.qty : ''}</span><span>${money(p.unit_cents * p.qty)}</span></div>`).join('')}
+        ${r.quote_items.map(q => `<div><span>${esc(q)}</span><span>Quote</span></div>`).join('')}
+        <div style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><b>Total so far</b><b>${money(r.total_cents)}</b></div></div>
+        ${r.quote_items.length ? '<div class="callout">We\'ll call you with prices for the quote items.</div>' : ''}
+        <p style="margin:0;color:var(--muted);font-size:.9rem">Need to change something? ${D.shop.phone ? `Call us on <a href="tel:${esc(D.shop.tel)}">${esc(D.shop.phone)}</a>.` : 'Give us a call.'}</p>`;
+      next.textContent = 'Done';
+    }
+  }
+  async function loadSlots() {
+    const area = $('#slot-area'); area.innerHTML = '<p style="color:var(--muted);margin:0">Checking free times…</p>';
+    try {
+      const r = await fetch(`${D.api}/api/availability?date=${co.date}&hours=${hours()}`, { headers: { Accept: 'application/json' } });
+      if (!r.ok) throw new Error();
+      const j = await r.json(); co.slots = j.free_slots || [];
+      if (!j.open) { area.innerHTML = '<p style="margin:0">We\'re closed that day. Please pick another date.</p>'; return; }
+      if (!co.slots.length) { area.innerHTML = '<p style="margin:0">No free times left that day. Please try another date.</p>'; return; }
+      area.innerHTML = '<div class="slots">' + co.slots.map(s => `<button type="button" class="slot" aria-pressed="${s === co.slot}" data-slot="${s}">${esc(fmtSlot(s))}</button>`).join('') + '</div>';
+    } catch (e) {
+      co.offline = true;
+      area.innerHTML = `<div class="callout">Online booking isn't available right now.</div>` +
+        (D.shop.phone ? `<a class="btn btn-dark btn-block" href="tel:${esc(D.shop.tel)}">Call ${esc(D.shop.phone)} to book</a>` : '<p style="margin:0">Please call us to book.</p>');
+    }
+  }
+  const err = m => { const e = $('#co-err'); if (e) e.textContent = m || ''; };
+  async function coNext() {
+    if (co.step === 0) {
+      co.vehicle = { rego: $('#v-rego').value.trim().toUpperCase(), make: $('#v-make').value.trim(), model: $('#v-model').value.trim(), year: $('#v-year').value.trim() };
+      if (!co.vehicle.make || !co.vehicle.model) return err('Please add the make and model.');
+      if (co.vehicle.year && !/^(19|20)\d\d$/.test(co.vehicle.year)) return err('Year should look like 2018.');
+      co.step = 1;
+    } else if (co.step === 1) {
+      if (!co.slot) return err(co.offline ? 'Please call us to book.' : 'Please pick a time.');
+      co.step = 2;
+    } else if (co.step === 2) {
+      co.customer = { name: $('#c-name').value.trim(), phone: $('#c-phone').value.trim(), email: $('#c-email').value.trim() };
+      co.notes = $('#c-notes').value.trim();
+      if (!co.customer.name) return err('Please add your name.');
+      if ((co.customer.phone.match(/\d/g) || []).length < 8) return err('Please add a phone number we can call.');
+      if (co.customer.email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(co.customer.email)) return err('That email doesn\'t look right.');
+      const btn = $('#co-next'); btn.disabled = true; btn.textContent = 'Booking…';
+      try {
+        const r = await fetch(`${D.api}/api/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+          items: cart.items.map(i => ({ name: i.name, qty: i.qty })), tyres: cart.tyres, vehicle: co.vehicle,
+          customer: co.customer, notes: co.notes, slot: co.slot, company: $('#c-company').value }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) { btn.disabled = false; btn.textContent = 'Confirm booking';
+          if (r.status === 409) { co.step = 1; co.slot = ''; coRender(); return err('Sorry, that time was just taken. Please pick another.'); }
+          return err(j.error || 'Something went wrong. Please call us.'); }
+        co.result = j; co.step = 3; cart = { items: [], tyres: null }; save(); renderAll();
+      } catch (e) { return err('Couldn\'t reach the workshop. Please call us to book.'); }
+      finally { btn.disabled = false; }
+    } else { $('#co').close(); co.step = 0; co.slot = ''; co.result = null; return; }
+    coRender();
+  }
+
+  // ---------- events ----------
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-add],[data-inc],[data-dec],[data-rm],[data-rm-tyres],[data-tab],[data-slot]');
+    if (!t) return;
+    if (t.dataset.add) add(t.dataset.add);
+    else if (t.dataset.inc) { const i = cart.items.find(x => x.name === t.dataset.inc); i.qty = Math.min(i.qty + 1, 4); save(); renderAll(); }
+    else if (t.dataset.dec) { const i = cart.items.find(x => x.name === t.dataset.dec); if (i.qty > 1) i.qty--; else cart.items = cart.items.filter(x => x !== i); save(); renderAll(); }
+    else if (t.dataset.rm) { cart.items = cart.items.filter(x => x.name !== t.dataset.rm); save(); renderAll(); }
+    else if ('rmTyres' in t.dataset) { cart.tyres = null; save(); renderAll(); }
+    else if (t.dataset.tab) { tab = t.dataset.tab; renderTabs(); renderGrid(); }
+    else if (t.dataset.slot) { co.slot = t.dataset.slot; document.querySelectorAll('.slot').forEach(b => b.setAttribute('aria-pressed', String(b === t))); err(''); }
+  });
+  $('#q').addEventListener('input', renderGrid);
+  $('#size-form').addEventListener('submit', e => { e.preventDefault(); add(new FormData(e.target).get('size')); openCart(true); });
+  const showTyre = () => $('#t-show').textContent = `${$('#t-width').value}/${$('#t-profile').value} R${$('#t-rim').value}`;
+  ['#t-width', '#t-profile', '#t-rim'].forEach(s => $(s).addEventListener('change', showTyre));
+  $('#tyre-form').addEventListener('submit', e => { e.preventDefault();
+    cart.tyres = { width: +$('#t-width').value, profile: +$('#t-profile').value, rim: +$('#t-rim').value, qty: +$('#t-qty').value };
+    save(); renderAll(); pulse(); openCart(true); });
+  $('#open-cart').addEventListener('click', () => openCart(true));
+  $('#cb-open').addEventListener('click', () => openCart(true));
+  $('#close-cart').addEventListener('click', () => openCart(false));
+  $('#scrim').addEventListener('click', () => openCart(false));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#drawer').classList.contains('open')) openCart(false); });
+  $('#checkout').addEventListener('click', () => { openCart(false); co.step = 0; co.result = null; coRender(); $('#co').showModal(); });
+  $('#co-next').addEventListener('click', coNext);
+  $('#co-back').addEventListener('click', () => { co.step = Math.max(0, co.step - 1); coRender(); });
+  $('#co').addEventListener('close', () => { if (co.step === 3) { co.step = 0; co.result = null; } });
+
+  renderStatic(); renderTabs(); renderAll(); showTyre();
+})();
+</script>
+</body>
+</html>

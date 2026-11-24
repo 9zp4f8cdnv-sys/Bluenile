@@ -19,6 +19,7 @@ reads and changes them only through the tools in `bluenile/tools.py`.
 | Scheduling | `check_availability` (hours × bays), `book_appointment`, `cancel_appointment`, `list_appointments` |
 | Work orders | `create_work_order`, `add_work_order_line` (labor/parts/fees), `update_work_order`, `get_work_order`, `list_work_orders` |
 | Invoices & payments | `create_invoice` (GST-inclusive totals, printable tax invoice in `invoices/`), `record_payment`, `get_invoice` |
+| Website & online booking | `build_website.py` + `web_server.py`: service shop, tyre finder, cart and live booking into the workshop system |
 | Websites, bug fixes, new agents | The container's bash and file tools; results land in `outputs/<session>/` |
 
 Guardrails:
@@ -40,6 +41,37 @@ to confirm. Anything not on the list gets a follow-up instead of a quote.
 To change a price, edit the JSON file (no setup re-run needed) and set
 `"confirmed": true` once it's checked. To use a file elsewhere, set `SHOP_PRICE_LIST`.
 
+## Website and online booking
+
+The public website is a booking storefront built from the same data the agent
+uses (the price list and `SHOP_*` settings), so the two always agree on prices.
+
+- **Shop-style browsing:** service cards with prices, category tabs and
+  search, a car-size picker for the standard service, and a tyre finder by size.
+- **Booking cart:** customers add services, see the total incl. GST (and the
+  GST amount), then check out: car → live time slot → contact details.
+- **Straight into the workshop:** a confirmed booking creates (or matches, by
+  phone and rego) the customer and vehicle, books a bay, and opens a work order
+  with every fixed-price item on it. Ranges, unconfirmed prices and tyres are
+  listed in the work order notes as "Quote needed" so staff call the customer.
+- **Safe by default:** the server re-prices everything from the price list
+  (the browser only sends service names), checks slots against opening hours
+  and free bays, rejects bookings less than an hour away or more than 60 days
+  out, and has a spam trap and a per-connection rate limit.
+- Only confirmed prices are published; only `description` and `web_note` from
+  the price list are public (`notes` stays internal). `hours` in the price list
+  sets how long a booking reserves a bay (default 1).
+
+```bash
+python build_website.py   # builds website/index.html; lists any missing contact details
+python web_server.py      # serves the site + booking API on :8000 (PORT to change)
+```
+
+Run `web_server.py` behind HTTPS on any small server. To host the page
+somewhere else (Netlify, your current host) and the API separately, set
+`SHOP_BOOKING_API=https://your-api-host` before building. If the booking API
+can't be reached, the checkout tells customers to call instead.
+
 ## Setup
 
 ```bash
@@ -52,7 +84,7 @@ Shop settings come from environment variables:
 
 | Variable | Default |
 | --- | --- |
-| `SHOP_NAME`, `SHOP_ADDRESS`, `SHOP_PHONE`, `SHOP_ABN` | `Bluenile Auto Repair`, empty, empty, empty |
+| `SHOP_NAME`, `SHOP_ADDRESS`, `SHOP_PHONE`, `SHOP_EMAIL`, `SHOP_ABN` | `Bluenile Auto Repair`, empty, empty, empty, empty |
 | `SHOP_LABOR_RATE` (dollars/hour, incl. GST) | `130` |
 | `SHOP_TAX_NAME`, `SHOP_TAX_RATE` | `GST`, `0.10` |
 | `SHOP_TAX_INCLUSIVE` (`1`: prices include GST; `0`: tax added on top) | `1` |

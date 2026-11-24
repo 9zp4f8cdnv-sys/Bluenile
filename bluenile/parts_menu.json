@@ -1,0 +1,72 @@
+{
+  "note": "The 'Your car' panel on the website: one card per category, each field a drop-down. Customers' choices go into the booking as quote items, so staff confirm the right part and price for the car. Edit freely: add or remove options and brands. 'price_link' maps a choice to a row in price_list.json, so it's added at that price instead of as a quote. Fitment (which part fits which car) is NOT here: see vehicle_specs.json.",
+  "categories": [
+    {
+      "key": "oil",
+      "label": "Engine oil",
+      "hint": "Leave it on the manufacturer's recommendation if you're not sure; we'll match your logbook.",
+      "fields": [
+        {"key": "grade", "label": "Oil grade", "options": ["Manufacturer's recommendation", "0W-16", "0W-20", "5W-20", "5W-30", "5W-40", "10W-30", "10W-40", "15W-40", "20W-50"]},
+        {"key": "brand", "label": "Brand", "options": ["No preference", "Penrite", "Castrol", "Mobil 1", "Nulon", "Valvoline", "Shell Helix", "Liqui Moly", "Motul"]}
+      ]
+    },
+    {
+      "key": "brakes",
+      "label": "Brakes",
+      "hint": "Squealing, grinding, a soft pedal or pulling to one side? Pick a brake check and we'll tell you what it needs.",
+      "fields": [
+        {"key": "part", "label": "What needs doing", "options": ["Brake check (noise, vibration or pulling)", "Front brake pads", "Rear brake pads", "Front and rear brake pads", "Front rotors", "Rear rotors", "Brake fluid flush"]},
+        {"key": "brand", "label": "Brand", "options": ["No preference", "Bendix", "Protex", "DBA", "Brembo", "Ferodo", "Genuine (dealer) parts"]}
+      ],
+      "price_link": {"Brake fluid flush": "Brake fluid flush"}
+    },
+    {
+      "key": "filters",
+      "label": "Filters",
+      "fields": [
+        {"key": "part", "label": "Filter", "options": ["Oil filter", "Air filter", "Cabin filter", "Fuel filter"]},
+        {"key": "brand", "label": "Brand", "options": ["No preference", "Ryco", "Wesfil", "Sakura", "Genuine (dealer) parts"]}
+      ],
+      "price_link": {"Air filter": "Air filter", "Cabin filter": "Cabin filter"}
+    },
+    {
+      "key": "battery",
+      "label": "Battery",
+      "fields": [
+        {"key": "part", "label": "What you need", "options": ["Battery and charging test", "Replace battery"]},
+        {"key": "brand", "label": "Brand", "options": ["No preference", "Century", "Supercharge", "Exide", "Varta"]}
+      ]
+    },
+    {
+      "key": "cooling",
+      "label": "Cooling and A/C",
+      "fields": [
+        {"key": "part", "label": "What you need", "options": ["A/C regas", "A/C sanitiser", "Coolant flush", "Overheating or leak check"]}
+      ],
+      "price_link": {"A/C regas": "A/C regas", "A/C sanitiser": "A/C sanitiser", "Coolant flush": "Coolant flush"}
+    },
+    {
+      "key": "lights",
+      "label": "Wipers and lights",
+      "fields": [
+        {"key": "part", "label": "What you need", "options": ["Wiper blades (standard)", "Wiper blades (premium)", "Replace a blown bulb", "Headlight polish"]}
+      ],
+      "price_link": {"Wiper blades (standard)": "Cheap wipers", "Wiper blades (premium)": "Expensive wipers", "Replace a blown bulb": "Light (globe)", "Headlight polish": "Headlight polish"}
+    },
+    {
+      "key": "tyres",
+      "label": "Tyres",
+      "hint": "Find your size on the tyre's sidewall (like 205/55 R16). Tyres we have in stock show in the Tyres & wheels section.",
+      "fields": [
+        {"key": "brand", "label": "Preferred brand", "options": ["No preference", "Michelin", "Bridgestone", "Continental", "Pirelli", "Goodyear", "Dunlop", "Yokohama", "Toyo", "Hankook", "Kumho", "Falken", "Maxxis"]},
+        {"key": "qty", "label": "How many", "options": ["1", "2", "4"]}
+      ]
+    },
+    {
+      "key": "other",
+      "label": "Other parts",
+      "hint": "Need a specific part? Tell us what it is and we'll source it.",
+      "free_text": true
+    }
+  ]
+}

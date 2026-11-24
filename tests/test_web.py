@@ -148,3 +148,37 @@ def test_rego_lookup_needs_a_provider(client, tmp_path):
     j = c.get("/api/vehicle?rego=abc 123&state=VIC").get_json()
     assert j["model"] == "HiLux" and j["tier"] == "Standard service - very big cars"
     assert c.get("/api/vehicle?rego=ZZZ999").status_code == 404
+
+
+def test_part_requests_from_your_car_panel(client):
+    reqs = [
+        {"cat": "oil", "fields": {"grade": "5W-30", "brand": "Penrite"}},
+        {"cat": "brakes", "fields": {"part": "Front brake pads", "brand": "Bendix"}},
+        {"cat": "cooling", "fields": {"part": "A/C regas"}},           # linked to the price list
+        {"cat": "filters", "fields": {"part": "Air filter", "brand": "Ryco"}},  # linked, range -> quote + pref
+        {"cat": "other", "text": "Towbar wiring check"},
+    ]
+    j = client.post("/api/bookings", json=booking(items=[], tyres=None, requests=reqs)).get_json()
+    assert [p["name"] for p in j["priced_items"]] == ["A/C regas"] and j["total_cents"] == 15000
+    assert "Engine oil: 5W-30, Penrite" not in j["quote_items"]  # labelled with the field name
+    assert "Engine oil: oil grade 5W-30, Penrite" in j["quote_items"]
+    assert "Brakes: Front brake pads, Bendix" in j["quote_items"]
+    assert "Air filter" in j["quote_items"] and "Other parts: Towbar wiring check" in j["quote_items"]
+    wo = ShopTools(connect(client.db), client.cfg).get_work_order(j["work_order_id"])
+    assert "Customer preferences: Air filter: Ryco" in wo["notes"]
+
+
+@pytest.mark.parametrize("req,msg", [
+    ({"cat": "nope"}, "Unknown part request"),
+    ({"cat": "oil", "fields": {"grade": "99W-99"}}, "isn't one of the choices"),
+    ({"cat": "other", "text": ""}, "text is required"),
+    ({"cat": "other", "text": "x" * 200}, "too long"),
+])
+def test_bad_part_requests(client, req, msg):
+    r = client.post("/api/bookings", json=booking(items=[], tyres=None, requests=[req]))
+    assert r.status_code == 400 and msg in r.get_json()["error"]
+
+
+def test_requests_alone_are_a_valid_booking(client):
+    r = client.post("/api/bookings", json=booking(items=[], tyres=None, requests=[{"cat": "battery", "fields": {}}]))
+    assert r.status_code == 201 and r.get_json()["quote_items"] == ["Battery: Battery and charging test"]

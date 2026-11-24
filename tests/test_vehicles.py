@@ -41,3 +41,17 @@ def test_agent_tool(tmp_path):
     t = ShopTools(connect(tmp_path / "db"), ShopConfig(invoice_dir=tmp_path))
     r = json.loads(t.run("classify_vehicle", {"make": "Nissan", "model": "Patrol"}))
     assert r["tier"] == BIG and r["quote"] == "$329" and r["confirmed"] is True
+
+
+def test_find_spec_matches_make_model_and_years():
+    from bluenile.vehicles import find_spec
+    specs = {"vehicles": [{"make": "toyota", "model": "corolla", "years": [2019, 2025], "oil_grade": "0W-20"}]}
+    assert find_spec("Toyota", "Corolla Ascent", 2021, specs)["oil_grade"] == "0W-20"
+    assert find_spec("toyota", "corolla", None, specs) is not None
+    assert find_spec("Toyota", "Corolla", 2010, specs) is None
+    assert find_spec("Mazda", "3", 2021, specs) is None
+
+
+def test_shipped_specs_file_is_valid_and_empty_until_checked():
+    from bluenile.vehicles import load_specs
+    assert load_specs()["vehicles"] == []

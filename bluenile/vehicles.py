@@ -18,6 +18,7 @@ from pathlib import Path
 from typing import Callable, Optional
 
 CLASSES_FILE = Path(__file__).with_name("vehicle_classes.json")
+SPECS_FILE = Path(__file__).with_name("vehicle_specs.json")
 
 # rego, state -> {"make", "model", "year"?} or None. Plug a provider in here.
 RegoLookup = Callable[[str, str], Optional[dict]]
@@ -55,3 +56,22 @@ def classify(make: str, model: str, rules: dict | None = None) -> dict:
                     "reason": f"{make.strip()} vehicles are classed as {rule['label']}"}
     return {"tier": rules["default"], "matched": False,
             "reason": f"{make.strip()} {model.strip()}".strip() + " gets the standard price"}
+
+
+def load_specs(path: Path = SPECS_FILE) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def find_spec(make: str, model: str, year: int | None = None, specs: dict | None = None,
+              rules: dict | None = None) -> dict | None:
+    """A checked spec from vehicle_specs.json for this vehicle, or None. Mirrored in the website's JS."""
+    specs, rules = specs or load_specs(), rules or load_rules()
+    mk, md = _make(make, rules), _norm(model)
+    for v in specs.get("vehicles", []):
+        if _make(v.get("make", ""), rules) != mk or not md.startswith(_norm(v.get("model", ""))):
+            continue
+        years = v.get("years")
+        if years and year and not years[0] <= year <= years[1]:
+            continue
+        return v
+    return None

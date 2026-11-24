@@ -161,6 +161,26 @@ label.f { display: grid; gap: 6px; font-size: .85rem; font-weight: 600; color: v
 .tyre-help h3 { margin: 0 0 8px; font-size: 1rem; }
 .tyre-help ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: .92rem; }
 .suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+/* Your car */
+.mycar { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; box-shadow: var(--shadow); overflow: hidden; }
+.mycar-head { display: grid; grid-template-columns: minmax(0, 340px) 1fr; gap: 28px; align-items: center; padding: 26px 30px;
+  background: linear-gradient(160deg, var(--brand-soft), transparent); border-bottom: 1px solid var(--line); }
+.car-pic svg { width: 100%; height: auto; display: block; }
+.car-pic figcaption { font-size: .75rem; color: var(--muted); text-align: center; margin-top: 2px; }
+.mycar-head .tag { margin-bottom: 8px; }
+.mycar-head h3 { font: 400 clamp(1.8rem, 4vw, 2.6rem)/1 Anton, Impact, sans-serif; text-transform: uppercase; margin: 6px 0 8px; }
+.mycar-head p { margin: 0; color: var(--muted); }
+.mycar-head .svc { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; }
+.mycar-head .svc b { font-size: 1.4rem; }
+.spec { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.spec span { background: var(--ok-soft); color: var(--ok); border-radius: 999px; padding: 4px 10px; font-size: .82rem; font-weight: 700; }
+.part-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; padding: 22px 30px 28px; }
+.part { border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; align-content: start; background: var(--surface); min-width: 0; }
+.part h4 { margin: 0; font-size: 1rem; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.part h4 small { color: var(--muted); font-weight: 600; font-size: .8rem; white-space: nowrap; }
+.part .hint { margin: 0; color: var(--muted); font-size: .85rem; }
+.part .add { justify-self: start; }
+@media (max-width: 760px) { .mycar-head { grid-template-columns: 1fr; padding: 20px; } .part-grid { padding: 18px 20px 22px; } .car-pic { max-width: 300px; } }
 .stock-list { display: grid; gap: 10px; margin-top: 16px; }
 .stock-list h4 { margin: 6px 0 0; font-size: .95rem; }
 .stock { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 12px 14px;
@@ -326,10 +346,29 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
             <label class="f">Make<input id="car-make" list="makes" placeholder="e.g. Toyota" autocomplete="off"></label>
             <label class="f">Model<input id="car-model" placeholder="e.g. Corolla" autocomplete="off"></label>
           </div>
+          <label class="f">Year (optional)<input id="car-year" inputmode="numeric" maxlength="4" placeholder="e.g. 2019" autocomplete="off"></label>
           <datalist id="makes"></datalist>
           <div id="car-result" aria-live="polite"><p class="car-hint">Enter your make and model to see your price.</p></div>
           <button class="btn btn-cta btn-block" type="submit" id="car-add" disabled>Add service to booking</button>
         </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="your-car" style="padding-top:0" hidden>
+    <div class="wrap">
+      <div class="mycar">
+        <div class="mycar-head">
+          <figure class="car-pic" id="car-pic" style="margin:0"></figure>
+          <div>
+            <span class="tag">Built for your car</span>
+            <h3 id="car-title"></h3>
+            <p id="car-sub"></p>
+            <div class="spec" id="car-spec"></div>
+            <div class="svc"><span>Standard service <b id="car-svc-price"></b></span><button type="button" class="btn btn-cta" id="car-svc-add">Add service</button></div>
+          </div>
+        </div>
+        <div class="part-grid" id="part-grid"></div>
       </div>
     </div>
   </section>
@@ -460,6 +499,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   try { const saved = JSON.parse(localStorage.getItem(KEY)); if (saved && Array.isArray(saved.items)) cart = saved; } catch (e) {}
   cart.items = cart.items.filter(i => byName[i.name]);
   cart.stock = Array.isArray(cart.stock) ? cart.stock : [];
+  cart.requests = Array.isArray(cart.requests) ? cart.requests.filter(r => MENU.some(c => c.key === r.cat)) : [];
   // Tyres and wheels in stock come live from the staff app (empty if the booking server can't be reached).
   let STOCK = {};
   const stockLabel = p => [p.brand, p.model].filter(Boolean).join(' ') || p.name;
@@ -492,6 +532,26 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
     return R.default;
   }
   const carName = v => v ? [v.year, v.make, v.model].filter(Boolean).join(' ') : '';
+  // Checked specs (vehicle_specs.json); same matching as bluenile/vehicles.py find_spec().
+  function findSpec(make, model, year) {
+    const mk = makeKey(make), md = norm(model), y = parseInt(year, 10);
+    return (D.vehicle_specs || []).find(v => makeKey(v.make) === mk && md.startsWith(norm(v.model)) &&
+      !(v.years && y && (y < v.years[0] || y > v.years[1]))) || null;
+  }
+  const MENU = D.parts_menu || [];
+  // Side-view illustrations by vehicle class (not a photo of the exact car).
+  const BODY = {
+    'Standard service - normal cars': { d: 'M22 104 L30 78 Q38 66 66 63 L108 38 Q118 32 138 32 L206 32 Q222 32 232 42 L262 64 Q292 68 298 84 L300 104 Z', win: 'M112 44 L140 40 L204 40 Q214 40 222 48 L240 62 L100 62 Z', label: 'Hatch or small car' },
+    'Standard service - large cars and EU': { d: 'M14 104 L20 80 Q28 68 58 66 L102 42 Q112 36 132 36 L202 36 Q218 36 230 48 L254 66 Q292 68 302 82 L306 104 Z', win: 'M108 46 L134 42 L200 42 Q212 42 222 52 L238 64 L94 64 Z', label: 'Large or European car' },
+    'Standard service - very big cars': { d: 'M12 104 L14 64 Q16 52 32 52 L70 52 L94 22 Q99 16 110 16 L232 16 Q246 16 252 28 L264 52 L294 56 Q306 58 306 72 L308 104 Z', win: 'M102 26 L112 22 L228 22 Q238 22 242 30 L252 50 L80 50 Z', label: '4WD, ute, van or people mover' },
+  };
+  function carSvg(tier) {
+    const b = BODY[tier] || BODY[R.default];
+    const wheel = x => `<g transform="translate(${x} 104)"><circle r="26" fill="#0d0f14"/><circle r="22" fill="none" stroke="#ffb81c" stroke-width="2"/><circle r="17" fill="#d9dfe8"/><circle r="14" fill="#0b2e6b"/>` +
+      [0, 72, 144, 216, 288].map(a => `<rect x="-2.5" y="-14" width="5" height="11" rx="2" fill="#f5f7fa" transform="rotate(${a})"/>`).join('') + `<circle r="4" fill="#ffb81c"/></g>`;
+    return `<svg viewBox="0 0 320 136" role="img" aria-label="${esc(b.label)} illustration"><ellipse cx="160" cy="130" rx="150" ry="5" fill="var(--line)"/>` +
+      `<path d="${b.d}" fill="var(--brand)"/><path d="${b.win}" fill="var(--surface-2)" opacity=".9"/><rect x="286" y="78" width="14" height="6" rx="2" fill="#ffb81c"/>${wheel(82)}${wheel(238)}</svg><figcaption>${esc(b.label)} (illustration)</figcaption>`;
+  }
   function add(name) {
     const s = byName[name]; if (!s) return;
     if (s.tier) cart.items = cart.items.filter(i => !byName[i.name].tier); // one standard service at a time
@@ -508,6 +568,12 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       else quotes++;
     }
     for (const x of cart.stock) { n++; fixed += x.price_cents * x.qty; }
+    for (const r of cart.requests) {
+      n++; const s = r.link && byName[r.link];
+      if (s && s.fixed_cents != null) fixed += s.fixed_cents;
+      else if (s && s.from_cents != null) { from += s.from_cents; quotes++; }
+      else quotes++;
+    }
     if (cart.tyres) { n++; quotes++; }
     return { fixed, from, quotes, n };
   }
@@ -536,7 +602,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
     $('#svc-from').innerHTML = `<small>from</small> ${money(cheapest)}`;
     $('#makes').innerHTML = (D.makes || []).map(m => `<option value="${esc(m)}">`).join('');
     $('#rego-row').hidden = !D.rego_lookup;
-    if (cart.vehicle) { $('#car-make').value = cart.vehicle.make || ''; $('#car-model').value = cart.vehicle.model || ''; $('#car-rego').value = cart.vehicle.rego || ''; }
+    if (cart.vehicle) { $('#car-make').value = cart.vehicle.make || ''; $('#car-model').value = cart.vehicle.model || ''; $('#car-year').value = cart.vehicle.year || ''; $('#car-rego').value = cart.vehicle.rego || ''; }
     showCar();
     // tyres
     const opt = (arr, sel) => arr.map(v => `<option ${v == sel ? 'selected' : ''}>${v}</option>`).join('');
@@ -598,6 +664,11 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       const label = s.tier && cart.vehicle ? `${dn(s.name)} · ${carName(cart.vehicle)}` : dn(s.name);
       return `<div class="line"><b>${esc(label)}</b>${lp}${qty}<button class="rm" data-rm="${esc(i.name)}">Remove</button></div>`;
     });
+    for (const r of cart.requests) {
+      const s = r.link && byName[r.link];
+      const lp = s && s.fixed_cents != null ? `<span class="lp">${money(s.fixed_cents)}</span>` : `<span class="lp q">${esc(s && s.price_label || 'On quote')}</span>`;
+      lines.push(`<div class="line"><b>${esc(r.label)}</b>${lp}<span></span><button class="rm" data-rrm="${esc(r.key)}">Remove</button></div>`);
+    }
     for (const x of cart.stock) {
       lines.push(`<div class="line"><b>${esc(x.name)}</b><span class="lp">${money(x.price_cents * x.qty)}</span><span class="qty"><button type="button" data-sdec="${esc(x.sku)}" aria-label="Fewer">−</button><span>${x.qty}</span><button type="button" data-sinc="${esc(x.sku)}" aria-label="More">+</button></span><button class="rm" data-srm="${esc(x.sku)}">Remove</button></div>`);
     }
@@ -615,7 +686,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
     $('#cb-count').textContent = `${t.n} item${t.n === 1 ? '' : 's'} in your booking`;
     $('#cb-total').textContent = money(t.fixed + t.from) + (t.from || t.quotes ? ' + quotes' : '') + (D.shop.tax_inclusive ? ' incl. ' + D.shop.tax_name : '');
   }
-  function renderAll() { renderGrid(); renderCart(); renderQuick(); }
+  function renderAll() { renderGrid(); renderCart(); renderQuick(); if (typeof renderMyCar === 'function' && $('#part-grid')) renderMyCar(); }
   function renderQuick() { document.querySelectorAll('.quick-item[data-add]').forEach(b => b.style.borderColor = inCart(b.dataset.add) ? 'var(--ok)' : ''); }
   function pulse() { const c = $('#cart-count'); c.animate?.([{ transform: 'scale(1.5)' }, { transform: 'scale(1)' }], { duration: 300 }); }
   function openCart(open) {
@@ -653,6 +724,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       $('#co-title').textContent = 'Your details';
       const t = totals();
       const sum = cart.items.map(i => { const s = byName[i.name]; return `<div><span>${esc(dn(s.name))}${i.qty > 1 ? ' × ' + i.qty : ''}</span><span>${s.fixed_cents != null ? money(s.fixed_cents * i.qty) : 'Quote'}</span></div>`; }).join('') +
+        cart.requests.map(r => { const s = r.link && byName[r.link]; return `<div><span>${esc(r.label)}</span><span>${s && s.fixed_cents != null ? money(s.fixed_cents) : 'Quote'}</span></div>`; }).join('') +
         cart.stock.map(x => `<div><span>${esc(x.name)} × ${x.qty}</span><span>${money(x.price_cents * x.qty)}</span></div>`).join('') +
         (cart.tyres ? `<div><span>${cart.tyres.qty} × tyres ${cart.tyres.width}/${cart.tyres.profile} R${cart.tyres.rim}</span><span>Quote</span></div>` : '') +
         `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><b>${esc(fmtDate(co.date))}, ${esc(fmtSlot(co.slot))}</b><b>${money(t.fixed)}${t.quotes ? ' + quotes' : ''}</b></div>`;
@@ -720,14 +792,14 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       const btn = $('#co-next'); btn.disabled = true; btn.textContent = 'Booking…';
       try {
         const r = await fetch(`${D.api}/api/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          items: cart.items.map(i => ({ name: i.name, qty: i.qty })), stock: cart.stock.map(x => ({ sku: x.sku, qty: x.qty })), tyres: cart.tyres, vehicle: co.vehicle,
+          items: cart.items.map(i => ({ name: i.name, qty: i.qty })), stock: cart.stock.map(x => ({ sku: x.sku, qty: x.qty })), requests: cart.requests.map(r => ({ cat: r.cat, fields: r.fields, text: r.text })), tyres: cart.tyres, vehicle: co.vehicle,
           customer: co.customer, notes: co.notes, slot: co.slot, company: $('#c-company').value }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) { btn.disabled = false; btn.textContent = 'Confirm booking';
           if (r.status === 409 && /stock/.test(j.error || '')) { await loadStock(); return err(j.error + '. Your booking has been updated; please check it.'); }
           if (r.status === 409) { co.step = 1; co.slot = ''; coRender(); return err('Sorry, that time was just taken. Please pick another.'); }
           return err(j.error || 'Something went wrong. Please call us.'); }
-        co.result = j; co.step = 3; cart = { items: [], tyres: null, stock: [] }; save(); renderAll(); loadStock();
+        co.result = j; co.step = 3; cart = { items: [], tyres: null, stock: [], requests: [] }; save(); renderAll(); loadStock();
       } catch (e) { return err('Couldn\'t reach the workshop. Please call us to book.'); }
       finally { btn.disabled = false; }
     } else { $('#co').close(); co.step = 0; co.slot = ''; co.result = null; return; }
@@ -736,7 +808,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 
   // ---------- events ----------
   document.addEventListener('click', e => {
-    const t = e.target.closest('[data-add],[data-inc],[data-dec],[data-rm],[data-rm-tyres],[data-tab],[data-slot],[data-sadd],[data-sinc],[data-sdec],[data-srm]');
+    const t = e.target.closest('[data-add],[data-inc],[data-dec],[data-rm],[data-rm-tyres],[data-tab],[data-slot],[data-sadd],[data-sinc],[data-sdec],[data-srm],[data-padd],[data-rrm]');
     if (!t) return;
     if (t.dataset.add) add(t.dataset.add);
     else if (t.dataset.inc) { const i = cart.items.find(x => x.name === t.dataset.inc); i.qty = Math.min(i.qty + 1, 4); save(); renderAll(); }
@@ -755,6 +827,8 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       if (t.dataset.sinc) x.qty = Math.min(x.qty + 1, max); else if (x.qty > 1) x.qty--; else cart.stock = cart.stock.filter(y => y !== x);
       save(); renderAll(); showTyre();
     }
+    else if (t.dataset.padd) { addRequest(t.dataset.padd); }
+    else if (t.dataset.rrm) { cart.requests = cart.requests.filter(r => r.key !== t.dataset.rrm); save(); renderAll(); renderMyCar(); }
     else if (t.dataset.srm) { cart.stock = cart.stock.filter(y => y.sku !== t.dataset.srm); save(); renderAll(); showTyre(); }
     else if (t.dataset.tab) { tab = t.dataset.tab; renderTabs(); renderGrid(); }
     else if (t.dataset.slot) { co.slot = t.dataset.slot; document.querySelectorAll('.slot').forEach(b => b.setAttribute('aria-pressed', String(b === t))); err(''); }
@@ -767,12 +841,71 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       $('#car-result').innerHTML = '<p class="car-hint">Enter your make and model to see your price.</p>';
       btn.disabled = true; return;
     }
+    const year = $('#car-year').value.trim();
     const t = byName[classify(make, model)];
-    $('#car-result').innerHTML = `<div class="car-result"><span><small>Standard service for your</small><b>${esc(carName({ make, model }))}</b></span><span class="p">${esc(priceLabel(t))}</span></div>`;
+    $('#car-result').innerHTML = `<div class="car-result"><span><small>Standard service for your</small><b>${esc(carName({ make, model, year }))}</b></span><span class="p">${esc(priceLabel(t))}</span></div>`;
     btn.disabled = false;
+    cart.vehicle = Object.assign({}, cart.vehicle || {}, { make, model, year: /^(19|20)\d\d$/.test(year) ? year : '' });
+    co.vehicle = Object.assign({}, co.vehicle || {}, cart.vehicle);
+    const svc = cart.items.find(i => byName[i.name].tier);  // service already added: follow the car
+    if (svc) svc.name = classify(make, model);
+    save(); renderAll();
+  }
+  function partCard(c, spec) {
+    const fields = (c.fields || []).map(f => {
+      let sel = f.options[0];
+      if (f.key === 'grade' && spec && spec.oil_grade && f.options.includes(spec.oil_grade)) sel = spec.oil_grade;
+      return `<label class="f">${esc(f.label)}<select data-pf="${esc(c.key)}" data-fk="${esc(f.key)}">${f.options.map(o => `<option ${o === sel ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></label>`;
+    }).join('');
+    const text = c.free_text ? `<label class="f">Part<input data-pf="${esc(c.key)}" data-fk="text" maxlength="120" placeholder="e.g. front wheel bearing"></label>` : '';
+    return `<div class="part" id="part-${esc(c.key)}"><h4>${esc(c.label)}<small data-pprice="${esc(c.key)}"></small></h4>${c.hint ? `<p class="hint">${esc(c.hint)}</p>` : ''}${fields}${text}
+      <button type="button" class="add" data-padd="${esc(c.key)}">Add to booking</button></div>`;
+  }
+  function readPart(key) {
+    const c = MENU.find(x => x.key === key); const fields = {}; let text = '';
+    document.querySelectorAll(`[data-pf="${key}"]`).forEach(el => { if (el.dataset.fk === 'text') text = el.value.trim(); else fields[el.dataset.fk] = el.value; });
+    const link = fields.part && c.price_link ? c.price_link[fields.part] : null;
+    const bits = c.free_text ? [text] : [fields.part].concat((c.fields || []).filter(f => f.key !== 'part' && fields[f.key] !== 'No preference')
+      .map(f => f.key === 'qty' ? `× ${fields[f.key]}` : fields[f.key])).filter(Boolean);
+    return { c, fields, text, link: link && byName[link] ? link : null, label: `${c.label}: ${bits.join(', ') || 'as recommended'}`, key: key + '|' + (fields.part || text || '') };
+  }
+  function partPrice(key) {
+    const el = document.querySelector(`[data-pprice="${key}"]`); if (!el) return;
+    const r = readPart(key), s = r.link && byName[r.link];
+    el.textContent = s ? priceLabel(s) : 'Price on quote';
+    const btn = document.querySelector(`[data-padd="${key}"]`), has = cart.requests.some(x => x.key === r.key);
+    btn.classList.toggle('in', has); btn.textContent = has ? '✓ Added' : 'Add to booking';
+  }
+  function addRequest(key) {
+    const r = readPart(key);
+    if (r.c.free_text && !r.text) { document.querySelector(`[data-pf="${key}"]`).focus(); return; }
+    cart.requests = cart.requests.filter(x => x.key !== r.key);
+    cart.requests.push({ key: r.key, cat: key, fields: r.c.free_text ? undefined : r.fields, text: r.c.free_text ? r.text : undefined, label: r.label, link: r.link });
+    save(); renderAll(); partPrice(key); pulse();
+  }
+  function renderMyCar() {
+    const v = cart.vehicle, sec = $('#your-car');
+    if (!v || !v.make || !v.model) { sec.hidden = true; return; }
+    const tier = classify(v.make, v.model), t = byName[tier], spec = findSpec(v.make, v.model, v.year);
+    const sig = [v.make, v.model, v.year].join('|');
+    sec.hidden = false;
+    $('#car-pic').innerHTML = carSvg(tier);
+    $('#car-title').textContent = carName(v);
+    $('#car-sub').textContent = spec ? 'We have checked specs for your car, shown below.' : 'Pick what your car needs. We check every part against your car before we fit it, and confirm prices for anything marked quote.';
+    $('#car-spec').innerHTML = spec ? [spec.oil_grade && `Oil ${spec.oil_grade}${spec.oil_litres ? ', ' + spec.oil_litres + ' L' : ''}`, ...(spec.tyre_sizes || []).map(z => `Tyres ${z}`)].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('') : '';
+    $('#car-svc-price').textContent = priceLabel(t);
+    const inCart = cart.items.some(i => i.name === tier);
+    $('#car-svc-add').textContent = inCart ? '✓ Service added' : 'Add service';
+    if ($('#part-grid').dataset.sig !== sig) {
+      $('#part-grid').innerHTML = MENU.map(c => partCard(c, spec)).join('');
+      $('#part-grid').dataset.sig = sig;
+    }
+    MENU.forEach(c => partPrice(c.key));
   }
   let carTimer;
-  ['#car-make', '#car-model'].forEach(sel => $(sel).addEventListener('input', () => { clearTimeout(carTimer); carTimer = setTimeout(showCar, 150); }));
+  ['#car-make', '#car-model', '#car-year'].forEach(sel => $(sel).addEventListener('input', () => { clearTimeout(carTimer); carTimer = setTimeout(showCar, 250); }));
+  $('#part-grid').addEventListener('change', e => { const k = e.target.dataset.pf; if (k) partPrice(k); });
+  $('#car-svc-add').addEventListener('click', () => { const v = cart.vehicle; if (v) { add(classify(v.make, v.model)); renderMyCar(); } });
   $('#car-form').addEventListener('submit', e => {
     e.preventDefault();
     const v = { make: $('#car-make').value.trim(), model: $('#car-model').value.trim(), rego: $('#car-rego').value.trim().toUpperCase() };

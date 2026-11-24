@@ -63,6 +63,22 @@ uses (the price list and `SHOP_*` settings), so the two always agree on prices.
   the price list are public (`notes` stays internal).
 - Every booking reserves a bay for 2 hours (`SHOP_BOOKING_HOURS`).
 
+### "Your car" panel
+
+When a customer enters their make, model and (optionally) year, the site shows
+a panel built for that car: an illustration of its body type, the standard
+service price for it, and a card per category (engine oil, brakes, filters,
+battery, cooling and A/C, wipers and lights, tyres, other parts) with drop-down
+lists of options and brands. Choices linked to the price list (A/C regas,
+wipers, filters...) are added at that price; the rest become quote items for
+staff, and brand preferences go into the work order notes. Edit the lists in
+`bluenile/parts_menu.json`.
+
+Which part fits which car is deliberately not guessed. Add checked specs (oil
+grade and capacity, tyre sizes) to `bluenile/vehicle_specs.json`; matching cars
+then show them as "recommended" and the oil grade is pre-selected. A licensed
+parts catalogue could fill this automatically later.
+
 ### Standard service price by vehicle
 
 Customers never pick a size. The standard service price ($249 / $299 / $329)

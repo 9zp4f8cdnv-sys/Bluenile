@@ -1,0 +1,4 @@
+{
+  "note": "Checked specs for particular vehicles, shown to customers as 'Recommended for your car' and used to pre-select the drop-downs. Only add values you've checked against the owner's manual, a parts catalogue or the tyre placard: wrong oil or brake parts are a safety risk. Matching works like vehicle_classes.json: make (aliases apply), model prefix, optional year range. Example entry (not real data, shape only): {\"make\": \"toyota\", \"model\": \"corolla\", \"years\": [2019, 2025], \"oil_grade\": \"0W-20\", \"oil_litres\": 4.2, \"tyre_sizes\": [\"205/55R16\"], \"notes\": \"Checked against owner's manual\"}",
+  "vehicles": []
+}

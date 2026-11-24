@@ -158,7 +158,8 @@ def _faq(cfg: ShopConfig, services: dict) -> list[list[str]]:
         ["How is the standard service price worked out?",
          "From your car's make and model. Enter them and you'll see the price for your car straight away."],
         ["How do I get a price for tyres?",
-         "Choose your tyre size in the Tyres section and add it to your booking. We'll call you with a fitted price."],
+         "Choose your tyre size in the Tyres & wheels section. Tyres we have in stock show with their price; "
+         "for anything else, ask for a quote and we'll call you with a fitted price."],
         ["My job isn't listed. Can I still book?",
          "Yes. Add Diagnostic / labour" + (f" ({labour_price})" if labour_price else "")
          + " and tell us what's wrong in the notes, or give us a call."],

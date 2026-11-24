@@ -150,6 +150,14 @@ label.f { display: grid; gap: 6px; font-size: .85rem; font-weight: 600; color: v
 .tyre-help h3 { margin: 0 0 8px; font-size: 1rem; }
 .tyre-help ol { margin: 0; padding-left: 20px; color: var(--muted); font-size: .92rem; }
 .suggest { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.stock-list { display: grid; gap: 10px; margin-top: 16px; }
+.stock-list h4 { margin: 6px 0 0; font-size: .95rem; }
+.stock { display: grid; grid-template-columns: 1fr auto auto; gap: 12px; align-items: center; padding: 12px 14px;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface-2); }
+.stock b { display: block; } .stock small { color: var(--muted); }
+.stock .sp { font-weight: 800; white-space: nowrap; text-align: right; } .stock .sp small { display: block; font-weight: 600; }
+.instock { color: var(--ok); font-weight: 700; font-size: .8rem; }
+@media (max-width: 640px) { .stock { grid-template-columns: 1fr auto; } .stock .add { grid-column: 1 / -1; } }
 .pill { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 12px; font-size: .85rem; font-weight: 600; }
 
 /* Steps, FAQ, visit */
@@ -333,11 +341,11 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   <section id="tyres" style="padding-top:0">
     <div class="wrap">
       <div class="section-head">
-        <div><h2>Tyres</h2><p>Tell us your tyre size and we'll come back with a fitted price.</p></div>
+        <div><h2>Tyres &amp; wheels</h2><p>Pick your tyre size to see what we have in stock, or ask us for a quote.</p></div>
       </div>
       <div class="tyre-box">
         <form id="tyre-form">
-          <span class="tag warn">Quote on request</span>
+          <span class="tag" id="t-tag">Fitted price on request</span>
           <div class="tyre-fields">
             <label class="f">Width<select id="t-width"></select></label>
             <label class="f">Profile<select id="t-profile"></select></label>
@@ -345,7 +353,9 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
             <label class="f">How many<select id="t-qty"><option>1</option><option selected>2</option><option>4</option><option>5</option></select></label>
           </div>
           <div class="tyre-size" id="t-show">205/55 R16</div>
-          <div class="btns" style="margin-top:16px"><button class="btn btn-cta" type="submit">Add tyre quote to booking</button></div>
+          <div class="stock-list" id="t-stock" aria-live="polite"></div>
+          <div class="btns" style="margin-top:16px"><button class="btn btn-cta" type="submit" id="t-quote">Ask for a quote in this size</button></div>
+          <div class="stock-list" id="w-stock"></div>
           <div class="suggest" id="t-suggest"></div>
         </form>
         <div class="tyre-help">
@@ -434,9 +444,23 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 
   // ---------- cart state (kept in this browser only) ----------
   const KEY = 'bluenile-booking-v1';
-  let cart = { items: [], tyres: null };
+  let cart = { items: [], tyres: null, stock: [] };
   try { const saved = JSON.parse(localStorage.getItem(KEY)); if (saved && Array.isArray(saved.items)) cart = saved; } catch (e) {}
   cart.items = cart.items.filter(i => byName[i.name]);
+  cart.stock = Array.isArray(cart.stock) ? cart.stock : [];
+  // Tyres and wheels in stock come live from the staff app (empty if the booking server can't be reached).
+  let STOCK = {};
+  const stockLabel = p => [p.brand, p.model].filter(Boolean).join(' ') || p.name;
+  async function loadStock() {
+    try {
+      const r = await fetch(`${D.api}/api/stock`, { headers: { Accept: 'application/json' } });
+      if (!r.ok) throw new Error();
+      STOCK = Object.fromEntries((await r.json()).items.map(p => [p.sku, p]));
+    } catch (e) { STOCK = {}; }
+    // keep the cart in line with what's actually in stock now
+    cart.stock = cart.stock.filter(x => STOCK[x.sku]).map(x => Object.assign(x, { qty: Math.min(x.qty, STOCK[x.sku].max_qty), price_cents: STOCK[x.sku].price_cents, name: STOCK[x.sku].name }));
+    save(); renderAll(); showTyre();
+  }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} };
   const inCart = n => cart.items.some(i => i.name === n);
   const tiers = D.services.filter(s => s.tier);
@@ -471,6 +495,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       else if (s.from_cents != null) { from += s.from_cents * i.qty; quotes++; }
       else quotes++;
     }
+    for (const x of cart.stock) { n++; fixed += x.price_cents * x.qty; }
     if (cart.tyres) { n++; quotes++; }
     return { fixed, from, quotes, n };
   }
@@ -561,6 +586,9 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       const label = s.tier && cart.vehicle ? `${dn(s.name)} · ${carName(cart.vehicle)}` : dn(s.name);
       return `<div class="line"><b>${esc(label)}</b>${lp}${qty}<button class="rm" data-rm="${esc(i.name)}">Remove</button></div>`;
     });
+    for (const x of cart.stock) {
+      lines.push(`<div class="line"><b>${esc(x.name)}</b><span class="lp">${money(x.price_cents * x.qty)}</span><span class="qty"><button type="button" data-sdec="${esc(x.sku)}" aria-label="Fewer">−</button><span>${x.qty}</span><button type="button" data-sinc="${esc(x.sku)}" aria-label="More">+</button></span><button class="rm" data-srm="${esc(x.sku)}">Remove</button></div>`);
+    }
     if (cart.tyres) {
       const y = cart.tyres;
       lines.push(`<div class="line"><b>${y.qty} × tyres ${y.width}/${y.profile} R${y.rim}</b><span class="lp q">On quote</span><span></span><button class="rm" data-rm-tyres>Remove</button></div>`);
@@ -613,6 +641,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       $('#co-title').textContent = 'Your details';
       const t = totals();
       const sum = cart.items.map(i => { const s = byName[i.name]; return `<div><span>${esc(dn(s.name))}${i.qty > 1 ? ' × ' + i.qty : ''}</span><span>${s.fixed_cents != null ? money(s.fixed_cents * i.qty) : 'Quote'}</span></div>`; }).join('') +
+        cart.stock.map(x => `<div><span>${esc(x.name)} × ${x.qty}</span><span>${money(x.price_cents * x.qty)}</span></div>`).join('') +
         (cart.tyres ? `<div><span>${cart.tyres.qty} × tyres ${cart.tyres.width}/${cart.tyres.profile} R${cart.tyres.rim}</span><span>Quote</span></div>` : '') +
         `<div style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><b>${esc(fmtDate(co.date))}, ${esc(fmtSlot(co.slot))}</b><b>${money(t.fixed)}${t.quotes ? ' + quotes' : ''}</b></div>`;
       body.innerHTML = `<div class="summary">${sum}</div>` + field('c-name', 'Name', co.customer.name, 'autocomplete="name" required') +
@@ -679,13 +708,14 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       const btn = $('#co-next'); btn.disabled = true; btn.textContent = 'Booking…';
       try {
         const r = await fetch(`${D.api}/api/bookings`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-          items: cart.items.map(i => ({ name: i.name, qty: i.qty })), tyres: cart.tyres, vehicle: co.vehicle,
+          items: cart.items.map(i => ({ name: i.name, qty: i.qty })), stock: cart.stock.map(x => ({ sku: x.sku, qty: x.qty })), tyres: cart.tyres, vehicle: co.vehicle,
           customer: co.customer, notes: co.notes, slot: co.slot, company: $('#c-company').value }) });
         const j = await r.json().catch(() => ({}));
         if (!r.ok) { btn.disabled = false; btn.textContent = 'Confirm booking';
+          if (r.status === 409 && /stock/.test(j.error || '')) { await loadStock(); return err(j.error + '. Your booking has been updated; please check it.'); }
           if (r.status === 409) { co.step = 1; co.slot = ''; coRender(); return err('Sorry, that time was just taken. Please pick another.'); }
           return err(j.error || 'Something went wrong. Please call us.'); }
-        co.result = j; co.step = 3; cart = { items: [], tyres: null }; save(); renderAll();
+        co.result = j; co.step = 3; cart = { items: [], tyres: null, stock: [] }; save(); renderAll(); loadStock();
       } catch (e) { return err('Couldn\'t reach the workshop. Please call us to book.'); }
       finally { btn.disabled = false; }
     } else { $('#co').close(); co.step = 0; co.slot = ''; co.result = null; return; }
@@ -694,13 +724,26 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 
   // ---------- events ----------
   document.addEventListener('click', e => {
-    const t = e.target.closest('[data-add],[data-inc],[data-dec],[data-rm],[data-rm-tyres],[data-tab],[data-slot]');
+    const t = e.target.closest('[data-add],[data-inc],[data-dec],[data-rm],[data-rm-tyres],[data-tab],[data-slot],[data-sadd],[data-sinc],[data-sdec],[data-srm]');
     if (!t) return;
     if (t.dataset.add) add(t.dataset.add);
     else if (t.dataset.inc) { const i = cart.items.find(x => x.name === t.dataset.inc); i.qty = Math.min(i.qty + 1, 4); save(); renderAll(); }
     else if (t.dataset.dec) { const i = cart.items.find(x => x.name === t.dataset.dec); if (i.qty > 1) i.qty--; else cart.items = cart.items.filter(x => x !== i); save(); renderAll(); }
     else if (t.dataset.rm) { cart.items = cart.items.filter(x => x.name !== t.dataset.rm); save(); renderAll(); }
     else if ('rmTyres' in t.dataset) { cart.tyres = null; save(); renderAll(); }
+    else if (t.dataset.sadd) {
+      const p = STOCK[t.dataset.sadd]; if (!p) return;
+      const want = Math.min(+$('#t-qty').value || 1, p.max_qty), have = cart.stock.find(x => x.sku === p.sku);
+      if (have) have.qty = want; else cart.stock.push({ sku: p.sku, qty: want, price_cents: p.price_cents, name: p.name });
+      save(); renderAll(); showTyre(); pulse(); openCart(true);
+    }
+    else if (t.dataset.sinc || t.dataset.sdec) {
+      const x = cart.stock.find(y => y.sku === (t.dataset.sinc || t.dataset.sdec)); if (!x) return;
+      const max = STOCK[x.sku] ? STOCK[x.sku].max_qty : x.qty;
+      if (t.dataset.sinc) x.qty = Math.min(x.qty + 1, max); else if (x.qty > 1) x.qty--; else cart.stock = cart.stock.filter(y => y !== x);
+      save(); renderAll(); showTyre();
+    }
+    else if (t.dataset.srm) { cart.stock = cart.stock.filter(y => y.sku !== t.dataset.srm); save(); renderAll(); showTyre(); }
     else if (t.dataset.tab) { tab = t.dataset.tab; renderTabs(); renderGrid(); }
     else if (t.dataset.slot) { co.slot = t.dataset.slot; document.querySelectorAll('.slot').forEach(b => b.setAttribute('aria-pressed', String(b === t))); err(''); }
   });
@@ -737,8 +780,28 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       showCar();
     } catch (e) { $('#car-result').innerHTML = `<p class="car-hint">${esc(e.message || "We couldn't find that rego")}. Please enter your make and model.</p>`; }
   });
-  const showTyre = () => $('#t-show').textContent = `${$('#t-width').value}/${$('#t-profile').value} R${$('#t-rim').value}`;
-  ['#t-width', '#t-profile', '#t-rim'].forEach(s => $(s).addEventListener('change', showTyre));
+  const digits = s => String(s || '').replace(/[^0-9]/g, '');
+  function stockCard(p, kind) {
+    const inCartQty = (cart.stock.find(x => x.sku === p.sku) || {}).qty;
+    const sub = kind === 'tyre' ? p.size : [p.size, p.pcd, p.material].filter(Boolean).join(' · ');
+    return `<div class="stock"><span><b>${esc(stockLabel(p))}</b><small>${esc(sub)}</small> <span class="instock">In stock</span></span>
+      <span class="sp">${money(p.price_cents)}<small>each${D.shop.tax_inclusive ? ' incl. ' + esc(D.shop.tax_name) : ''}</small></span>
+      <button type="button" class="add ${inCartQty ? 'in' : ''}" data-sadd="${esc(p.sku)}">${inCartQty ? '✓ ' + inCartQty + ' added' : 'Add ' + Math.min(+$('#t-qty').value || 1, p.max_qty)}</button></div>`;
+  }
+  function showTyre() {
+    const w = $('#t-width').value, pr = $('#t-profile').value, rim = $('#t-rim').value;
+    $('#t-show').textContent = `${w}/${pr} R${rim}`;
+    const all = Object.values(STOCK);
+    const tyres = all.filter(p => p.kind === 'tyre' && digits(p.size) === w + pr + rim);
+    const wheels = all.filter(p => p.kind === 'wheel' && digits(String(p.size).split(/x/i)[0]) === rim);
+    $('#t-stock').innerHTML = tyres.length
+      ? `<h4>In stock in ${esc(w)}/${esc(pr)} R${esc(rim)}</h4>` + tyres.map(p => stockCard(p, 'tyre')).join('')
+      : (all.length ? `<p class="car-hint">None in stock in this size right now. Ask for a quote and we'll find them for you.</p>` : '');
+    $('#w-stock').innerHTML = wheels.length ? `<h4>${esc(rim)}" wheels in stock</h4>` + wheels.map(p => stockCard(p, 'wheel')).join('') : '';
+    $('#t-tag').textContent = tyres.length ? 'In stock' : 'Fitted price on request';
+    $('#t-quote').textContent = tyres.length ? 'Want a different tyre? Ask for a quote' : 'Ask for a quote in this size';
+  }
+  ['#t-width', '#t-profile', '#t-rim', '#t-qty'].forEach(s => $(s).addEventListener('change', showTyre));
   $('#tyre-form').addEventListener('submit', e => { e.preventDefault();
     cart.tyres = { width: +$('#t-width').value, profile: +$('#t-profile').value, rim: +$('#t-rim').value, qty: +$('#t-qty').value };
     save(); renderAll(); pulse(); openCart(true); });
@@ -752,7 +815,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   $('#co-back').addEventListener('click', () => { co.step = Math.max(0, co.step - 1); coRender(); });
   $('#co').addEventListener('close', () => { if (co.step === 3) { co.step = 0; co.result = null; } });
 
-  renderStatic(); renderTabs(); renderAll(); showTyre();
+  renderStatic(); renderTabs(); renderAll(); showTyre(); loadStock();
 })();
 </script>
 </body>

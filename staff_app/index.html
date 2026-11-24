@@ -1,0 +1,1010 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Blue Nile</title>
+<meta name="theme-color" content="#06080D">
+<meta name="color-scheme" content="dark">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Blue Nile">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&display=swap">
+<script src="storage.js"></script>
+<style>
+/* Dark-only car-gamer skin on an iOS layout. Layout: iOS-style app. Large title bar, inset grouped lists, frosted bottom tab bar with icons, bottom sheets with a grab handle and Done button. */
+:root{
+  color-scheme:dark;
+  --bg:#06080D; --surface:#0F1522; --ink:#EAF2FF; --muted:#8C9AB3; --line:#1D2940;
+  --accent:#00E5FF; --accent-ink:#00141A; --accent-bg:rgba(0,229,255,.14);
+  --ok:#34F5A0; --warn:#FFB020; --bad:#FF4D6D; --solid-ink:#05070B;
+  --ok-bg:rgba(52,245,160,.16); --warn-bg:rgba(255,176,32,.17); --bad-bg:rgba(255,77,109,.17);
+  --tint:rgba(140,170,220,.12); --bar:rgba(6,8,13,.84); --scrim:rgba(0,0,0,.68); --seg-on:#1F2D47;
+  --glass:rgba(15,21,34,.74); --glass-line:rgba(0,229,255,.24); --violet:#7C5CFF; --glow:rgba(0,229,255,.38);
+  --spring:cubic-bezier(.34,1.35,.5,1);
+  --display:'Rajdhani','SF Pro Display',-apple-system,BlinkMacSystemFont,'Helvetica Neue',system-ui,sans-serif;
+  --body:-apple-system,BlinkMacSystemFont,'SF Pro Text','Helvetica Neue',system-ui,sans-serif;
+}
+@supports (transition-timing-function:linear(0,1)){:root{--spring:linear(0,.009,.035 2.1%,.141,.281 6.7%,.723 12.9%,.938 16.7%,1.017,1.077,1.121,1.149 24.3%,1.159,1.163,1.161,1.154 29.9%,1.129 32.8%,1.051 39.6%,1.017 43.1%,.991,.977 51%,.974 53.8%,.975 57.1%,.997 69.8%,1.003 76.9%,1)}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--ink);font:17px/1.35 var(--body);-webkit-font-smoothing:antialiased;padding-inline:max(16px,env(safe-area-inset-left,0px)) max(16px,env(safe-area-inset-right,0px));padding-block:0 116px}
+.wrap{max-width:640px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:env(safe-area-inset-top,0px);background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);margin-inline:-16px;padding:8px 16px 10px;z-index:5;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bar);-webkit-backdrop-filter:saturate(180%) blur(20px);backdrop-filter:saturate(180%) blur(20px);z-index:10}
+h1{font:700 32px/1.1 var(--display);letter-spacing:-.02em;margin:0;flex:1 1 100%;min-width:0}
+h1 small{display:block;font:400 13px/1.3 var(--body);letter-spacing:0;color:var(--muted);margin-top:2px}
+h2{font:400 13px/1.2 var(--body);letter-spacing:.02em;text-transform:uppercase;color:var(--muted);margin:24px 16px 7px}
+.btn{border:0;border-radius:12px;padding:12px 18px;min-height:48px;background:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn:active{opacity:.7}
+.btn.ghost{background:var(--accent-bg);color:var(--accent);border:0}
+.btn.small{min-height:36px;padding:7px 14px;font-size:15px;border-radius:18px}
+.btn.bad{background:var(--bad);color:var(--solid-ink)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border-radius:12px;padding:14px 16px;min-width:0}
+.tile>b{display:block;font:700 34px/1.1 var(--display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.tile>span{font-size:13px;color:var(--muted)}
+.tile.alert>b{color:var(--warn)}
+.list{display:flex;flex-direction:column;background:var(--surface);border-radius:12px;overflow:hidden}
+.list .row{border-radius:0}
+.list .row+.row,.list>.row+.row{border-top:.5px solid var(--line)}
+.row{background:var(--surface);border:0;border-radius:12px;padding:12px 16px;display:flex;gap:12px;align-items:center;text-align:left;width:100%;min-width:0}
+button.row:active{background:var(--tint)}
+.row .grow{flex:1;min-width:0}
+.row .t{font-weight:600;overflow-wrap:anywhere}
+.row .s{font-size:14px;color:var(--muted);overflow-wrap:anywhere}
+.plate{font:600 15px/1 var(--display);letter-spacing:.06em;background:var(--tint);border-radius:7px;padding:7px 9px;white-space:nowrap}
+.size{font:700 20px/1 var(--display);letter-spacing:-.01em}
+.pill{font-size:12px;font-weight:600;line-height:1.3;border-radius:99px;padding:4px 10px;white-space:nowrap;background:var(--tint);color:var(--muted);align-self:center;height:fit-content;flex:none}
+.pill.ok{color:var(--ok);background:var(--ok-bg)}.pill.warn{color:var(--warn);background:var(--warn-bg)}.pill.bad{color:var(--bad);background:var(--bad-bg)}.pill.mute{color:var(--muted);background:var(--tint)}
+.num{font-variant-numeric:tabular-nums}
+.empty{background:var(--surface);border-radius:12px;padding:24px 16px;color:var(--muted);text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.seg{display:flex;background:var(--tint);border-radius:9px;padding:2px;gap:2px;flex:1}
+.seg button{flex:1;border:0;background:transparent;border-radius:7px;min-height:34px;font-weight:500;font-size:14px;color:var(--ink)}
+.seg button.on{background:var(--seg-on);font-weight:600;box-shadow:0 3px 8px rgba(0,0,0,.12),0 1px 1px rgba(0,0,0,.1)}
+input,select,textarea{width:100%;background:var(--surface);border:0;border-radius:10px;padding:12px 14px;min-height:48px;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%238E8E93' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.sheet input,.sheet select{background-color:var(--surface)}
+label{display:block;font-size:13px;font-weight:400;color:var(--muted);margin:14px 0 5px 4px;text-transform:uppercase;letter-spacing:.02em}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tabs{position:fixed;left:max(12px,env(safe-area-inset-left,0px));right:max(12px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px));max-width:616px;margin:0 auto;background:var(--glass);-webkit-backdrop-filter:saturate(180%) blur(24px);backdrop-filter:saturate(180%) blur(24px);border:.5px solid var(--glass-line);border-radius:30px;box-shadow:0 8px 30px rgba(0,0,0,.16);display:flex;padding:5px;z-index:20}
+.tabs .ind{position:absolute;top:5px;bottom:5px;left:5px;width:calc((100% - 10px)/5);border-radius:25px;background:var(--tint);transform:translateX(calc(var(--i,0)*100%));transition:transform .6s var(--spring);pointer-events:none}
+.tabs button{position:relative;z-index:1;flex:1;border:0;background:transparent;min-height:54px;font:500 10px/1.1 var(--body);color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:2px;transition:color .25s,transform .4s var(--spring)}
+.tabs button:active{transform:scale(.88)}
+.tabs button svg{width:26px;height:26px}
+.tabs button.on{color:var(--accent)}
+.tabs i{position:absolute;top:3px;left:calc(50% + 5px);min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font:600 11px/18px var(--body);font-style:normal;padding:0 5px;text-align:center}
+.back{position:fixed;inset:0;background:var(--scrim);z-index:30;display:flex;align-items:flex-end;justify-content:center;animation:fade .25s ease;transition:background .28s}
+.sheet{background:var(--bg);width:100%;max-width:640px;max-height:92%;overflow:auto;border-radius:14px 14px 0 0;padding:8px max(16px,env(safe-area-inset-left,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-right,0px));animation:up .6s var(--spring);will-change:transform}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.grab{height:24px;margin:0 -16px;touch-action:none;display:flex;justify-content:center;align-items:flex-start;padding-top:6px;cursor:grab}
+.grab::after{content:"";width:36px;height:5px;border-radius:3px;background:var(--line)}
+.sheet header{touch-action:none}
+.sheet header{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:8px}
+.sheet h3{font:600 17px/1.2 var(--display);margin:0;text-align:center;overflow-wrap:anywhere}
+.x{grid-column:3;justify-self:end;border:0;background:transparent;color:var(--accent);font-weight:600;min-height:44px;padding:0 4px}
+.res{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.res button{border:0;background:var(--surface);border-radius:10px;min-height:46px;font-weight:600}
+.res button.on[data-v=pass]{background:var(--ok);color:var(--solid-ink)}
+.res button.on[data-v=advisory]{background:var(--warn);color:var(--solid-ink)}
+.res button.on[data-v=fail]{background:var(--bad);color:var(--solid-ink)}
+.line{display:flex;justify-content:space-between;gap:12px;padding:10px 4px;border-bottom:.5px solid var(--line)}
+.line:last-child{border:0}
+.line>span:first-child{flex:1;min-width:0}
+.total{font:700 24px/1.1 var(--display);letter-spacing:-.01em}
+.banner{background:var(--surface);border-radius:12px;padding:12px 16px;font-size:15px;margin-bottom:10px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom,0px));background:rgba(60,60,67,.92);color:#fff;padding:11px 18px;border-radius:14px;z-index:50;max-width:90%;font-size:15px;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.hint{font-size:13px;color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.inv{background:var(--surface);border-radius:12px;padding:16px;margin-top:10px}
+.inv h4{font:700 20px/1.15 var(--display);letter-spacing:-.01em;margin:0 0 2px}
+.inv .head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.inv h2{margin-left:0;margin-right:0}
+/* Motion: spring easing, press feedback, directional screen change, staggered rise, collapsing large title */
+@keyframes slide{from{opacity:0;transform:translateX(calc(var(--dx,1)*34px))}to{opacity:1;transform:none}}
+@keyframes rise{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+main.enter{animation:slide .55s var(--spring)}
+main.enter>*{animation:rise .65s var(--spring) backwards}
+main.enter>:nth-child(2){animation-delay:40ms}main.enter>:nth-child(3){animation-delay:80ms}main.enter>:nth-child(4){animation-delay:120ms}main.enter>:nth-child(5){animation-delay:160ms}main.enter>:nth-child(6){animation-delay:200ms}main.enter>:nth-child(n+7){animation-delay:240ms}
+.btn,.seg button,.res button,button.row{transition:transform .4s var(--spring),opacity .2s,background-color .2s}
+.btn:active,.seg button:active,.res button:active{transform:scale(.94)}
+button.row:active{transform:scale(.985)}
+h1{transition:font-size .35s var(--spring)}
+h1 small{max-height:20px;overflow:hidden;transition:opacity .2s,max-height .3s,margin .3s}
+.top.scrolled h1{font-size:22px}
+.top.scrolled h1 small{opacity:0;max-height:0;margin:0}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;transition-duration:.01ms!important}}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:0;background:var(--tint);color:var(--ink);border-radius:16px;padding:7px 12px;font-size:14px;font-weight:500;min-height:34px;transition:transform .4s var(--spring)}
+.chip:active{transform:scale(.92)}
+.dlg{background:var(--surface);border-radius:16px;padding:20px;margin:0 24px;max-width:340px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3);animation:pop .45s var(--spring)}
+.dlg p{margin:0 0 16px;font-size:16px}
+@keyframes pop{from{transform:scale(.88);opacity:0}to{transform:none;opacity:1}}
+.tbtn{border:0;background:transparent;color:#64B5FF;font-weight:700;margin-left:10px;min-height:32px;padding:0 4px}
+
+/* ---------- car-gamer skin ---------- */
+body{background:radial-gradient(110% 55% at 50% -8%,rgba(0,229,255,.13),transparent 62%),radial-gradient(70% 40% at 100% 100%,rgba(124,92,255,.10),transparent 70%),linear-gradient(135deg,rgba(255,255,255,.028) 25%,transparent 25%) 0 0/6px 6px,linear-gradient(225deg,rgba(255,255,255,.028) 25%,transparent 25%) 0 0/6px 6px,var(--bg);background-attachment:fixed}
+h1,h2,.tile>b,.total,.size,.inv h4,.sheet h3,.btn,.seg button,.chip{font-family:var(--display)}
+h1{font-size:34px;font-weight:700;letter-spacing:.01em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+h1 small{text-transform:none;letter-spacing:.04em;font-weight:500;color:var(--accent)}
+.top{border-bottom:1px solid rgba(0,229,255,.16)}
+.top.scrolled h1{font-size:24px}
+h1:not(:has(.wm)){display:block}
+h2{font:600 14px/1.2 var(--display);letter-spacing:.14em;color:var(--muted);display:flex;align-items:center}
+h2::before{content:"";width:4px;height:13px;margin-right:9px;background:var(--accent);transform:skewX(-18deg);box-shadow:0 0 10px var(--glow);flex:none}
+.tile,.list,.empty,.banner,.inv{border:1px solid var(--line)}
+.grid .tile{border-left:3px solid var(--accent);box-shadow:inset 0 0 28px rgba(0,229,255,.05)}
+.grid .tile.alert{border-left-color:var(--warn)}
+.tile>b{font-size:38px;text-shadow:0 0 16px var(--glow)}
+.tile.alert>b{text-shadow:0 0 16px rgba(255,176,32,.4)}
+.btn{background:linear-gradient(135deg,#00E5FF,#3D8BFF);text-transform:uppercase;letter-spacing:.06em;font-weight:700;box-shadow:0 0 18px rgba(0,229,255,.28),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn.ghost{background:var(--accent-bg);color:var(--accent);box-shadow:inset 0 0 0 1px rgba(0,229,255,.38)}
+.btn.bad{background:linear-gradient(135deg,#FF4D6D,#FF8A5C);box-shadow:0 0 18px rgba(255,77,109,.3)}
+.btn.small{font-size:14px}
+.seg button{font-weight:600;letter-spacing:.05em;text-transform:uppercase;font-size:14px}
+.seg button.on{color:var(--accent);box-shadow:0 0 0 1px rgba(0,229,255,.4),0 0 14px rgba(0,229,255,.2)}
+input,select,textarea{border:1px solid var(--line);transition:border-color .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,229,255,.18),0 0 16px rgba(0,229,255,.2)}
+.plate{background:#F2EEDF;color:#5A1020;font:700 17px/1 var(--display);letter-spacing:.14em;padding:6px 10px;border-radius:6px;box-shadow:inset 0 0 0 2px #5A1020,0 0 0 1px rgba(0,0,0,.6)}
+.timechip{font:700 17px/1 var(--display);letter-spacing:.08em;color:var(--accent);border-radius:8px;padding:7px 10px;background:var(--accent-bg);box-shadow:inset 0 0 0 1px rgba(0,229,255,.4);white-space:nowrap;font-variant-numeric:tabular-nums}
+.tabs{box-shadow:0 8px 30px rgba(0,0,0,.55),0 0 24px rgba(0,229,255,.12)}
+.tabs .ind{background:var(--accent-bg);box-shadow:inset 0 0 0 1px rgba(0,229,255,.4),0 0 16px rgba(0,229,255,.22)}
+.tabs button.on svg{filter:drop-shadow(0 0 6px var(--glow))}
+.tabs button{font-family:var(--display);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+.sheet{border-top:1px solid rgba(0,229,255,.3);box-shadow:0 -10px 40px rgba(0,229,255,.1)}
+.dlg{border:1px solid var(--glass-line);box-shadow:0 12px 50px rgba(0,0,0,.7),0 0 30px rgba(0,229,255,.12)}
+.toast{background:rgba(15,21,34,.95);border:1px solid var(--glass-line);box-shadow:0 0 20px rgba(0,229,255,.18)}
+.tbtn{color:var(--accent)}
+.inv h4{font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.total{text-shadow:0 0 14px var(--glow)}
+.brandrow{display:flex;gap:10px;align-items:center}
+.logo{display:inline-block;flex:none;border:0;background:transparent;padding:0;line-height:0;filter:drop-shadow(0 0 8px var(--glow));min-height:0;-webkit-tap-highlight-color:transparent}
+.logo svg{display:block}
+.logo .spin{transform-origin:50px 50px;animation:idle 14s linear infinite}
+@keyframes idle{to{transform:rotate(360deg)}}
+@keyframes spinup{from{transform:rotate(-900deg)}to{transform:rotate(0)}}
+.logo.intro .spin{animation:spinup 1.6s cubic-bezier(.1,.8,.2,1) both,idle 14s linear 1.6s infinite}
+.wm{display:flex;flex-direction:column;min-width:0}
+.wm b{font:700 1em/1 var(--display);letter-spacing:.03em}
+.wm small{margin-top:3px!important}
+.pr{display:grid;grid-template-columns:1fr 112px;gap:10px;align-items:center;padding:8px 0;border-bottom:.5px solid var(--line)}
+.pr:last-of-type{border:0}
+.pr .hint{display:block}
+.pr input{min-height:44px;text-align:right}
+.prx{display:grid;grid-template-columns:1fr 112px;gap:10px;margin-bottom:8px}
+.sum .line{padding:6px 2px}
+.sum{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:6px 14px;margin-top:12px;position:sticky;bottom:0}
+.gauge{display:flex;align-items:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--accent);border-radius:12px;padding:10px 16px;margin-bottom:10px}
+.gauge svg{width:132px;flex:none;overflow:visible}
+.gauge .needle{transform-origin:100px 100px;transform:rotate(var(--rot,-90deg))}
+.gauge .needle.anim{animation:sweep 1.2s var(--spring) both}
+@keyframes sweep{from{transform:rotate(-90deg)}to{transform:rotate(var(--rot))}}
+.gauge b{font:700 26px/1.1 var(--display);text-shadow:0 0 14px var(--glow)}
+.gauge .hint{display:block}
+.gauge.full b{color:var(--bad);text-shadow:0 0 14px rgba(255,77,109,.45)}
+.abn{border:1px solid rgba(255,176,32,.45);background:linear-gradient(90deg,rgba(255,176,32,.14),var(--surface))}
+#splash{position:fixed;inset:0;z-index:100;background:radial-gradient(80% 50% at 50% 42%,rgba(0,229,255,.2),transparent 70%),#05070B;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .5s ease,transform .5s ease}
+#splash[hidden]{display:none}
+#splash.out{opacity:0;transform:scale(1.06);pointer-events:none}
+#splash .word{font:700 44px/1 var(--display);letter-spacing:.14em;text-transform:uppercase;animation:rise .9s var(--spring) .5s backwards;text-shadow:0 0 24px var(--glow)}
+#splash .sub{font:600 15px/1 var(--display);letter-spacing:.34em;text-transform:uppercase;color:var(--accent);animation:rise .9s var(--spring) .7s backwards}
+#splash .bar{width:160px;height:3px;background:var(--line);border-radius:2px;overflow:hidden}
+#splash .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--violet));animation:load 1.5s cubic-bezier(.3,.7,.3,1) both;box-shadow:0 0 10px var(--glow)}
+@keyframes load{from{width:0}to{width:100%}}
+@media (prefers-reduced-motion:reduce){.logo .spin,.logo.intro .spin{animation:none!important}#splash{display:none}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="gRim" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#00E5FF"/><stop offset=".55" stop-color="#3D8BFF"/><stop offset="1" stop-color="#7C5CFF"/></linearGradient>
+<linearGradient id="gTire" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2A3650"/><stop offset="1" stop-color="#0E1420"/></linearGradient>
+<linearGradient id="gGauge" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#00E5FF"/><stop offset=".6" stop-color="#7C5CFF"/><stop offset="1" stop-color="#FF4D6D"/></linearGradient>
+</defs></svg>
+<datalist id="tbrands"></datalist><datalist id="wbrands"></datalist><datalist id="tsizes"></datalist><datalist id="wsizes"></datalist><datalist id="pcds"></datalist>
+<div class="wrap">
+  <div class="top" id="head"></div>
+  <div id="net" class="banner" hidden>You are offline. Changes may not save until you are back online.</div>
+  <div id="banner"></div>
+  <main id="body"></main>
+</div>
+<nav class="tabs" id="tabs"></nav>
+<div id="sheet"></div>
+<div id="confirm"></div>
+<div id="toast" class="toast" hidden></div>
+<div id="splash" hidden></div>
+
+<script>
+const $=s=>document.querySelector(s);
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'$'+(Math.round((n||0)*100)/100).toFixed(2);
+// Brisbane has no daylight saving, so its calendar day is stable all year.
+const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'Australia/Brisbane'}).format(new Date());
+const nice=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'}):'';
+const longDate=d=>d?new Date(d+'T12:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'}):'';
+
+/* ---------- catalogues (cars, tyres, wheels; passenger, 4WD and van only, no trucks) ---------- */
+const MAKES='Toyota Mazda Hyundai Kia Mitsubishi Ford Holden Nissan Subaru Honda Suzuki Volkswagen Isuzu MG Tesla BMW Mercedes-Benz Audi Lexus Jeep Land_Rover Volvo Skoda Peugeot Renault Citroen Mini Porsche GWM Haval LDV SsangYong Fiat Alfa_Romeo Chrysler Dodge RAM Daihatsu Jaguar Mahindra BYD Chery Cupra Genesis Infiniti Maserati Lotus Ferrari Lamborghini Bentley Rolls_Royce Aston_Martin McLaren Smart Saab Chevrolet Hummer Tata Opel Seat Lincoln Cadillac Datsun Proton Polestar Zeekr Leapmotor KGM'.split(' ').filter((m,i,a)=>a.indexOf(m)===i).sort().map(m=>m.replace('_',' '));
+const TYRE_BRANDS='Bridgestone Michelin Goodyear Dunlop Pirelli Continental Yokohama Hankook Toyo BFGoodrich Falken Maxxis Nitto Kumho Cooper General Nexen Firestone Federal Achilles Westlake Linglong Sailun Giti Nankang Roadstone Mickey_Thompson Triangle Lionshead Hifly Zeetex Delinte Atturo Mastercraft Nokian Vredestein Uniroyal'.split(' ').map(m=>m.replace('_',' '));
+const WHEEL_BRANDS='Ultra Simmons Fuel XXR Enkei Rays BBS Method KMC American_Racing Dynamic King Tuff OZ Rotiform Vossen Konig Factory_OEM Steel_wheel Genuine'.split(' ').map(m=>m.replace('_',' '));
+const TYRE_SIZES=('155/80R13 165/70R13 175/70R13 185/70R13 165/65R14 175/65R14 185/60R14 185/65R14 195/60R14 195/70R14 175/65R15 185/55R15 185/60R15 185/65R15 195/55R15 195/60R15 195/65R15 205/65R15 205/70R15 215/70R15 235/75R15 31x10.5R15 '+
+'195/55R16 195/60R16 195/65R16 205/55R16 205/60R16 205/65R16 215/55R16 215/60R16 215/65R16 215/70R16 225/55R16 225/60R16 225/65R16 225/70R16 235/60R16 235/70R16 245/70R16 255/70R16 265/70R16 265/75R16 '+
+'205/50R17 205/55R17 215/45R17 215/50R17 215/55R17 215/60R17 215/65R17 225/45R17 225/50R17 225/55R17 225/60R17 225/65R17 235/45R17 235/55R17 235/60R17 235/65R17 235/70R17 245/45R17 245/65R17 245/70R17 255/65R17 265/65R17 265/70R17 275/65R17 285/70R17 '+
+'215/40R18 215/45R18 215/55R18 225/40R18 225/45R18 225/50R18 225/55R18 225/60R18 235/40R18 235/45R18 235/50R18 235/55R18 235/60R18 245/40R18 245/45R18 255/35R18 255/45R18 255/55R18 255/60R18 265/60R18 265/65R18 265/70R18 275/60R18 275/65R18 '+
+'225/40R19 225/45R19 235/40R19 235/45R19 235/50R19 235/55R19 245/35R19 245/40R19 255/35R19 255/40R19 255/50R19 265/50R19 275/40R19 275/45R19 '+
+'235/45R20 245/40R20 245/45R20 255/45R20 255/50R20 265/45R20 265/50R20 265/60R20 275/40R20 275/45R20 275/55R20 275/60R20 285/50R20 295/40R20 255/40R21 265/40R21 275/40R21 275/45R21 265/35R22 285/40R22 285/45R22 '+
+'195/70R15C 195/75R16C 205/65R16C 215/65R16C 215/75R16C 225/65R16C 235/65R16C').split(' ');
+const WHEEL_SIZES=[];for(let d=13;d<=22;d++){const w=d<=15?[5,5.5,6,6.5,7]:d<=17?[6,6.5,7,7.5,8]:d<=19?[7,7.5,8,8.5,9]:[8,8.5,9,9.5,10];w.forEach(x=>WHEEL_SIZES.push(d+'x'+x))}
+const PCDS='4x100 4x108 4x114.3 5x100 5x108 5x112 5x114.3 5x120 5x127 5x130 5x139.7 5x150 6x114.3 6x139.7'.split(' ');
+const fillList=(id,a)=>{$('#'+id).innerHTML=a.map(x=>`<option value="${esc(x)}">`).join('')};
+fillList('tbrands',TYRE_BRANDS);fillList('wbrands',WHEEL_BRANDS);fillList('tsizes',TYRE_SIZES);fillList('wsizes',WHEEL_SIZES);fillList('pcds',PCDS);
+
+/* Common factory tyre sizes by model (passenger, SUV, 4WD, ute, van). Trims and years differ, so the screen always says to confirm on the tyre placard in the driver's door jamb. */
+const FIT={
+Toyota:{Corolla:'195/65R15 205/55R16 225/45R17 225/40R18',Camry:'215/60R16 215/55R17 235/45R18','Corolla Cross':'215/60R17 225/50R18',RAV4:'225/65R17 235/55R18 235/55R19',Yaris:'185/60R15 195/50R16 205/45R17','Yaris Cross':'205/65R16 215/50R18','C-HR':'215/60R17 225/50R18',Hilux:'255/70R16 265/65R17 265/60R18',Fortuner:'265/65R17 265/60R18',Prado:'265/65R17 265/60R18 265/55R19','LandCruiser 200':'285/60R18 285/50R20',Kluger:'235/65R18 235/55R20',HiAce:'195/70R15C 215/65R16C','86':'215/45R17 215/40R18'},
+Mazda:{Mazda2:'185/65R15 185/60R16',Mazda3:'205/60R16 215/45R18',CX3:'215/60R16 215/50R18',CX30:'215/65R16 215/55R18',CX5:'225/65R17 225/55R19',CX8:'225/65R17 225/55R19',CX9:'255/60R18 255/50R20','BT-50':'255/70R16 265/65R17 265/60R18','MX-5':'205/50R16 205/45R17'},
+Hyundai:{i30:'205/55R16 225/45R17 225/40R18',i20:'195/55R16',Accent:'185/65R15 195/55R16',Elantra:'205/55R16 225/45R17',Kona:'215/55R17 235/45R18',Tucson:'225/60R17 235/55R18 235/50R19','Santa Fe':'235/65R17 235/60R18 235/55R19',Palisade:'245/60R18 245/50R20','Ioniq 5':'235/55R19 255/45R20'},
+Kia:{Rio:'185/65R15 195/55R16',Cerato:'205/55R16 225/45R17',Stonic:'205/60R16 205/55R17',Seltos:'215/60R17 235/45R18',Sportage:'215/65R17 235/60R18 235/55R19',Sorento:'235/65R17 235/55R19',Carnival:'235/65R17 235/60R18 235/55R19'},
+Mitsubishi:{Triton:'245/70R16 265/65R17 265/60R18',Outlander:'225/55R18 225/55R19',ASX:'215/60R17 225/55R18','Eclipse Cross':'225/55R18 225/50R18','Pajero Sport':'265/65R17 265/60R18',Pajero:'265/65R17 265/60R18'},
+Ford:{Ranger:'255/70R16 265/65R17 265/60R18 265/50R20',Everest:'265/65R17 265/60R18 255/55R20',Focus:'205/55R16 215/50R17 235/40R18',Fiesta:'195/50R16 205/45R17',Escape:'235/55R18 235/50R19',Puma:'215/55R17 215/50R18'},
+Holden:{Commodore:'225/55R17 245/45R18 245/40R19 245/35R20',Colorado:'245/70R16 265/65R17 265/60R18',Cruze:'205/55R16 215/50R17 225/45R18',Captiva:'235/60R17 235/55R19',Barina:'185/65R15 195/55R16',Trax:'205/70R16 215/55R17'},
+Nissan:{Navara:'255/70R16 255/60R18','X-Trail':'225/65R17 225/60R18',Qashqai:'215/60R17 215/55R18',Pulsar:'195/65R15 205/50R17',Juke:'215/55R17',Patrol:'265/70R17'},
+Subaru:{Impreza:'205/55R16 205/50R17',XV:'225/60R17 235/45R18',Forester:'225/60R17 225/55R18',Outback:'225/65R17 225/60R18',WRX:'235/45R17 245/40R18',Liberty:'215/55R17 225/50R17'},
+Honda:{Civic:'215/55R16 215/50R17 235/40R18','CR-V':'235/65R17 235/60R18 235/55R19','HR-V':'215/60R16 215/55R17',Jazz:'175/65R15 185/55R16',Accord:'215/55R17 235/45R18',City:'185/60R15 185/55R16'},
+Suzuki:{Swift:'185/55R16',Jimny:'195/80R15',Vitara:'215/55R17','S-Cross':'215/55R17'},
+Volkswagen:{Golf:'205/55R16 225/45R17 225/40R18',Polo:'185/65R15 195/55R16',Tiguan:'215/65R17 235/55R18',Amarok:'255/65R17 255/60R18 265/60R18'},
+Isuzu:{'D-Max':'245/70R16 255/65R17 255/60R18','MU-X':'255/65R17 255/60R18'},
+MG:{MG3:'195/55R16 205/45R17',ZS:'215/55R17',HS:'235/50R18'},
+Tesla:{'Model 3':'235/45R18 235/40R19','Model Y':'255/45R19 255/40R20'},
+BMW:{'3 Series':'225/50R17 225/45R18'},
+'Mercedes-Benz':{'A-Class':'205/55R16 225/45R17','C-Class':'205/60R16 225/45R17'},
+Audi:{A3:'205/55R16 225/45R17'},
+Skoda:{Octavia:'205/55R16 225/45R17'},
+Peugeot:{'208':'195/55R16 205/45R17'},
+LDV:{T60:'255/70R16'}
+};
+const fitSizes=(make,model)=>{const s=FIT[make]&&FIT[make][model];return s?s.split(' '):null};
+const tyreStock=size=>Object.entries(S.parts).filter(([k,p])=>p.category==='tyre'&&p.size===size).sort((a,b)=>b[1].qty-a[1].qty);
+function sizeCard(size,jid){
+  const items=tyreStock(size),n=items.reduce((a,[k,p])=>a+p.qty,0);
+  return `<div class="tile" style="margin-top:8px"><div class="line" style="border:0"><span class="size">${esc(size)}</span><span class="pill ${n>0?'ok':'bad'}">${n>0?n+' in stock':'Not in stock'}</span></div>${items.filter(([k,p])=>p.qty>0).map(([k,p])=>`<div class="line"><span>${esc([p.brand,p.model].filter(Boolean).join(' ')||p.name)}<br><span class="hint">${money(p.price)} each</span></span><span style="display:flex;gap:8px;align-items:center"><span class="pill ok">${p.qty}</span>${jid?`<button class="btn small" data-act="fittyre" data-id="${jid}|${esc(k)}">Fit</button>`:''}</span></div>`).join('')}</div>`;
+}
+function fitPanel(make,model,jid){
+  if(!make)return '';
+  const sizes=fitSizes(make,model),inStock=[...new Set(Object.values(S.parts).filter(p=>p.category==='tyre'&&p.qty>0&&p.size).map(p=>p.size))].sort((a,b)=>sizeKey(a)-sizeKey(b));
+  let h=`<h2>Tyres for ${esc([make,model&&model!=='__other'?model:''].filter(Boolean).join(' '))}</h2>`;
+  if(jid)h+=field('tf-qty','Tyres to fit','type="number" inputmode="numeric" min="1"','4');
+  if(sizes)h+=`<div class="hint" style="margin-top:6px">Common factory sizes for this model. Trims and years differ, so confirm on the placard in the driver's door jamb.</div>`+sizes.map(s=>sizeCard(s,jid)).join('');
+  else h+=`<div class="hint">${model?'No size on file for this model.':'Choose a model to see its tyre sizes.'} Check the placard in the driver's door jamb, then pick the size below.</div>`;
+  h+=`<label for="chk">Check another size</label><select id="chk" data-chg="chk" data-id="${jid||''}"><option value="">${inStock.length?'Sizes you have in stock':'No tyres in stock yet'}</option>${inStock.map(s=>`<option>${esc(s)}</option>`).join('')}</select><div id="chkres"></div>`;
+  return h;
+}
+function carPicker(p,make='',model='',year=''){
+  return `<div class="two"><div><label for="${p}-make">Make</label><select id="${p}-make" data-chg="pmake" data-id="${p}"><option value="">Choose make</option>${MAKES.map(m=>`<option${m===make?' selected':''}>${esc(m)}</option>`).join('')}</select></div><div><label for="${p}-model">Model</label><select id="${p}-model" data-chg="pmodel" data-id="${p}"></select></div></div>
+  <div id="${p}-oth" hidden><label for="${p}-other">Model (type it)</label><input id="${p}-other" autocomplete="off"></div><label for="${p}-year">Year (optional)</label><input id="${p}-year" type="number" inputmode="numeric" placeholder="2018" value="${esc(year)}">`;
+}
+function fillModels(p,make,model){
+  const sel=$('#'+p+'-model');if(!sel)return;
+  const ms=Object.keys(FIT[make]||{}).sort((a,b)=>a.localeCompare(b)),known=ms.includes(model);
+  sel.innerHTML=(make?'<option value="">Choose model</option>':'<option value="">Choose make first</option>')+ms.map(m=>`<option${known&&m===model?' selected':''}>${esc(m)}</option>`).join('')+(make?`<option value="__other"${model&&!known?' selected':''}>Other / not listed</option>`:'');
+  if(model&&!known){const o=$('#'+p+'-other');if(o)o.value=model}
+}
+function carVal(p){const make=val(p+'-make'),d=val(p+'-model'),model=d==='__other'?val(p+'-other').trim():d,year=val(p+'-year').trim();return {make,model,year,vehicle:[make,model,year].filter(Boolean).join(' ')}}
+function updateFit(p){const f=$('#'+p+'-fit'),oth=$('#'+p+'-oth'),c=carVal(p);if(oth)oth.hidden=val(p+'-model')!=='__other';if(f)f.innerHTML=fitPanel(c.make,c.model,null)}
+function initPicker(p,make,model){fillModels(p,make||'',model||'');updateFit(p)}
+function setPicker(p,make,model,year){const mk=$('#'+p+'-make');if(!mk||!make||mk.value)return;mk.value=make;fillModels(p,make,model||'');const y=$('#'+p+'-year');if(y&&!y.value&&year)y.value=year;updateFit(p)}
+function carFitBlock(j,id){
+  if(!j.make)return `<h2>Tyres for this car</h2><div class="hint">Choose the car to see which tyre sizes fit and what you have in stock.</div><div class="actions"><button class="btn small" data-act="editcar" data-id="${id}">Choose car</button></div>`;
+  return fitPanel(j.make,j.model,id)+`<div class="actions"><button class="btn small ghost" data-act="editcar" data-id="${id}">Change car</button></div>`;
+}
+async function fitItem(jid,sku,qty,force){
+  const p=S.parts[sku];
+  if(!p||!(qty>0)){toast('Pick an item and a quantity.');return}
+  if(p.qty<qty){toast('Only '+p.qty+' in stock.');return}
+  if(!force&&(p.category==='tyre'?qty>6:qty>20)){ask(`Fit ${qty} × ${p.name}? That is a lot for one job.`,'Fit '+qty,()=>fitItem(jid,sku,qty,true));return}
+  const j=clone(S.jobs[jid]);j.parts=j.parts||[];j.parts.push({sku,name:p.name,qty,price:p.price});
+  await put('parts',sku,{...p,qty:p.qty-qty});await put('jobs',jid,j);renderBody();sheetJob(jid);
+  toastAction(`Fitted ${qty} × ${p.name}`,'Undo',async()=>{
+    const k=S.jobs[jid],idx=((k&&k.parts)||[]).map(x=>x.sku+'|'+x.qty).lastIndexOf(sku+'|'+qty);
+    if(idx>=0)await removeLine(jid,idx);renderBody();if(S.sheet&&S.sheet.type==='job'&&S.sheet.id===jid)sheetJob(jid);
+  });
+}
+
+const AREAS=['Brakes','Tyres','Wheels','Suspension','Steering','Lights','Fluids','Exhaust','Body and rust','Windscreen and wipers','Battery'];
+const PART_CATS=['brakes','fluids','filters','battery','other'];
+const SAMPLE_PARTS=[['BRK-PAD-F01','Front brake pad set','brakes',89,6,3],['OIL-5W30-5L','Engine oil 5W-30 5L','fluids',59,15,5],['FLT-OIL-01','Oil filter','filters',18,20,6]];
+const SAMPLE_STOCK=[['tyre','Bridgestone','Turanza','205/55R16','',145,12,4],['tyre','Michelin','Primacy 4','225/45R17','',210,8,4],['tyre','Hankook','Dynapro AT2','265/60R18','',235,3,4],['tyre','Falken','Ziex','215/60R16','',129,6,4],['wheel','Ultra','Hunter','17x7.5','5x114.3',320,4,2]];
+
+let db=null;
+const S={tab:'today',date:today(),parts:{},jobs:{},bookings:{},cars:{},stor:{},settings:{},ready:{},sheet:null,q:'',sq:'',jq:'',draft:null,jobTab:'open',carTab:'preparing',stockTab:'tyre',res:'pass'};
+
+function toastAction(msg,label,fn,ms=7000){
+  const t=$('#toast');t.innerHTML=esc(msg)+' <button class="tbtn" data-act="toastact">'+esc(label)+'</button>';t.hidden=false;
+  toastAction.fn=fn;clearTimeout(toast.t);toast.t=setTimeout(()=>{t.hidden=true;toastAction.fn=null},ms);
+}
+/* In-page confirmation (the browser's confirm() is blocked). Optional third button for "do it anyway". */
+function ask(msg,label,fn,danger,altLabel,altFn){
+  ask.fn=fn;ask.alt=altFn||null;
+  $('#confirm').innerHTML=`<div class="back" style="z-index:60;align-items:center" data-act="askno" data-bg="1"><div class="dlg" role="alertdialog" aria-label="Confirm"><p>${esc(msg)}</p><div class="actions" style="justify-content:flex-end;margin-top:0"><button class="btn ghost" data-act="askno">Cancel</button>${altLabel?`<button class="btn ghost" data-act="askalt">${esc(altLabel)}</button>`:''}<button class="btn ${danger?'bad':''}" data-act="askyes">${esc(label)}</button></div></div></div>`;
+}
+const fmtPhone=v=>{const raw=String(v||'').trim(),d=raw.replace(/[^\d+]/g,'');
+  if(/^\+?61/.test(d))return fmtPhone('0'+d.replace(/^\+?61/,''));
+  if(/^04\d{8}$/.test(d))return d.replace(/(\d{4})(\d{3})(\d{3})/,'$1 $2 $3');
+  if(/^0[2378]\d{8}$/.test(d))return d.replace(/(\d{2})(\d{4})(\d{4})/,'$1 $2 $3');
+  return raw};
+const emailOk=v=>!v||/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+const abnOk=v=>{const d=String(v||'').replace(/\s/g,'');if(!d)return true;if(!/^\d{11}$/.test(d))return false;
+  const w=[10,1,3,5,7,9,11,13,15,17,19],n=d.split('').map(Number);n[0]-=1;return n.reduce((a,x,i)=>a+x*w[i],0)%89===0};
+/* Half-filled forms survive a phone call, a locked screen or a tap outside. */
+const DRAFTS=new Set(['New booking','New job','Add tyre','Add wheel','Add part','Add car','Store customer tyres']);
+function saveDraft(){const sh=document.querySelector('#sheet .sheet');if(!sh||!S.draft)return;const o={};sh.querySelectorAll('input,select').forEach(e=>{if(e.id)o[e.id]=e.value});try{localStorage.setItem('bn-draft:'+S.draft,JSON.stringify(o))}catch(e){}}
+function restoreDraft(title){
+  if(S.draft!==title)return;let o=null;try{o=JSON.parse(localStorage.getItem('bn-draft:'+title)||'null')}catch(e){}
+  if(!o)return;const g=id=>document.getElementById(id);
+  Object.entries(o).forEach(([id,v])=>{const e=g(id);if(e&&e.tagName!=='SELECT'&&!/-date$/.test(id))e.value=v});
+  ['b','j','k'].forEach(p=>{const mk=g(p+'-make');if(mk&&o[p+'-make']){mk.value=o[p+'-make'];fillModels(p,o[p+'-make'],o[p+'-model']==='__other'?(o[p+'-other']||''):(o[p+'-model']||''));updateFit(p)}});
+  document.querySelectorAll('#sheet select').forEach(e=>{if(!/-(make|model)$/.test(e.id)&&o[e.id]!==undefined)e.value=o[e.id]});
+  if(Object.entries(o).some(([id,v])=>v&&!/-(date|time|qty|re)$/.test(id)))toast('Restored where you left off');
+}
+function clearDraft(){if(!S.draft)return;try{localStorage.removeItem('bn-draft:'+S.draft)}catch(e){}S.draft=null}
+async function saveSettings(doc){S.settings=doc;if(!db)return;try{await db.doc('settings/business').set(doc)}catch(e){toastAction('Not saved','Retry',()=>saveSettings(doc),10000)}}
+async function removeLine(jid,idx){
+  const j=clone(S.jobs[jid]),ln=(j.parts||[])[idx];if(!ln)return;j.parts.splice(idx,1);
+  const p=S.parts[ln.sku];if(p)await put('parts',ln.sku,{...p,qty:p.qty+ln.qty});await put('jobs',jid,j);
+}
+const mins=t=>{const m=/^(\d\d):(\d\d)/.exec(t||'');return m?(+m[1])*60+(+m[2]):null};
+const nowMins=()=>mins(new Intl.DateTimeFormat('en-GB',{timeZone:'Australia/Brisbane',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()));
+function attention(){
+  const out=[],td=today(),nm=nowMins();
+  Object.entries(S.bookings).forEach(([id,b])=>{if(b.date===td&&b.status==='booked'&&mins(b.time)!==null&&nm-mins(b.time)>=20)out.push({k:'Late',t:`${b.name} was due at ${b.time} and has not arrived`,s:'Tap to mark as a no-show. If they turn up, use Start job.',act:'noshow',id})});
+  Object.entries(S.jobs).forEach(([id,j])=>{
+    if(j.status==='open'&&j.openedOn&&daysBetween(j.openedOn,td)>=2)out.push({k:'Stuck',t:`${j.rego} has been open ${daysBetween(j.openedOn,td)} days`,s:j.description||'Tap to open',act:'openjob',id});
+    if(j.status==='closed'&&!j.invoice&&!j.noInvoice&&j.closedOn&&daysBetween(j.closedOn,td)<=14)out.push({k:'Invoice?',t:`${j.rego} closed with no invoice decision`,s:money(jobTotal(j).total)+' · tap to invoice or mark not needed',act:'openjob',id});
+    if(j.invoice&&!j.invoice.paid&&daysBetween(j.invoice.date,td)>=7)out.push({k:'Overdue',t:`${invNo(j)} unpaid ${daysBetween(j.invoice.date,td)} days`,s:`${j.customer||j.rego} · ${money(jobTotal(j).total)}`,act:'openinv',id});
+  });
+  Object.entries(S.stor).forEach(([id,x])=>{if(x.since&&daysBetween(x.since,td)>=180)out.push({k:'Storage',t:`${x.customer}'s ${x.size} tyres stored ${daysBetween(x.since,td)} days`,s:'Ask them to collect',act:'tab',id:'stock'})});
+  Object.entries(S.cars).forEach(([id,c])=>{if(c.status!=='sold'&&c.bought&&daysBetween(c.bought,td)>=60)out.push({k:'Slow',t:`${[c.year,c.make,c.model].filter(Boolean).join(' ')||c.rego} in stock ${daysBetween(c.bought,td)} days`,s:'Consider a price drop',act:'opencar',id})});
+  return out;
+}
+function toast(m){const t=$('#toast');t.textContent=m;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,3200)}
+async function put(c,id,data){
+  S[c][id]=data;
+  if(!db){toast('Not saved. Open this in Claude and sign in to keep your data.');return}
+  try{await db.doc(c+'/'+id).set(data)}catch(e){toastAction('Not saved','Retry',()=>put(c,id,data),10000)}
+}
+const newId=c=>db?db.collection(c).doc().id:'t'+Date.now()+Math.floor(Math.random()*999);
+const clone=o=>JSON.parse(JSON.stringify(o));
+// Prices are entered before GST; GST is 10% on top.
+const calcTotal=(parts,extras,labour,disc)=>{const gross=parts+extras+labour,d=Math.min(Math.max(0,disc||0),gross),sub=gross-d,gst=sub*0.1;return {parts,extras,labour,gross,disc:d,sub,gst,total:sub+gst}};
+const jobTotal=j=>calcTotal((j.parts||[]).reduce((a,p)=>a+p.qty*p.price,0),(j.extras||[]).reduce((a,e)=>a+(e.qty||1)*e.price,0),(j.labour||0)*(j.rate||120),j.discount);
+const canEditPrices=j=>!!j&&!(j.invoice&&j.invoice.paid);
+const daysAgo=n=>{const d=new Date(today()+'T12:00:00');d.setDate(d.getDate()-n);return new Intl.DateTimeFormat('en-CA').format(d)};
+const daysBetween=(a,b)=>Math.max(0,Math.round((new Date(b+'T12:00:00')-new Date(a+'T12:00:00'))/864e5));
+const carCost=c=>(c.cost||0)+(c.recon||[]).reduce((a,r)=>a+r.cost,0);
+const isStock=p=>p.category==='tyre'||p.category==='wheel';
+const lowParts=(stock)=>Object.entries(S.parts).filter(([k,p])=>(stock===undefined||isStock(p)===stock)&&p.qty<=p.reorder).sort((a,b)=>a[1].qty-b[1].qty);
+const tyresInStock=()=>Object.values(S.parts).filter(p=>p.category==='tyre').reduce((a,p)=>a+p.qty,0);
+const pill=(r)=>r==='pass'?'<span class="pill ok">Pass</span>':r==='advisory'?'<span class="pill warn">Advisory</span>':'<span class="pill bad">Fail</span>';
+const BRAND='Blue Nile Auto Tyres & Wheels';
+const fmtAbn=v=>{const d=String(v||'').replace(/\s/g,'');return /^\d{11}$/.test(d)?d.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/,'$1 $2 $3 $4'):String(v||'')};
+const biz=()=>({name:(S.settings.name&&S.settings.name!=='Blue Nile')?S.settings.name:BRAND,abn:fmtAbn(S.settings.abn||''),phone:S.settings.phone||'',address:S.settings.address||'',email:S.settings.email||'',pay:S.settings.pay||''});
+async function copy(text,msg){try{await navigator.clipboard.writeText(text);toast(msg||'Copied')}catch(e){toast('Copy is blocked here. Open the page in your browser to copy.')}}
+const followups=()=>{const out=[];Object.entries(S.jobs).forEach(([id,j])=>(j.inspection||[]).forEach(i=>{if(i.result!=='pass'&&i.est>0&&i.decision!=='approved')out.push({id,rego:j.rego,customer:j.customer,area:i.area,est:i.est,decision:i.decision})}));return out};
+function autofill(r,n,p,pref){const el=$('#'+r);if(!el)return;el.onchange=()=>{const rego=el.value.toUpperCase().replace(/\s/g,'');const m=[...Object.values(S.jobs),...Object.values(S.bookings)].sort((a,b)=>(b.openedOn||b.date||'').localeCompare(a.openedOn||a.date||'')).find(x=>x.rego===rego);if(!m)return;[[n,m.customer||m.name],[p,m.phone]].forEach(([id,x])=>{const e=$('#'+id);if(e&&!e.value&&x)e.value=x});setPicker(pref,m.make,m.model,m.year);toast('Filled in from their last visit')}}
+const sizeKey=s=>{const m=/(\d+)\/(\d+)R(\d+)/.exec(s||'')||/^(\d+)x([\d.]+)/.exec(s||'');return m?(m[3]?(+m[3])*1e6+(+m[1])*1e3+(+m[2]):(+m[1])*1e6+(+m[2])*1e3):9e12};
+const invNo=j=>'INV-'+j.invoice.no;
+function logoSVG(px){
+  const sp=[0,1,2,3,4].map(i=>`<path transform="rotate(${i*72} 50 50)" d="M47 50 L44.5 22 Q50 18.5 55.5 22 L53 50Z" fill="url(#gRim)"/>`).join('');
+  return `<svg viewBox="0 0 100 100" width="${px}" height="${px}" aria-hidden="true"><circle cx="50" cy="50" r="47" fill="#0B1019"/><circle cx="50" cy="50" r="43" fill="none" stroke="url(#gTire)" stroke-width="8" stroke-dasharray="5 3"/><circle cx="50" cy="50" r="47" fill="none" stroke="url(#gRim)" stroke-width="2"/><g class="spin"><circle cx="50" cy="50" r="33" fill="#0B1019" stroke="url(#gRim)" stroke-width="3.5"/>${sp}<circle cx="50" cy="50" r="8" fill="#0B1019" stroke="url(#gRim)" stroke-width="2.5"/><circle cx="50" cy="50" r="2.6" fill="#00E5FF"/></g></svg>`;
+}
+const logoBtn=(px,intro)=>`<button class="logo${intro?' intro':''}" data-act="rev" aria-label="Spin the wheel">${logoSVG(px)}</button>`;
+function invText(j){
+  const b=biz(),t=jobTotal(j),tax=!!b.abn;
+  return [b.name+(b.abn?'  ABN '+b.abn:''),[b.address,b.phone,b.email].filter(Boolean).join(' | '),'',(tax?'TAX INVOICE ':'INVOICE ')+(j.invoice?invNo(j):''),j.invoice?'Date '+longDate(j.invoice.date):'','',
+   'Bill to: '+(j.customer||'Customer')+(j.phone?' '+j.phone:''),'Vehicle: '+j.rego+(j.vehicle?' ('+j.vehicle+')':''),(j.description?'Work: '+j.description:''),'',
+   ...(j.parts||[]).map(p=>p.qty+' x '+p.name+'  '+money(p.qty*p.price)),...(j.extras||[]).map(e=>(e.desc||'Extra')+'  '+money((e.qty||1)*e.price)),...(j.labour?[j.labour+' h labour at '+money(j.rate||120)+'/h  '+money(t.labour)]:[]),...(t.disc>0?['Discount  -'+money(t.disc)]:[]),'',
+   'Subtotal (ex GST) '+money(t.sub),'GST '+money(t.gst),'Total (inc GST) '+money(t.total),'',j.invoice&&j.invoice.paid?'PAID':'AMOUNT DUE '+money(t.total),b.pay?('Pay to: '+b.pay):''].filter((x,i,a)=>x!==''||a[i-1]!=='').join('\n');
+}
+
+/* ---------- head (rendered when tab changes; holds inputs so typing is never wiped) ---------- */
+function renderHead(){
+  const t=S.tab,h=$('#head');
+  const title={today:['Blue Nile','Auto Tyres & Wheels · Rocklea'],jobs:['Jobs','Workshop floor'],parts:['Parts','Other stock'],stock:['Stock in hand','Tyres and wheels'],cars:['Cars','Sales stock']}[t];
+  let extra='';
+  if(t==='today')extra=`<input id="date" type="date" value="${S.date}" style="width:auto;flex:0 0 auto;min-height:42px"><button class="btn small" data-act="newbk">+ Booking</button><button class="btn small ghost" data-act="setbiz">Business</button>`;
+  if(t==='jobs')extra=`<button class="btn small" data-act="newjob">+ Job</button><input id="jq" placeholder="Search rego, name or phone" value="${esc(S.jq)}" style="flex:1 1 100%">`;
+  if(t==='parts')extra=`<button class="btn small" data-act="newpart">+ Part</button><input id="q" placeholder="Search parts" value="${esc(S.q)}" style="flex:1 1 100%">`;
+  if(t==='stock')extra=`<button class="btn small" data-act="newtyre">+ Tyre</button><button class="btn small ghost" data-act="newwheel">+ Wheel</button><input id="sq" placeholder="Search size or brand, e.g. 265/60 or Hankook" value="${esc(S.sq)}" style="flex:1 1 100%">`;
+  if(t==='cars')extra=`<button class="btn small" data-act="newcar">+ Car</button>`;
+  h.innerHTML=`<h1>${t==='today'?logoBtn(44)+'<span class="wm"><b>'+esc(title[0])+'</b><small>'+esc(title[1])+'</small></span>':title[0]+'<small>'+title[1]+'</small>'}</h1>${extra}`;
+  const d=$('#date');if(d)d.onchange=()=>{S.date=d.value||today();renderBody()};
+  const q=$('#q');if(q)q.oninput=()=>{S.q=q.value;renderBody()};
+  const jq=$('#jq');if(jq)jq.oninput=()=>{S.jq=jq.value;renderBody()};
+  const sq=$('#sq');if(sq)sq.oninput=()=>{S.sq=sq.value;renderBody()};
+}
+const TAB_ORDER=['today','jobs','parts','stock','cars'];
+function enter(dir){const m=$('#body');m.style.setProperty('--dx',dir);m.classList.remove('enter');void m.offsetWidth;m.classList.add('enter')}
+function renderTabs(){
+  const open=Object.values(S.jobs).filter(j=>j.status==='open').length;
+  const T=[['today','Today',0],['jobs','Jobs',open],['parts','Parts',lowParts(false).length],['stock','Stock',lowParts(true).length],['cars','Cars',0]];
+  const IC={
+    today:'<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+    jobs:'<path d="M14.7 6.3a4 4 0 0 0-5.4 5.1L3.5 17.2a1.8 1.8 0 0 0 2.5 2.5l5.8-5.8a4 4 0 0 0 5.1-5.4l-2.4 2.4-2.1-.5-.5-2.1z"/>',
+    parts:'<path d="M3.5 7.5 12 3l8.5 4.5v9L12 21l-8.5-4.5z"/><path d="M3.5 7.5 12 12l8.5-4.5M12 12v9"/>',
+    stock:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5v5.5M12 15v5.5M3.5 12H9M15 12h5.5"/>',
+    cars:'<path d="M4.5 16.5V12l1.9-4.6A2 2 0 0 1 8.3 6h7.4a2 2 0 0 1 1.9 1.4L19.5 12v4.5z"/><path d="M4.5 12h15M6.5 16.5V19M17.5 16.5V19"/><circle cx="8" cy="14.2" r=".5"/><circle cx="16" cy="14.2" r=".5"/>'};
+  const nav=$('#tabs');
+  // Built once so the highlight can glide between tabs; later calls only update state.
+  if(!nav.dataset.built){
+    nav.innerHTML='<span class="ind"></span>'+T.map(([k,l])=>`<button data-act="tab" data-id="${k}" aria-label="${l}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[k]}</svg><span>${l}</span><i hidden></i></button>`).join('');
+    nav.dataset.built='1';
+  }
+  nav.style.setProperty('--i',TAB_ORDER.indexOf(S.tab));
+  nav.querySelectorAll('button').forEach((b,n)=>{b.classList.toggle('on',T[n][0]===S.tab);const i=b.querySelector('i'),c=T[n][2];i.hidden=!c;i.textContent=c||''});
+}
+
+/* ---------- body views ---------- */
+function loadingOrEmpty(){return !Object.keys(S.ready).length&&db}
+const BAYS=3;
+function gaugeHTML(open,anim){
+  const pct=Math.min(open/BAYS,1),rot=-90+pct*180,full=open>=BAYS;
+  const ticks=Array.from({length:BAYS+1},(_,i)=>{const a=(-180+i*180/BAYS)*Math.PI/180,c=Math.cos(a),s=Math.sin(a);return `<line x1="${(100+66*c).toFixed(1)}" y1="${(100+66*s).toFixed(1)}" x2="${(100+76*c).toFixed(1)}" y2="${(100+76*s).toFixed(1)}" stroke="#8C9AB3" stroke-width="2" stroke-linecap="round"/>`}).join('');
+  const free=Math.max(0,BAYS-open);
+  return `<div class="gauge${full?' full':''}"><svg viewBox="0 0 200 112" aria-hidden="true"><path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#1D2940" stroke-width="12" stroke-linecap="round"/><path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="url(#gGauge)" stroke-width="12" stroke-linecap="round" pathLength="100" stroke-dasharray="${(pct*100).toFixed(1)} 100"/>${ticks}<g class="needle${anim?' anim':''}" style="--rot:${rot}deg"><path d="M100 100 L97 40 L100 30 L103 40Z" fill="#EAF2FF"/></g><circle cx="100" cy="100" r="7" fill="#0F1522" stroke="#00E5FF" stroke-width="2.5"/></svg><div><span class="hint">Workshop bays</span><b>${open} of ${BAYS} busy</b><span class="hint">${open>BAYS?'Over capacity by '+(open-BAYS):free?free+' free':'Full'}</span></div></div>`;
+}
+function viewToday(){
+  const td=today(),bks=Object.entries(S.bookings).filter(([i,b])=>b.date===S.date).sort((a,b)=>(a[1].time||'').localeCompare(b[1].time||''));
+  const todays=Object.entries(S.bookings).filter(([i,b])=>b.date===td&&b.status!=='cancelled').length;
+  const open=Object.values(S.jobs).filter(j=>j.status==='open').length;
+  const closed=Object.values(S.jobs).filter(j=>j.closedOn===td);
+  const tt=closed.map(jobTotal),pr=tt.reduce((a,t)=>a+t.parts+t.extras,0),lr=tt.reduce((a,t)=>a+t.labour,0),dsc=tt.reduce((a,t)=>a+t.disc,0),gstT=tt.reduce((a,t)=>a+t.gst,0),totT=tt.reduce((a,t)=>a+t.total,0);
+  const low=lowParts().length;
+  const gk=open;const anim=S._gk!==gk;S._gk=gk;
+  let html=((S.ready.settings||!db)&&!S.settings.abn)?`<div class="banner abn"><b>Add your ABN</b><div class="hint">Invoices only count as tax invoices once your ABN is on them.</div><div class="actions"><button class="btn small" data-act="setbiz">Add ABN</button></div></div>`:'';
+  html+=gaugeHTML(open,anim);
+  html+=`<div class="grid">
+   <div class="tile"><b>${todays}</b><span>Bookings today</span></div>
+   <div class="tile"><b>${open}</b><span>Jobs in workshop</span></div>
+   <div class="tile ${low?'alert':''}"><b>${low}</b><span>Items to reorder</span></div>
+   <div class="tile"><b>${tyresInStock()}</b><span>Tyres in stock</span></div></div>`;
+  const att=attention();
+  if(att.length)html+=`<h2>Needs attention · ${att.length}</h2><div class="list">`+att.slice(0,8).map(x=>`<button class="row" data-act="${x.act}" data-id="${esc(x.id)}"><span class="grow"><span class="t">${esc(x.t)}</span><br><span class="s">${esc(x.s)}</span></span><span class="pill warn">${x.k}</span></button>`).join('')+'</div>';
+  html+=`<h2>${S.date===td?'Today':nice(S.date)} bookings</h2>`;
+  if(!bks.length)html+=`<div class="empty">No bookings for this day.<button class="btn" data-act="newbk">Add a booking</button></div>`;
+  else html+='<div class="list">'+bks.map(([id,b])=>{
+    const st={booked:['Booked','mute'],in_workshop:['In workshop','warn'],done:['Done','ok'],cancelled:['Cancelled','mute'],noshow:['No-show','bad']}[b.status]||['Booked','mute'];
+    return `<div class="row" style="align-items:flex-start;flex-wrap:wrap"><span class="timechip">${esc(b.time||'--:--')}</span>
+      <div class="grow"><div class="t">${esc(b.name)} <span class="hint">${esc(b.rego)}</span></div><div class="s">${esc(b.service)}${b.vehicle?' · '+esc(b.vehicle):''}${b.phone?' · '+esc(b.phone):''}</div></div>
+      <span class="pill ${st[1]}">${st[0]}</span>
+      ${b.status==='booked'?`<div class="actions" style="margin:0;width:100%"><button class="btn small" data-act="startjob" data-id="${id}">Start job</button><button class="btn small ghost" data-act="cancelbk" data-id="${id}">Cancel</button><button class="btn small ghost" data-act="copyrem" data-id="${id}">Copy reminder text</button></div>`:''}</div>`}).join('')+'</div>';
+  const unpaid=Object.entries(S.jobs).filter(([k,j])=>j.invoice&&!j.invoice.paid);
+  if(unpaid.length)html+=`<h2>Unpaid invoices</h2><div class="list">`+unpaid.slice(0,6).map(([k,j])=>`<button class="row" data-act="openinv" data-id="${k}"><span class="plate">${esc(j.rego)}</span><span class="grow"><span class="t">${invNo(j)}</span><br><span class="s">${esc(j.customer||'')} · ${nice(j.invoice.date)}</span></span><span class="num"><b>${money(jobTotal(j).total)}</b></span></button>`).join('')+'</div>';
+  const fu=followups();
+  if(fu.length)html+=`<h2>Work to follow up</h2><div class="list">`+fu.slice(0,6).map(f=>`<button class="row" data-act="openjob" data-id="${f.id}"><span class="plate">${esc(f.rego)}</span><span class="grow"><span class="t">${esc(f.area)}</span><br><span class="s">${f.decision==='declined'?'Declined':'No answer yet'}${f.customer?' · '+esc(f.customer):''}</span></span><span class="num">${money(f.est)}</span></button>`).join('')+'</div>';
+  const wkT=Object.values(S.jobs).filter(j=>j.closedOn&&j.closedOn>=daysAgo(6)).reduce((a,j)=>a+jobTotal(j).sub,0);
+  html+=`<h2>Takings closed today</h2><div class="tile"><div class="line"><span>Jobs closed</span><b class="num">${closed.length}</b></div><div class="line"><span>Parts</span><span class="num">${money(pr)}</span></div><div class="line"><span>Labour</span><span class="num">${money(lr)}</span></div>${dsc>0?`<div class="line"><span>Discounts</span><span class="num">-${money(dsc)}</span></div>`:''}<div class="line"><span>GST</span><span class="num">${money(gstT)}</span></div><div class="line"><span><b>Total</b></span><span class="total num">${money(totT)}</span></div><div class="line"><span>Last 7 days (before GST)</span><span class="num">${money(wkT)}</span></div></div>`;
+  html+=`<p class="hint">Prices are before GST; GST is added at 10%. Labour rate is set per job (default $120/hr).</p>`;
+  return html;
+}
+function viewJobs(){
+  const q=S.jq.trim().toLowerCase().replace(/\s+/g,'');
+  const hit=j=>((j.rego||'')+(j.customer||'')+(j.phone||'')+(j.vehicle||'')+(j.description||'')).toLowerCase().replace(/\s+/g,'').includes(q);
+  const list=Object.entries(S.jobs).filter(([i,j])=>q?hit(j):j.status===S.jobTab).sort((a,b)=>(b[1].openedOn||'').localeCompare(a[1].openedOn||''));
+  let html=`<div class="actions" style="margin:0 0 10px"><div class="seg"><button data-act="jobseg" data-id="open" class="${S.jobTab==='open'?'on':''}">Open</button><button data-act="jobseg" data-id="closed" class="${S.jobTab==='closed'?'on':''}">Closed</button></div></div>`;
+  if(!list.length)return html+`<div class="empty">${q?'No jobs match that search.':S.jobTab==='open'?'No jobs in the workshop.':'No closed jobs yet.'}${!q&&S.jobTab==='open'?'<button class="btn" data-act="newjob">Open a job</button>':''}</div>`;
+  return html+'<div class="list">'+list.map(([id,j])=>{
+    const fails=(j.inspection||[]).filter(i=>i.result==='fail').length,adv=(j.inspection||[]).filter(i=>i.result==='advisory').length;
+    const inv=j.status==='closed'?(j.invoice?(j.invoice.paid?'<span class="pill ok">Paid</span>':'<span class="pill warn">Unpaid</span>'):'<span class="pill mute">No invoice</span>'):'';
+    return `<button class="row" data-act="openjob" data-id="${id}"><span class="plate">${esc(j.rego)}</span><span class="grow"><span class="t">${esc(j.description||'Job')}</span><br><span class="s">${esc(j.customer||'')}${j.vehicle?' · '+esc(j.vehicle):''}</span></span>${fails?`<span class="pill bad">${fails} fail</span>`:adv?`<span class="pill warn">${adv} advisory</span>`:''}${inv}<span class="num">${money(jobTotal(j).total)}</span></button>`}).join('')+'</div>';
+}
+function viewParts(){
+  const q=S.q.trim().toLowerCase(),all=Object.entries(S.parts).filter(([k,p])=>!isStock(p)).sort((a,b)=>a[1].name.localeCompare(b[1].name));
+  if(!all.length)return `<div class="empty">No parts yet. Tyres and wheels live in the Stock tab. Add brakes, oil, filters and other parts here, or load a few samples to try the app.<button class="btn" data-act="newpart">Add a part</button><button class="btn ghost" data-act="sampleparts">Load sample parts</button></div>`;
+  const list=all.filter(([k,p])=>!q||(k+p.name+p.category).toLowerCase().includes(q));
+  const lp=lowParts(false),low=lp.length;
+  let html=low?`<div class="banner"><b>${low} to reorder:</b> ${lp.slice(0,4).map(([k,p])=>esc(p.name)).join(', ')}${low>4?'…':''}<div class="actions"><button class="btn small ghost" data-act="copyreorder" data-id="parts">Copy reorder list</button></div></div>`:'';
+  if(!list.length)return html+'<div class="empty">Nothing matches that search.</div>';
+  return html+'<div class="list">'+list.map(([k,p])=>`<button class="row" data-act="openpart" data-id="${esc(k)}"><span class="grow"><span class="t">${esc(p.name)}</span><br><span class="s">${esc(k)} · ${esc(p.category)} · ${money(p.price)}</span></span><span class="pill ${p.qty<=0?'bad':p.qty<=p.reorder?'warn':'ok'}">${p.qty} in stock</span></button>`).join('')+'</div>';
+}
+function viewStock(){
+  const kind=S.stockTab,q=S.sq.trim().toLowerCase().replace(/\s+/g,'');
+  const items=Object.entries(S.parts).filter(([k,p])=>p.category===kind);
+  const total=items.reduce((a,[k,p])=>a+p.qty,0),sizes=new Set(items.filter(([k,p])=>p.qty>0).map(([k,p])=>p.size||'Other')).size;
+  const lp=lowParts(true).filter(([k,p])=>p.category===kind);
+  let html=`<div class="seg" style="margin-bottom:10px"><button data-act="stocktab" data-id="tyre" class="${kind==='tyre'?'on':''}">Tyres</button><button data-act="stocktab" data-id="wheel" class="${kind==='wheel'?'on':''}">Wheels</button></div>
+  <div class="grid"><div class="tile"><b>${total}</b><span>${kind==='tyre'?'Tyres':'Wheels'} in hand</span></div><div class="tile ${lp.length?'alert':''}"><b>${sizes}</b><span>Sizes in stock${lp.length?' · '+lp.length+' low':''}</span></div></div>`;
+  if(!items.length){html+=`<div class="empty">No ${kind==='tyre'?'tyres':'wheels'} in stock yet. Add what is on your shelves, one size and brand at a time.<button class="btn" data-act="${kind==='tyre'?'newtyre':'newwheel'}">Add ${kind==='tyre'?'a tyre':'a wheel'}</button><button class="btn ghost" data-act="samplestock">Load sample tyres and wheels</button></div>`}
+  else{
+    const match=([k,p])=>!q||((p.size||'')+(p.brand||'')+(p.model||'')+(p.pcd||'')+p.name).toLowerCase().replace(/[\s\/x]/g,'').includes(q.replace(/[\/x]/g,''));
+    const groups={};items.filter(match).forEach(([k,p])=>{(groups[p.size||'Other']=groups[p.size||'Other']||[]).push([k,p])});
+    const keys=Object.keys(groups).sort((a,b)=>sizeKey(a)-sizeKey(b));
+    if(!keys.length)html+='<div class="empty" style="margin-top:10px">Nothing matches that search.</div>';
+    html+=keys.map(s=>{const g=groups[s],n=g.reduce((a,[k,p])=>a+p.qty,0);
+      return `<h2 style="display:flex;justify-content:space-between"><span class="size" style="color:var(--ink)">${esc(s)}</span><span>${n} in hand</span></h2><div class="list">`+g.sort((a,b)=>(a[1].brand||'').localeCompare(b[1].brand||'')).map(([k,p])=>`<button class="row" data-act="openpart" data-id="${esc(k)}"><span class="grow"><span class="t">${esc([p.brand,p.model].filter(Boolean).join(' ')||p.name)}</span><br><span class="s">${esc(p.pcd?p.pcd+' · ':'')}${esc(p.material?p.material+' · ':'')}${money(p.price)}${p.bay?' · bay '+esc(p.bay):''}</span></span><span class="pill ${p.qty<=0?'bad':p.qty<=p.reorder?'warn':'ok'}">${p.qty}</span></button>`).join('')+'</div>'}).join('');
+    if(lp.length)html+=`<div class="actions"><button class="btn small ghost" data-act="copyreorder" data-id="${kind}">Copy reorder list</button></div>`;
+  }
+  const sto=Object.entries(S.stor).sort((a,b)=>(a[1].since||'').localeCompare(b[1].since||''));
+  html+='<h2>Customer tyres in storage</h2>'+(sto.length?'<div class="list">'+sto.map(([id,s])=>`<div class="row" style="flex-wrap:wrap"><span class="plate">${esc(s.rego)}</span><span class="grow"><span class="t">${esc(s.customer)} · ${s.qty} × ${esc(s.size)}</span><br><span class="s">Bay ${esc(s.location)}${s.tread?' · tread '+esc(s.tread)+' mm':''} · since ${nice(s.since)}${s.phone?' · '+esc(s.phone):''}</span></span><button class="btn small ghost" data-act="retstor" data-id="${id}">Returned</button></div>`).join('')+'</div>':'<div class="hint">None right now.</div>');
+  html+='<div class="actions"><button class="btn small ghost" data-act="newstor">Store customer tyres</button></div>';
+  return html;
+}
+function viewCars(){
+  const all=Object.entries(S.cars),stock=all.filter(([i,c])=>c.status!=='sold');
+  const val=stock.reduce((a,[i,c])=>a+carCost(c),0),avg=stock.length?Math.round(stock.reduce((a,[i,c])=>a+daysBetween(c.bought||today(),today()),0)/stock.length):0;
+  const cnt=s=>all.filter(([i,c])=>c.status===s).length;
+  const list=all.filter(([i,c])=>c.status===S.carTab).sort((a,b)=>(a[1].bought||'').localeCompare(b[1].bought||''));
+  let html=`<div class="grid"><div class="tile"><b>${stock.length}</b><span>Cars in stock</span></div><div class="tile"><b class="num">${avg}</b><span>Average days in stock</span></div></div><div class="hint" style="margin:8px 0">Money tied up (buy price plus prep): <b class="num">${money(val)}</b></div>
+  <div class="seg">${[['preparing','Preparing'],['forsale','For sale'],['sold','Sold']].map(([k,l])=>`<button data-act="carseg" data-id="${k}" class="${S.carTab===k?'on':''}">${l} ${cnt(k)}</button>`).join('')}</div><div style="height:10px"></div>`;
+  if(!list.length)return html+`<div class="empty">${all.length?'Nothing here.':'No cars yet. Add a car you have bought and track its prep costs, asking price and profit.'}<button class="btn" data-act="newcar">Add a car</button></div>`;
+  return html+'<div class="list">'+list.map(([id,c])=>{
+    const d=daysBetween(c.bought||today(),c.soldOn||today()),sell=c.status==='sold'?c.soldPrice:c.price,pr=(sell||0)-carCost(c);
+    return `<button class="row" data-act="opencar" data-id="${id}"><span class="plate">${esc(c.rego)}</span><span class="grow"><span class="t">${esc([c.year,c.make,c.model].filter(Boolean).join(' '))}</span><br><span class="s">Cost ${money(carCost(c))} · ${c.status==='sold'?'sold':'asking'} ${money(sell)}</span></span><span style="text-align:right"><span class="pill ${d>60&&c.status!=='sold'?'warn':'mute'}">${d} days</span><br><span class="num" style="color:var(--${pr>=0?'ok':'bad'})">${pr>=0?'+':'-'}${money(Math.abs(pr))}</span></span></button>`}).join('')+'</div><p class="hint">Profit is sale price minus purchase price and prep costs. GST and margin scheme rules are not handled; check with your accountant.</p>';
+}
+function renderBody(){
+  renderTabs();
+  $('#body').innerHTML=loadingOrEmpty()?'<div class="empty">Loading your workshop…</div>':({today:viewToday,jobs:viewJobs,parts:viewParts,stock:viewStock,cars:viewCars}[S.tab])();
+}
+
+/* ---------- sheets ---------- */
+function openSheet(title,inner){
+  S.draft=DRAFTS.has(title)?title:null;setTimeout(()=>restoreDraft(title),0);
+  $('#sheet').innerHTML=`<div class="back" data-act="closesheet" data-bg="1"><div class="sheet" role="dialog" aria-label="${esc(title)}"><div class="grab"></div><header><span></span><h3>${esc(title)}</h3><button class="x" data-act="closesheet">Done</button></header>${inner}</div></div>`;
+}
+const closeSheet=()=>{$('#sheet').innerHTML='';S.sheet=null};
+const field=(id,label,attrs='',val='')=>`<label for="${id}">${label}</label><input id="${id}" ${attrs} value="${esc(val)}">`;
+
+function sheetBooking(){
+  openSheet('New booking',`${field('b-name','Customer name','autocomplete="off"')}${field('b-phone','Phone','inputmode="tel"')}
+  ${field('b-rego','Rego','autocapitalize="characters"')}${carPicker('b')}
+  <label for="b-svc">Service</label><select id="b-svc">${['Safety inspection','Mechanical repair','Tyre fitting','Wheel and tyre package','Service','Brakes','Other'].map(s=>`<option>${s}</option>`).join('')}</select>
+  <div class="two"><div>${field('b-date','Date','type="date"',S.date)}</div><div>${field('b-time','Time','type="time"','09:00')}</div></div>
+  <div id="b-fit"></div><div class="actions"><button class="btn" data-act="savebk">Save booking</button></div>`);
+  initPicker('b');autofill('b-rego','b-name','b-phone','b');
+}
+function sheetJobNew(){
+  openSheet('New job',`${field('j-rego','Rego','autocapitalize="characters"')}${carPicker('j')}${field('j-cust','Customer')}${field('j-phone','Phone','inputmode="tel"')}${field('j-email','Customer email (for invoices)','type="email" inputmode="email" autocomplete="off"')}${field('j-desc','What needs doing')}<div class="chips">${['Safety inspection','Tyre fitting','Service','Brakes','Wheel alignment','Repair'].map(d=>`<button class="chip" data-act="desc" data-id="${esc(d)}">${esc(d)}</button>`).join('')}</div>
+  <div id="j-fit"></div><div class="actions"><button class="btn" data-act="savejob">Open job</button></div>`);
+  initPicker('j');autofill('j-rego','j-cust','j-phone','j');
+}
+function sheetJob(id){
+  const j=S.jobs[id];if(!j){closeSheet();return}
+  S.sheet={type:'job',id};const o=j.status==='open',t=jobTotal(j),fails=(j.inspection||[]).filter(i=>i.result==='fail');
+  const hist=Object.entries(S.jobs).filter(([k,x])=>k!==id&&x.rego===j.rego).sort((a,b)=>(b[1].openedOn||'').localeCompare(a[1].openedOn||'')).slice(0,5);
+  const q=(j.inspection||[]).filter(i=>i.est>0),qs=d=>q.filter(i=>i.decision===d).reduce((a,i)=>a+i.est,0);
+  const partOpts=Object.entries(S.parts).filter(([k,p])=>p.qty>0).sort((a,b)=>a[1].name.localeCompare(b[1].name)).map(([k,p])=>`<option value="${esc(k)}">${esc(p.name)} (${p.qty}) ${money(p.price)}</option>`).join('');
+  openSheet(j.rego,`<div class="s hint">${esc(j.vehicle||'')} ${j.customer?'· '+esc(j.customer):''} ${j.phone?'· '+esc(j.phone):''}</div><div style="font-weight:600;margin:4px 0">${esc(j.description||'')}</div>
+  ${fails.length?`<div class="banner" style="border-color:var(--bad);color:var(--bad)"><b>Safety issue:</b> ${fails.map(f=>esc(f.area)).join(', ')} failed. The licensed mechanic decides sign-off.</div>`:''}
+  <h2>Inspection</h2>
+  ${(j.inspection||[]).length?(j.inspection.map((i,n)=>`<div class="line" style="flex-wrap:wrap"><span>${esc(i.area)}${i.note?`<br><span class="hint">${esc(i.note)}</span>`:''}${i.est>0?`<br><span class="hint">Quote ${money(i.est)} before GST · ${i.decision==='approved'?'Approved':i.decision==='declined'?'Declined':'Waiting for customer'}</span>`:''}</span>${pill(i.result)}${i.est>0&&o?`<span style="width:100%;display:flex;gap:8px"><button class="btn small ${i.decision==='approved'?'':'ghost'}" data-act="decide" data-id="${id}|${n}|approved">Approved</button><button class="btn small ${i.decision==='declined'?'bad':'ghost'}" data-act="decide" data-id="${id}|${n}|declined">Declined</button></span>`:''}${i.est>0&&i.decision!=='approved'?`<span style="width:100%"><button class="btn small ghost" data-act="copyfu" data-id="${id}|${n}">Copy follow-up text</button></span>`:''}</div>`).join('')+(q.length?`<div class="hint" style="margin-top:6px">Approved ${money(qs('approved'))} · waiting ${money(qs('pending'))} · declined ${money(qs('declined'))} (before GST)</div>`:'')):'<div class="hint">Nothing recorded yet.</div>'}
+  ${o?`<label for="i-area">Area</label><input id="i-area" list="areas" placeholder="Brakes"><datalist id="areas">${AREAS.map(a=>`<option value="${a}">`).join('')}</datalist><div class="chips">${AREAS.map(a=>`<button class="chip" data-act="area" data-id="${esc(a)}">${esc(a)}</button>`).join('')}</div>
+  <div class="res" style="margin-top:8px"><button data-act="res" data-v="pass" class="on">Pass</button><button data-act="res" data-v="advisory">Advisory</button><button data-act="res" data-v="fail">Fail</button></div>
+  ${field('i-note','Note')}${field('i-est','Quote to fix, before GST (optional)','type="number" inputmode="decimal" min="0" step="1"')}<div class="actions"><button class="btn small" data-act="addinsp" data-id="${id}">Add finding</button></div>`:''}
+  ${o?carFitBlock(j,id):''}
+  <h2>Parts, tyres and wheels</h2>
+  ${(j.parts||[]).length?j.parts.map((p,n)=>`<div class="line" style="align-items:center"><span>${p.qty} × ${esc(p.name)}</span><span style="display:flex;gap:10px;align-items:center"><span class="num">${money(p.qty*p.price)}</span>${o?`<button class="chip" data-act="rmline" data-id="${id}|${n}" aria-label="Remove">Remove</button>`:''}</span></div>`).join(''):'<div class="hint">Nothing fitted yet.</div>'}
+  ${o?(partOpts?`<label for="p-sku">Item</label><select id="p-sku">${partOpts}</select>${field('p-qty','Quantity','type="number" inputmode="numeric" min="1"','1')}<div class="actions"><button class="btn small" data-act="addpart" data-id="${id}">Fit item</button></div>`:'<div class="hint" style="margin-top:8px">Nothing in stock. Add stock in the Parts or Stock tab.</div>'):''}
+  ${(j.extras||[]).length?'<h2>Extra charges</h2>'+j.extras.map(e=>`<div class="line"><span>${esc(e.desc||'Extra')}</span><span class="num">${money((e.qty||1)*e.price)}</span></div>`).join(''):''}
+  <h2>Labour</h2>
+  <div class="line"><span>${j.labour||0} h at ${money(j.rate||120)}/h</span><span class="num">${money(t.labour)}</span></div>
+  ${o?`<div class="two"><div>${field('l-hrs','Add hours','type="number" inputmode="decimal" step="0.25" min="0"','1')}</div><div style="align-self:end"><button class="btn small ghost" style="width:100%" data-act="addlab" data-id="${id}">Add labour</button></div></div><div class="chips">${[0.5,1,2].map(h=>`<button class="chip" data-act="addlabq" data-id="${id}|${h}">+${h} h</button>`).join('')}</div>`:''}
+  <h2>Total</h2>${t.disc>0?`<div class="line"><span>Discount</span><span class="num">-${money(t.disc)}</span></div>`:''}<div class="line"><span>Subtotal</span><span class="num">${money(t.sub)}</span></div><div class="line"><span>GST 10%</span><span class="num">${money(t.gst)}</span></div><div class="line"><span><b>Total</b></span><span class="total num">${money(t.total)}</span></div>
+  ${canEditPrices(j)?`<div class="actions"><button class="btn small ghost" data-act="editprices" data-id="${id}">Edit prices and discount</button></div>`:'<div class="hint">Paid invoice: prices are locked.</div>'}
+  ${o?`<div class="actions"><button class="btn" data-act="closejob" data-id="${id}">Close job</button></div>`:`<div class="hint" style="margin-top:8px">Closed ${nice(j.closedOn)}</div><div class="actions">${j.invoice?`<button class="btn" data-act="openinv" data-id="${id}">View invoice ${invNo(j)}</button>`:`<button class="btn" data-act="createinv" data-id="${id}">Create invoice</button>${j.noInvoice?'':`<button class="btn ghost" data-act="noinv" data-id="${id}">No invoice needed</button>`}`}<button class="btn small ghost" data-act="reopen" data-id="${id}">Reopen job</button></div>`}
+  ${hist.length?`<h2>Previous visits for ${esc(j.rego)}</h2>`+hist.map(([k,x])=>`<button class="row" style="margin-bottom:6px" data-act="openjob" data-id="${k}"><span class="grow"><span class="t">${esc(x.description||'Job')}</span><br><span class="s">${nice(x.openedOn)}</span></span><span class="num">${money(jobTotal(x).total)}</span></button>`).join(''):''}`);
+}
+function sheetEditCar(id){
+  const j=S.jobs[id];if(!j)return;S.sheet={type:'editcar',id};
+  openSheet('Choose car',`${carPicker('e',j.make||'',j.model||'',j.year||'')}<div id="e-fit"></div><div class="actions"><button class="btn" data-act="savecarinfo" data-id="${id}">Save car</button></div>`);
+  initPicker('e',j.make,j.model);
+}
+function sheetAfterClose(id){
+  const j=S.jobs[id];S.sheet={type:'after',id};
+  openSheet('Job closed',`<div class="line"><span>${esc(j.rego)} · ${esc(j.customer||'')}</span><span class="total num">${money(jobTotal(j).total)}</span></div>
+  <p>Does this customer need an invoice?</p><div class="actions"><button class="btn" data-act="createinv" data-id="${id}">Create invoice</button><button class="btn ghost" data-act="noinv" data-id="${id}">No invoice needed</button></div>
+  <p class="hint">You can still create one later from the closed job.</p>`);
+}
+function sheetInvoice(id){
+  const j=S.jobs[id];if(!j||!j.invoice){closeSheet();return}
+  S.sheet={type:'inv',id};const b=biz(),t=jobTotal(j),paid=j.invoice.paid;
+  openSheet(invNo(j),`${b.abn?'':`<div class="banner">Add your ABN under Business on the Today tab so this counts as a tax invoice.</div>`}
+  <div class="inv"><div class="head"><div class="brandrow"><span class="logo">${logoSVG(46)}</span><div><h4>${esc(b.name)}</h4>${b.abn?`<div class="hint"><b>ABN ${esc(b.abn)}</b></div>`:'<div class="hint" style="color:var(--warn)">ABN not set</div>'}<div class="hint">${esc([b.address,b.phone,b.email].filter(Boolean).join(' · '))}</div></div></div><div style="text-align:right;margin-left:auto"><h4>${b.abn?'Tax invoice':'Invoice'}</h4><div class="hint">${invNo(j)}<br>${longDate(j.invoice.date)}</div></div></div>
+  <div class="line"><span class="hint">Bill to</span><span style="text-align:right">${esc(j.customer||'Customer')}${j.phone?'<br>'+esc(j.phone):''}</span></div>
+  <div class="line"><span class="hint">Vehicle</span><span style="text-align:right">${esc(j.rego)}${j.vehicle?'<br>'+esc(j.vehicle):''}</span></div>
+  ${j.description?`<div class="line"><span class="hint">Work</span><span style="text-align:right">${esc(j.description)}</span></div>`:''}
+  <h2>Items</h2>${(j.parts||[]).map(p=>`<div class="line"><span>${p.qty} × ${esc(p.name)}</span><span class="num">${money(p.qty*p.price)}</span></div>`).join('')}${(j.extras||[]).map(e=>`<div class="line"><span>${esc(e.desc||'Extra')}</span><span class="num">${money((e.qty||1)*e.price)}</span></div>`).join('')}${j.labour?`<div class="line"><span>${j.labour} h labour at ${money(j.rate||120)}/h</span><span class="num">${money(t.labour)}</span></div>`:''}${t.disc>0?`<div class="line"><span>Discount</span><span class="num">-${money(t.disc)}</span></div>`:''}
+  <div class="line"><span>Subtotal (ex GST)</span><span class="num">${money(t.sub)}</span></div><div class="line"><span>GST 10%</span><span class="num">${money(t.gst)}</span></div><div class="line"><span><b>Total (inc GST)</b></span><span class="total num">${money(t.total)}</span></div>
+  <div style="margin-top:8px"><span class="pill ${paid?'ok':'warn'}">${paid?'Paid':'Amount due '+money(t.total)}</span></div>${b.pay?`<div class="hint" style="margin-top:8px">Pay to: ${esc(b.pay)}</div>`:''}</div>
+  <h2>Send to customer</h2>
+  <div class="hint" style="margin-bottom:8px">${j.email?'Email: '+esc(j.email):'No email saved.'}${j.phone?' · Phone: '+esc(j.phone):''}</div>
+  <div class="actions"><button class="btn" data-act="shareinv" data-id="${id}">Send invoice</button></div>
+  <div class="actions"><a class="btn small ghost" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank" rel="noopener" href="mailto:${esc(j.email||'')}?subject=${encodeURIComponent((paid?'Receipt ':'Invoice ')+invNo(j)+' from '+b.name)}&body=${encodeURIComponent(invText(j))}">Email</a>${j.phone?`<a class="btn small ghost" style="text-decoration:none;display:inline-flex;align-items:center" target="_blank" rel="noopener" href="sms:${esc(j.phone.replace(/[^\d+]/g,''))}?&body=${encodeURIComponent(invText(j))}">Text message</a>`:''}<button class="btn small ghost" data-act="copyinv" data-id="${id}">Copy text</button>${j.email?`<button class="btn small ghost" data-act="copyemail" data-id="${id}">Copy email</button>`:''}</div>
+  <p class="hint">Send invoice opens your phone's share sheet (Messages, Mail, WhatsApp). If a button does nothing in this view, use Copy text and paste it into your own app.</p>
+  ${canEditPrices(j)?`<div class="actions"><button class="btn small ghost" data-act="editprices" data-id="${id}">Edit prices and discount</button></div>`:''}
+  <div class="actions"><button class="btn ghost" data-act="paidinv" data-id="${id}">${paid?'Mark unpaid':'Mark paid'}</button>${paid?'':`<button class="btn small ghost" data-act="copypay" data-id="${id}">Copy payment reminder</button>`}${paid?'':`<button class="btn small bad" data-act="delinv" data-id="${id}">Delete invoice</button>`}</div>`);
+}
+function sheetPrices(id){
+  const j=S.jobs[id];if(!j)return;
+  if(!canEditPrices(j)){toast('This invoice is paid, so its prices are locked. Mark it unpaid to change them.');return}
+  S.sheet={type:'prices',id};
+  const pl=(j.parts||[]).map((p,n)=>`<div class="pr"><div>${p.qty} × ${esc(p.name)}<span class="hint">${p.qty>1?'Price each, before GST':'Price, before GST'}${S.parts[p.sku]&&S.parts[p.sku].price!==p.price?' · list '+money(S.parts[p.sku].price):''}</span></div><input id="pp-${n}" data-live="1" type="number" inputmode="decimal" step="0.01" min="0" value="${p.price}"></div>`).join('');
+  const ex=(j.extras||[]).map((e,n)=>`<div class="prx"><input id="px-d${n}" data-live="1" value="${esc(e.desc||'')}" placeholder="Description"><input id="px-p${n}" data-live="1" type="number" inputmode="decimal" step="0.01" min="0" value="${e.price}" style="text-align:right"></div>`).join('');
+  const lg=(j.priceLog||[]).slice(-1)[0];
+  openSheet('Edit prices',`<div class="hint">All prices are before GST. GST is added at 10% after any discount.</div>
+  ${pl?'<h2>Parts, tyres and wheels</h2>'+pl:''}
+  <h2>Labour</h2><div class="two"><div>${field('pr-hrs','Hours','data-live="1" type="number" inputmode="decimal" step="0.25" min="0"',j.labour||0)}</div><div>${field('pr-rate','Rate per hour','data-live="1" type="number" inputmode="decimal" step="1" min="0"',j.rate||120)}</div></div>
+  <h2>Extra charges</h2>${ex}<div class="prx"><input id="px-dnew" data-live="1" placeholder="Add a charge, e.g. Balancing"><input id="px-pnew" data-live="1" type="number" inputmode="decimal" step="0.01" min="0" placeholder="0.00" style="text-align:right"></div>
+  <div class="hint">To remove an extra charge, clear its description and price.</div>
+  <h2>Discount</h2>${field('pr-disc','Discount in dollars, before GST','data-live="1" type="number" inputmode="decimal" step="0.01" min="0"',j.discount||'')}
+  <div class="chips"><button class="chip" data-act="discpct" data-id="5">5% off</button><button class="chip" data-act="discpct" data-id="10">10% off</button><button class="chip" data-act="discpct" data-id="0">No discount</button></div>
+  <div class="sum" id="pr-sum"></div>
+  ${lg?`<div class="hint" style="margin-top:8px">Last changed ${nice(lg.on)}: ${money(lg.from)} to ${money(lg.to)} inc GST</div>`:''}
+  <div class="actions"><button class="btn" data-act="saveprices" data-id="${id}">Save prices</button></div>`);
+  priceLive();
+}
+function readPrices(){
+  const j=S.jobs[S.sheet&&S.sheet.id];if(!j)return null;
+  const num=id=>{const e=$('#'+id);const t=e?String(e.value).trim():'';if(t==='')return NaN;const v=Number(t);return isFinite(v)&&v>=0?v:NaN};
+  const bad=[],parts=(j.parts||[]).map((p,n)=>{const v=num('pp-'+n);if(isNaN(v))bad.push(p.name);return v});
+  const extras=[];(j.extras||[]).forEach((e,n)=>{const d=($('#px-d'+n)||{value:''}).value.trim(),pv=($('#px-p'+n)||{value:''}).value.trim();if(!d&&pv==='')return;const v=num('px-p'+n);if(isNaN(v))bad.push(d||'Extra charge');extras.push({desc:d,price:v,qty:e.qty||1})});
+  const nd=($('#px-dnew')||{value:''}).value.trim(),np=($('#px-pnew')||{value:''}).value.trim();
+  if(nd||np){const v=num('px-pnew');if(!nd||isNaN(v))bad.push('New charge');else extras.push({desc:nd,price:v,qty:1})}
+  const hrs=$('#pr-hrs')&&String($('#pr-hrs').value).trim()===''?0:num('pr-hrs'),rate=num('pr-rate'),dt=($('#pr-disc')||{value:''}).value.trim(),disc=dt===''?0:num('pr-disc');
+  if(isNaN(hrs))bad.push('Hours');if(isNaN(rate))bad.push('Labour rate');if(isNaN(disc))bad.push('Discount');
+  return {j,parts,extras,hrs,rate,disc,bad};
+}
+function priceLive(){
+  const el=$('#pr-sum');if(!el||!S.sheet||S.sheet.type!=='prices')return;const r=readPrices();if(!r)return;
+  const ok=a=>a.every(x=>!isNaN(x)),pa=ok(r.parts)?r.parts.reduce((a,v,n)=>a+v*r.j.parts[n].qty,0):0,ea=r.extras.reduce((a,e)=>a+(isNaN(e.price)?0:e.price*e.qty),0);
+  const t=calcTotal(pa,ea,(isNaN(r.hrs)?0:r.hrs)*(isNaN(r.rate)?0:r.rate),isNaN(r.disc)?0:r.disc);
+  el.innerHTML=`<div class="line"><span>Subtotal</span><span class="num">${money(t.gross)}</span></div>${t.disc>0?`<div class="line"><span>Discount</span><span class="num">-${money(t.disc)}</span></div>`:''}<div class="line"><span>GST 10%</span><span class="num">${money(t.gst)}</span></div><div class="line"><span><b>Total</b></span><span class="total num">${money(t.total)}</span></div>${r.disc>t.gross&&t.gross>0?'<div class="hint" style="color:var(--warn)">Discount is more than the bill, so it will be capped.</div>':''}`;
+}
+function sheetBiz(){
+  const b=biz();
+  openSheet('Business details',`<div class="hint">These appear on invoices. With an ABN entered, invoices say Tax invoice.</div>${field('z-name','Business name','',b.name)}${field('z-abn','ABN','inputmode="numeric"',b.abn)}${field('z-phone','Phone','inputmode="tel"',b.phone)}${field('z-email','Email','inputmode="email"',b.email)}${field('z-addr','Address','',b.address)}${field('z-pay','How customers pay (bank details or note)','',b.pay)}
+  <div class="actions"><button class="btn" data-act="savebiz">Save</button></div>`);
+}
+function sheetPartNew(){
+  openSheet('Add part',`${field('n-sku','Part code','autocapitalize="characters"')}${field('n-name','Name')}
+  <label for="n-cat">Category</label><select id="n-cat">${PART_CATS.map(c=>`<option>${c}</option>`).join('')}</select>
+  <div class="two"><div>${field('n-price','Sell price','type="number" inputmode="decimal" step="0.01" min="0"')}</div><div>${field('n-qty','In stock now','type="number" inputmode="numeric" min="0"','0')}</div></div>
+  ${field('n-re','Reorder when stock is at or below','type="number" inputmode="numeric" min="0"','2')}
+  <div class="actions"><button class="btn" data-act="savepart">Save part</button></div>`);
+}
+function sheetStockNew(kind){
+  const t=kind==='tyre';
+  openSheet(t?'Add tyre':'Add wheel',`<div class="two"><div>${field('t-brand','Brand','list="'+(t?'tbrands':'wbrands')+'" autocomplete="off"')}</div><div>${field('t-model',t?'Pattern (optional)':'Design (optional)')}</div></div>
+  ${field('t-size',t?'Tyre size':'Wheel size (diameter x width)','list="'+(t?'tsizes':'wsizes')+'" autocomplete="off" placeholder="'+(t?'205/55R16':'17x7.5')+'"')}
+  ${t?'':`<div class="two"><div>${field('t-pcd','Stud pattern (PCD)','list="pcds" placeholder="5x114.3"')}</div><div><label for="t-mat">Material</label><select id="t-mat"><option>Alloy</option><option>Steel</option></select></div></div>`}
+  <div class="two"><div>${field('t-price','Sell price each, before GST','type="number" inputmode="decimal" step="0.01" min="0"')}</div><div>${field('t-qty','In hand now','type="number" inputmode="numeric" min="0"','4')}</div></div>
+  <div class="two"><div>${field('t-re','Reorder at or below','type="number" inputmode="numeric" min="0"','4')}</div><div>${field('t-bay','Bay or shelf')}</div></div>
+  <div class="actions"><button class="btn" data-act="savestock" data-id="${kind}">Save</button></div>`);
+}
+function sheetPart(k){
+  const p=S.parts[k];if(!p)return closeSheet();
+  openSheet(p.name,`<div class="hint">${esc(k)} · ${esc(p.category)} · ${money(p.price)}${p.bay?' · bay '+esc(p.bay):''}</div><div class="total num" style="margin:8px 0">${p.qty} in stock</div>
+  <div class="two"><div>${field('r-qty','Delivery received','type="number" inputmode="numeric" min="1"','1')}</div><div style="align-self:end"><button class="btn" style="width:100%" data-act="receive" data-id="${esc(k)}">Add stock</button></div></div>
+  <div class="two"><div>${field('r-count','Stocktake count','type="number" inputmode="numeric" min="0"',p.qty)}</div><div style="align-self:end"><button class="btn ghost" style="width:100%" data-act="setcount" data-id="${esc(k)}">Set count</button></div></div>
+  <div class="two"><div>${field('r-price','Sell price','type="number" inputmode="decimal" step="0.01" min="0"',p.price)}</div><div style="align-self:end"><button class="btn ghost" style="width:100%" data-act="setprice" data-id="${esc(k)}">Save price</button></div></div>`);
+}
+function sheetStorNew(){
+  openSheet('Store customer tyres',`${field('s-cust','Customer')}${field('s-phone','Phone','inputmode="tel"')}${field('s-rego','Rego','autocapitalize="characters"')}
+  <div class="two"><div>${field('s-size','Tyre size','list="tsizes" placeholder="205/55R16"')}</div><div>${field('s-qty','How many','type="number" inputmode="numeric" min="1"','4')}</div></div>
+  <div class="two"><div>${field('s-loc','Bay or shelf')}</div><div>${field('s-tread','Tread depth, mm','type="number" inputmode="decimal" step="0.1" min="0"')}</div></div>
+  <div class="actions"><button class="btn" data-act="savestor">Save</button></div>`);
+  autofill('s-rego','s-cust','s-phone','s-none');
+}
+function sheetCarNew(){
+  openSheet('Add car',`${field('k-rego','Rego or VIN','autocapitalize="characters"')}
+  ${carPicker('k')}
+  <div class="two"><div>${field('k-cost','Purchase price','type="number" inputmode="decimal" min="0"')}</div><div>${field('k-price','Asking price','type="number" inputmode="decimal" min="0"')}</div></div>${field('k-date','Date bought','type="date"',today())}
+  <div id="k-fit"></div><div class="actions"><button class="btn" data-act="savecar">Save car</button></div>`);
+  initPicker('k');
+}
+function sheetCar(id){
+  const c=S.cars[id];if(!c)return closeSheet();S.sheet={type:'car',id};
+  const sold=c.status==='sold',sell=sold?c.soldPrice:c.price,pr=(sell||0)-carCost(c);
+  openSheet(c.rego,`<div class="hint">${esc([c.year,c.make,c.model].filter(Boolean).join(' '))} · bought ${nice(c.bought)} · ${daysBetween(c.bought||today(),c.soldOn||today())} days</div>
+  <div class="seg" style="margin:10px 0">${[['preparing','Preparing'],['forsale','For sale'],['sold','Sold']].map(([k,l])=>`<button data-act="carstatus" data-id="${id}|${k}" class="${c.status===k?'on':''}">${l}</button>`).join('')}</div>
+  <h2>Costs</h2><div class="line"><span>Purchase price</span><span class="num">${money(c.cost)}</span></div>
+  ${(c.recon||[]).map(r=>`<div class="line"><span>${esc(r.desc)}</span><span class="num">${money(r.cost)}</span></div>`).join('')}
+  <div class="line"><span><b>Total cost</b></span><span class="num"><b>${money(carCost(c))}</b></span></div>
+  <div class="two"><div>${field('k-rdesc','Prep work','placeholder="New tyres, service"')}</div><div>${field('k-rcost','Cost','type="number" inputmode="decimal" min="0"')}</div></div>
+  <div class="actions"><button class="btn small ghost" data-act="addrecon" data-id="${id}">Add cost</button></div>
+  <h2>${sold?'Sold':'Price'}</h2><div class="line"><span>${sold?'Sold for':'Asking'}</span><span class="num">${money(sell)}</span></div><div class="line"><span><b>${sold?'Profit':'Profit at this price'}</b></span><span class="total num" style="color:var(--${pr>=0?'ok':'bad'})">${pr>=0?'':'-'}${money(Math.abs(pr))}</span></div>
+  ${sold?'':`<div class="two"><div>${field('k-ask','Asking price','type="number" inputmode="decimal" min="0"',c.price||'')}</div><div style="align-self:end"><button class="btn small ghost" style="width:100%" data-act="setask" data-id="${id}">Save price</button></div></div>
+  <div class="two"><div>${field('k-sold','Sold for','type="number" inputmode="decimal" min="0"')}</div><div style="align-self:end"><button class="btn" style="width:100%" data-act="sellcar" data-id="${id}">Mark sold</button></div></div>`}`);
+}
+
+/* ---------- actions ---------- */
+const val=id=>($('#'+id)||{}).value||'';
+function mkStock(kind,brand,model,size,pcd,price,qty,reorder,mat,bay){
+  const name=[brand,model,size,pcd].filter(Boolean).join(' ');
+  let base=(kind==='tyre'?'T-':'W-')+(size||'X').replace(/[^A-Za-z0-9]/g,'')+'-'+(brand||'X').replace(/[^A-Za-z0-9]/g,'').slice(0,5)+(model?'-'+model.replace(/[^A-Za-z0-9]/g,'').slice(0,5):'');
+  base=base.toUpperCase();let sku=base,n=2;while(S.parts[sku])sku=base+'-'+n++;
+  return [sku,{name,category:kind,brand,model,size,pcd:pcd||'',material:mat||'',price,qty,reorder,bay:bay||''}];
+}
+const A={
+  tab(id){const from=TAB_ORDER.indexOf(S.tab),to=TAB_ORDER.indexOf(id);S.tab=id;renderHead();renderBody();scrollTo(0,0);if(from!==to)enter(to>from?1:-1)},
+  jobseg(id){S.jobTab=id;renderBody()},
+  stocktab(id){S.stockTab=id;renderBody()},
+  closesheet(id,el,ev){if(el.dataset.bg&&ev.target!==el)return;dismiss()},
+  newbk(){sheetBooking()},
+  async savebk(){
+    const name=val('b-name').trim(),svc=val('b-svc'),date=val('b-date');
+    if(!name||!date){toast('Add a name and a date.');return}
+    const id=newId('bookings'),c=carVal('b');
+    const doc={name,phone:fmtPhone(val('b-phone')),rego:val('b-rego').toUpperCase().replace(/\s/g,''),make:c.make,model:c.model,year:c.year,vehicle:c.vehicle,service:svc,date,time:val('b-time'),status:'booked'};
+    const warns=[],live=Object.values(S.bookings).filter(b=>b.status!=='cancelled'&&b.status!=='noshow');
+    if(date<today())warns.push('That date is in the past.');
+    const clash=live.filter(b=>b.date===date&&doc.time&&b.time===doc.time).length;
+    if(clash>=3)warns.push(`${clash} bookings are already at ${doc.time}.`);
+    if(doc.rego&&live.some(b=>b.rego===doc.rego&&b.date===date))warns.push('This rego already has a booking that day.');
+    const commit=async()=>{clearDraft();closeSheet();await put('bookings',id,doc);S.date=date;renderHead();renderBody();toast('Booking saved')};
+    if(warns.length)ask(warns.join(' ')+' Save anyway?','Save anyway',commit);else await commit();
+  },
+  async cancelbk(id){const b=S.bookings[id];await put('bookings',id,{...b,status:'cancelled'});renderBody();toastAction('Booking cancelled','Undo',async()=>{await put('bookings',id,{...b,status:'booked'});renderBody()})},
+  noshow(id){const b=S.bookings[id];if(!b)return;ask(`Mark ${b.name} as a no-show?`,'No-show',async()=>{await put('bookings',id,{...b,status:'noshow'});renderBody()},false)},
+  toastact(){const f=toastAction.fn;toastAction.fn=null;$('#toast').hidden=true;if(f)return f()},
+  askno(id,el,ev){if(el.dataset.bg&&ev.target!==el)return;ask.fn=null;ask.alt=null;$('#confirm').innerHTML=''},
+  askyes(){const f=ask.fn;ask.fn=null;ask.alt=null;$('#confirm').innerHTML='';if(f)return f()},
+  askalt(){const f=ask.alt;ask.fn=null;ask.alt=null;$('#confirm').innerHTML='';if(f)return f()},
+  area(id){const e=document.getElementById('i-area');if(e)e.value=id},
+  desc(id){const e=document.getElementById('j-desc');if(e){e.value=id;saveDraft()}},
+  async addlabq(id){const [jid,h]=id.split('|');const j=clone(S.jobs[jid]);j.labour=(j.labour||0)+parseFloat(h);await put('jobs',jid,j);renderBody();sheetJob(jid)},
+  rmline(id){const [jid,n]=id.split('|'),ln=(S.jobs[jid].parts||[])[+n];if(!ln)return;ask(`Remove ${ln.qty} × ${ln.name} from this job? It goes back into stock.`,'Remove',async()=>{await removeLine(jid,+n);renderBody();sheetJob(jid);toast('Removed. Stock put back.')},true)},
+  copyfu(id){const [jid,n]=id.split('|'),j=S.jobs[jid],i=j.inspection[+n];copy(`Hi ${j.customer||'there'}, following up from ${biz().name} about your ${j.rego}: the ${i.area.toLowerCase()} work was quoted at ${money(i.est*1.1)} including GST. Let us know if you would like us to book it in.`,'Follow-up text copied')},
+  copypay(id){const j=S.jobs[id];copy(`Hi ${j.customer||'there'}, a friendly reminder that ${invNo(j)} for ${j.rego} (${money(jobTotal(j).total)}) is still unpaid.${biz().pay?' Pay to: '+biz().pay+'.':''} Thank you from ${biz().name}.`,'Payment reminder copied')},
+  async noinv(id){const j=clone(S.jobs[id]);j.noInvoice=true;await put('jobs',id,j);renderBody();dismiss()},
+  async reopen(id){
+    const j=S.jobs[id];if(!j)return;
+    if(j.invoice&&j.invoice.paid){toast('This invoice is already paid, so the job cannot be reopened.');return}
+    const go=async()=>{const k=clone(S.jobs[id]);k.status='open';delete k.closedOn;delete k.noInvoice;delete k.invoice;await put('jobs',id,k);
+      if(k.bookingId&&S.bookings[k.bookingId])await put('bookings',k.bookingId,{...S.bookings[k.bookingId],status:'in_workshop'});renderBody();sheetJob(id);toast('Job reopened')};
+    if(j.invoice)ask(`Reopening deletes ${invNo(j)} so a new one can be issued with the updated total.`,'Reopen',go,true);else await go();
+  },
+  async startjob(id){
+    const b=S.bookings[id],jid=newId('jobs');
+    await put('jobs',jid,{rego:b.rego||'NO REGO',make:b.make||'',model:b.model||'',year:b.year||'',vehicle:b.vehicle,customer:b.name,phone:b.phone,description:b.service,status:'open',labour:0,rate:120,parts:[],inspection:[],openedOn:today(),bookingId:id});
+    await put('bookings',id,{...b,status:'in_workshop'});renderBody();sheetJob(jid);
+  },
+  newjob(){sheetJobNew()},
+  async savejob(){
+    const rego=val('j-rego').toUpperCase().replace(/\s/g,'');
+    if(!rego){toast('Rego is needed.');return}
+    const email=val('j-email').trim().toLowerCase();
+    if(!emailOk(email)){toast('That email address does not look right. Fix it or leave it blank.');return}
+    const id=newId('jobs'),c=carVal('j');
+    const doc={rego,make:c.make,model:c.model,year:c.year,vehicle:c.vehicle,customer:val('j-cust').trim(),phone:fmtPhone(val('j-phone')),email,description:val('j-desc').trim(),status:'open',labour:0,rate:120,parts:[],inspection:[],openedOn:today()};
+    const commit=async()=>{clearDraft();closeSheet();await put('jobs',id,doc);S.tab='jobs';S.jobTab='open';renderHead();renderBody();sheetJob(id)};
+    const dupe=Object.entries(S.jobs).find(([k,j])=>j.status==='open'&&j.rego===rego);
+    if(dupe)ask(`${rego} already has an open job (${dupe[1].description||'no description'}). Open that one instead?`,'Open existing',()=>{clearDraft();closeSheet();sheetJob(dupe[0])},false,'Create new anyway',commit);
+    else await commit();
+  },
+  openjob(id){sheetJob(id)},
+  res(v,el){S.res=v;document.querySelectorAll('.res button').forEach(b=>b.classList.toggle('on',b===el))},
+  async addinsp(id){
+    const area=val('i-area').trim();if(!area){toast('Choose an area.');return}
+    const j=clone(S.jobs[id]);j.inspection=j.inspection||[];j.inspection.push({area,result:S.res,note:val('i-note').trim(),est:S.res==='pass'?0:(parseFloat(val('i-est'))||0),decision:'pending'});
+    S.res='pass';await put('jobs',id,j);renderBody();sheetJob(id);
+  },
+  async decide(id){
+    const [jid,n,dec]=id.split('|'),j=clone(S.jobs[jid]);j.inspection[+n].decision=dec;
+    await put('jobs',jid,j);renderBody();sheetJob(jid);
+  },
+  addpart(id){return fitItem(id,val('p-sku'),parseInt(val('p-qty'),10))},
+  async addlab(id){
+    const h=parseFloat(val('l-hrs'));if(!(h>0)){toast('Enter hours.');return}
+    const j=clone(S.jobs[id]);j.labour=(j.labour||0)+h;await put('jobs',id,j);renderBody();sheetJob(id);
+  },
+  async closejob(id,_el,_ev,force){
+    const cur=S.jobs[id];if(!cur)return;
+    if(!force&&jobTotal(cur).total===0){ask('This job has no parts or labour, so it will close at $0. Close it anyway?','Close job',()=>A.closejob(id,null,null,true));return}
+    const j=clone(cur);j.status='closed';j.closedOn=today();await put('jobs',id,j);
+    if(j.bookingId&&S.bookings[j.bookingId])await put('bookings',j.bookingId,{...S.bookings[j.bookingId],status:'done'});
+    renderBody();sheetAfterClose(id);
+  },
+  async createinv(id){
+    const j=clone(S.jobs[id]);if(j.invoice){sheetInvoice(id);return}
+    // Numbers are never reused, even if an invoice is deleted.
+    const no=Math.max(1000,S.settings.lastInv||0,...Object.values(S.jobs).map(x=>x.invoice?x.invoice.no:0))+1;
+    j.invoice={no,date:today(),paid:false};delete j.noInvoice;
+    await saveSettings({...S.settings,lastInv:no});await put('jobs',id,j);renderBody();sheetInvoice(id);
+  },
+  openinv(id){sheetInvoice(id)},
+  async paidinv(id){const j=clone(S.jobs[id]);j.invoice.paid=!j.invoice.paid;await put('jobs',id,j);renderBody();sheetInvoice(id);
+    toastAction(j.invoice.paid?'Marked paid':'Marked unpaid','Undo',async()=>{const k=clone(S.jobs[id]);k.invoice.paid=!k.invoice.paid;await put('jobs',id,k);renderBody();sheetInvoice(id)})},
+  delinv(id){const inv=S.jobs[id].invoice;ask(`Delete ${invNo(S.jobs[id])}? Its number will not be reused.`,'Delete',async()=>{const j=clone(S.jobs[id]);delete j.invoice;await put('jobs',id,j);renderBody();sheetJob(id);
+    toastAction('Invoice deleted','Undo',async()=>{const k=clone(S.jobs[id]);k.invoice=inv;await put('jobs',id,k);renderBody();sheetInvoice(id)})},true)},
+  copyinv(id){copy(invText(S.jobs[id]),'Invoice copied')},
+  async shareinv(id){const j=S.jobs[id],b=biz(),txt=invText(j),title=(j.invoice.paid?'Receipt ':'Invoice ')+invNo(j)+' from '+b.name;
+    if(navigator.share){try{await navigator.share({title,text:txt});return}catch(e){if(e&&e.name==='AbortError')return}}
+    await copy(txt,'Sharing is not available here. Invoice text copied, paste it into your message.')},
+  copyrem(id){const b=S.bookings[id];copy(`Hi ${b.name}, reminder from ${biz().name}: ${b.service} on ${nice(b.date)}${b.time?' at '+b.time:''}. Reply if you need to change it.`,'Reminder copied')},
+  copyreorder(id){
+    const sel=id==='parts'?lowParts(false):id==='tyre'||id==='wheel'?lowParts(true).filter(([k,p])=>p.category===id):lowParts();
+    copy('To reorder:\n'+sel.map(([k,p])=>`${p.name} - have ${p.qty}, reorder level ${p.reorder}`).join('\n'),'Reorder list copied');
+  },
+  setbiz(){sheetBiz()},
+  editprices(id){sheetPrices(id)},
+  discpct(id){const r=readPrices();if(!r)return;const pa=r.parts.reduce((a,v,n)=>a+(isNaN(v)?0:v*r.j.parts[n].qty),0),ea=r.extras.reduce((a,e)=>a+(isNaN(e.price)?0:e.price*e.qty),0),g=pa+ea+(isNaN(r.hrs)||isNaN(r.rate)?0:r.hrs*r.rate),e=$('#pr-disc');e.value=+id?(Math.round(g*(+id)))/100:'';priceLive()},
+  async saveprices(id){
+    const r=readPrices();if(!r)return;
+    if(r.bad.length){toast('Check these prices: '+r.bad.slice(0,3).join(', ')+'. Use 0 if it is free.');return}
+    const cur=S.jobs[id],j=clone(cur),before=jobTotal(cur).total;
+    (j.parts||[]).forEach((p,n)=>{p.price=r.parts[n]});j.extras=r.extras;j.labour=r.hrs;j.rate=r.rate;j.discount=r.disc;
+    const after=jobTotal(j),warns=[];
+    if(r.parts.some(v=>v===0))warns.push('A part or tyre is priced at $0.');
+    if(Math.max(...r.parts,...r.extras.map(e=>e.price),0)>=5000)warns.push('One price is $5,000 or more.');
+    if(r.rate>300||r.hrs>40)warns.push('The labour rate or hours look high.');
+    if(r.disc>after.gross&&after.gross>0)warns.push('The discount is more than the bill and will be capped.');
+    if(r.disc>0&&after.gross>0&&r.disc/after.gross>=.5)warns.push('The discount is over half the bill.');
+    j.priceLog=[...(j.priceLog||[]),{on:today(),from:before,to:after.total}].slice(-5);
+    const wasInv=!!j.invoice;
+    const commit=async()=>{closeSheet();await put('jobs',id,j);renderBody();if(wasInv)sheetInvoice(id);else sheetJob(id);toast(wasInv?'Prices updated. Invoice total is now '+money(after.total):'Prices updated')};
+    if(Math.abs(after.total-before)<0.005&&JSON.stringify(cur.extras||[])===JSON.stringify(j.extras)&&!warns.length){closeSheet();if(wasInv)sheetInvoice(id);else sheetJob(id);toast('No changes');return}
+    if(warns.length)ask(warns.join(' ')+' Save anyway?','Save anyway',commit);else await commit();
+  },
+  rev(id,el){const sp=el.querySelector('svg');if(!sp)return;if(reduceMotion())return;
+    sp.animate([{transform:'rotate(0deg)'},{transform:'rotate(1080deg)'}],{duration:1500,easing:'cubic-bezier(.1,.75,.2,1)'});
+    el.animate([{filter:'drop-shadow(0 0 8px rgba(0,229,255,.4))'},{filter:'drop-shadow(0 0 22px rgba(0,229,255,.95))',offset:.25},{filter:'drop-shadow(0 0 8px rgba(0,229,255,.4))'}],{duration:1500})},
+  async savebiz(){
+    if(!abnOk(val('z-abn'))){toast('That ABN does not pass the check. A wrong ABN makes a tax invoice invalid, so please re-check it.');return}
+    const em=val('z-email').trim();if(!emailOk(em)){toast('That email address does not look right.');return}
+    const doc={name:val('z-name').trim()||BRAND,abn:val('z-abn').trim(),phone:fmtPhone(val('z-phone')),email:em,address:val('z-addr').trim(),pay:val('z-pay').trim(),lastInv:S.settings.lastInv||0};
+    closeSheet();const sv=saveSettings(doc);renderBody();await sv;toast('Business details saved');
+  },
+  fittyre(id){const [jid,sku]=id.split('|');return fitItem(jid,sku,parseInt(val('tf-qty'),10))},
+  editcar(id){sheetEditCar(id)},
+  async savecarinfo(id){
+    const c=carVal('e');if(!c.make){toast('Choose a make.');return}
+    const j=clone(S.jobs[id]);Object.assign(j,{make:c.make,model:c.model,year:c.year,vehicle:c.vehicle});
+    await put('jobs',id,j);renderBody();sheetJob(id);
+  },
+  copyemail(id){const j=S.jobs[id];copy(j.email||'','Email address copied')},
+  copysubj(id){const j=S.jobs[id];copy(`${j.invoice.paid?'Receipt':'Invoice'} ${invNo(j)} from ${biz().name}`,'Subject copied')},
+  newpart(){sheetPartNew()},
+  async savepart(){
+    const sku=val('n-sku').toUpperCase().trim().replace(/[^A-Z0-9_.~:@+-]/g,'-'),name=val('n-name').trim();
+    if(!sku||!name){toast('Part code and name are needed.');return}
+    if(S.parts[sku]){toast('That part code already exists.');return}
+    const doc={name,category:val('n-cat'),price:parseFloat(val('n-price'))||0,qty:parseInt(val('n-qty'),10)||0,reorder:parseInt(val('n-re'),10)||0};
+    const commit=async()=>{clearDraft();closeSheet();await put('parts',sku,doc);renderBody()};
+    if(doc.price<=0)ask('The sell price is $0. Save anyway?','Save anyway',commit);else await commit();
+  },
+  newtyre(){sheetStockNew('tyre')},
+  newwheel(){sheetStockNew('wheel')},
+  async savestock(kind){
+    const brand=val('t-brand').trim(),size=val('t-size').trim();
+    if(!brand||!size){toast('Add a brand and a size.');return}
+    const [sku,doc]=mkStock(kind,brand,val('t-model').trim(),size,val('t-pcd').trim(),parseFloat(val('t-price'))||0,parseInt(val('t-qty'),10)||0,parseInt(val('t-re'),10)||0,kind==='wheel'?val('t-mat'):'',val('t-bay').trim());
+    const commit=async()=>{clearDraft();closeSheet();S.stockTab=kind;await put('parts',sku,doc);renderBody();toast('Added to stock')};
+    if(doc.price<=0)ask('The sell price is $0. Save anyway?','Save anyway',commit);else await commit();
+  },
+  async samplestock(){for(const s of SAMPLE_STOCK){const [sku,doc]=mkStock(s[0],s[1],s[2],s[3],s[4],s[5],s[6],s[7],s[0]==='wheel'?'Alloy':'');await put('parts',sku,doc)}renderBody();toast('Samples loaded. Replace them with what is on your shelves.')},
+  async sampleparts(){for(const [k,n,c,pr,q,r] of SAMPLE_PARTS)await put('parts',k,{name:n,category:c,price:pr,qty:q,reorder:r});renderBody();toast('Sample parts loaded. Replace them with your real stock.')},
+  openpart(id){sheetPart(id)},
+  async receive(id){const q=parseInt(val('r-qty'),10);if(!(q>0))return;const p=S.parts[id];await put('parts',id,{...p,qty:p.qty+q});renderBody();sheetPart(id);toast('Stock added')},
+  async setcount(id){const q=parseInt(val('r-count'),10);if(!(q>=0))return;await put('parts',id,{...S.parts[id],qty:q});renderBody();sheetPart(id)},
+  async setprice(id){const v=parseFloat(val('r-price'));if(!(v>=0))return;await put('parts',id,{...S.parts[id],price:v});renderBody();sheetPart(id);toast('Price saved')},
+  newstor(){sheetStorNew()},
+  async savestor(){
+    const cust=val('s-cust').trim(),size=val('s-size').trim(),qty=parseInt(val('s-qty'),10);
+    if(!cust||!size||!(qty>0)){toast('Add a customer, tyre size and how many.');return}
+    const doc={customer:cust,phone:fmtPhone(val('s-phone')),rego:val('s-rego').toUpperCase().replace(/\s/g,'')||'-',size,qty,location:val('s-loc').trim()||'?',tread:val('s-tread'),since:today()};
+    clearDraft();closeSheet();await put('stor',newId('stor'),doc);renderBody();
+  },
+  async retstor(id){
+    const doc=S.stor[id];delete S.stor[id];renderBody();
+    if(db){try{await db.doc('stor/'+id).delete()}catch(e){toast('Not removed: '+((e&&e.message)||'try again'))}}
+    toastAction('Marked as returned','Undo',async()=>{await put('stor',id,doc);renderBody()});
+  },
+  carseg(id){S.carTab=id;renderBody()},
+  newcar(){sheetCarNew()},
+  async savecar(){
+    const rego=val('k-rego').toUpperCase().replace(/\s/g,'');if(!rego){toast('Rego or VIN is needed.');return}
+    const c=carVal('k'),doc={rego,year:parseInt(c.year,10)||'',make:c.make,model:c.model,cost:parseFloat(val('k-cost'))||0,price:parseFloat(val('k-price'))||0,bought:val('k-date')||today(),status:'preparing',recon:[]};
+    clearDraft();closeSheet();await put('cars',newId('cars'),doc);
+    S.carTab='preparing';renderBody();
+  },
+  opencar(id){sheetCar(id)},
+  async addrecon(id){
+    const d=val('k-rdesc').trim(),n=parseFloat(val('k-rcost'));if(!d||!(n>=0)){toast('Add what was done and the cost.');return}
+    const c=clone(S.cars[id]);c.recon=c.recon||[];c.recon.push({desc:d,cost:n});await put('cars',id,c);renderBody();sheetCar(id);
+  },
+  async setask(id){const v=parseFloat(val('k-ask'));if(!(v>=0))return;await put('cars',id,{...S.cars[id],price:v});renderBody();sheetCar(id);toast('Price saved')},
+  async carstatus(id){
+    const [cid,st]=id.split('|');if(st==='sold'){toast('Enter the sale price, then tap Mark sold.');return}
+    await put('cars',cid,{...S.cars[cid],status:st});S.carTab=st;renderBody();sheetCar(cid);
+  },
+  async sellcar(id){
+    const v=parseFloat(val('k-sold'));if(!(v>=0)||val('k-sold')===''){toast('Enter what it sold for.');return}
+    await put('cars',id,{...S.cars[id],status:'sold',soldPrice:v,soldOn:today()});S.carTab='sold';renderBody();sheetCar(id);toast('Marked sold');
+  }
+};
+/* ---------- sheet dismiss: animated close and drag-down like iOS ---------- */
+const reduceMotion=()=>typeof matchMedia!=='undefined'&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+function dismiss(){
+  const b=document.querySelector('#sheet .back'),s=document.querySelector('#sheet .sheet');
+  if(!b||!s||reduceMotion()){closeSheet();return}
+  s.style.animation='none';s.style.transition='transform .32s cubic-bezier(.4,0,.2,1)';s.style.transform='translateY(100%)';b.style.background='transparent';
+  setTimeout(()=>{if(document.querySelector('#sheet .back')===b)closeSheet()},320);
+}
+let drag=null;
+document.addEventListener('pointerdown',ev=>{
+  const z=ev.target.closest&&ev.target.closest('.grab,.sheet header');if(!z||ev.target.closest('button'))return;
+  const s=document.querySelector('#sheet .sheet');if(!s)return;
+  drag={s,z,id:ev.pointerId,y0:ev.clientY,t0:performance.now(),dy:0};
+  s.style.animation='none';s.style.transition='none';try{z.setPointerCapture(ev.pointerId)}catch(e){}
+});
+document.addEventListener('pointermove',ev=>{
+  if(!drag||ev.pointerId!==drag.id)return;
+  drag.dy=Math.max(0,ev.clientY-drag.y0);drag.s.style.transform='translateY('+drag.dy+'px)';
+  drag.s.parentNode.style.background='rgba(0,0,0,'+Math.max(0,.4*(1-drag.dy/500)).toFixed(3)+')';
+});
+const endDrag=ev=>{
+  if(!drag||ev.pointerId!==drag.id)return;
+  const d=drag;drag=null;
+  const speed=d.dy/Math.max(1,performance.now()-d.t0);
+  if(d.dy>120||speed>.6){dismiss()}
+  else{d.s.style.transition='transform .55s var(--spring)';d.s.style.transform='';d.s.parentNode.style.background=''}
+};
+document.addEventListener('pointerup',endDrag);document.addEventListener('pointercancel',endDrag);
+/* Large title collapses as you scroll; two thresholds stop it flickering at the edge. */
+let collapsed=false;
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY||document.documentElement.scrollTop||0;
+  if(!collapsed&&y>40){collapsed=true;$('#head').classList.add('scrolled')}
+  else if(collapsed&&y<6){collapsed=false;$('#head').classList.remove('scrolled')}
+},{passive:true});
+
+document.addEventListener('change',ev=>{
+  const el=ev.target.closest&&ev.target.closest('[data-chg]');if(!el)return;
+  const k=el.dataset.chg,p=el.dataset.id;
+  if(k==='pmake'){fillModels(p,el.value,'');updateFit(p)}
+  else if(k==='pmodel'){updateFit(p)}
+  else if(k==='chk'){const r=$('#chkres');if(r)r.innerHTML=el.value?sizeCard(el.value,el.dataset.id||null):''}
+});
+const NAV=new Set(['rev','discpct','tab','jobseg','stocktab','carseg','res','closesheet','openjob','openpart','opencar','openinv','askno','toastact','area','desc']);
+let lastTap={k:'',t:0};
+document.addEventListener('click',async ev=>{
+  const el=ev.target.closest('[data-act]');if(!el)return;
+  const fn=A[el.dataset.act];if(!fn)return;
+  const k=el.dataset.act+'|'+(el.dataset.id||el.dataset.v||''),now=Date.now();
+  // A second tap on the same button within half a second is a double tap, not a second action.
+  if(!NAV.has(el.dataset.act)){if(lastTap.k===k&&now-lastTap.t<500)return;lastTap={k,t:now}}
+  try{await fn(el.dataset.id||el.dataset.v,el,ev)}catch(e){toast('Something went wrong: '+((e&&e.message)||'try again'))}
+});
+document.addEventListener('input',ev=>{if(ev.target.closest&&ev.target.closest('#sheet')){saveDraft();if(ev.target.dataset&&ev.target.dataset.live)priceLive()}});
+document.addEventListener('change',ev=>{if(ev.target.closest&&ev.target.closest('#sheet'))setTimeout(saveDraft,0)});
+function netUpdate(){const n=$('#net');if(n)n.hidden=!(typeof navigator!=='undefined'&&navigator.onLine===false)}
+window.addEventListener('online',netUpdate);window.addEventListener('offline',netUpdate);netUpdate();
+
+/* ---------- boot ---------- */
+function splash(){
+  const el=$('#splash');if(!el)return;
+  let seen=false;try{seen=sessionStorage.getItem('bn-splash')==='1';sessionStorage.setItem('bn-splash','1')}catch(e){}
+  if(seen||reduceMotion())return;
+  el.innerHTML=`<span class="logo intro">${logoSVG(132)}</span><div class="word">Blue Nile</div><div class="sub">Auto Tyres &amp; Wheels</div><div class="bar"><i></i></div>`;
+  el.hidden=false;
+  const end=()=>{el.classList.add('out');setTimeout(()=>{el.hidden=true;el.innerHTML=''},520)};
+  el.onclick=end;setTimeout(end,2100);
+}
+renderHead();renderBody();splash();
+(async()=>{
+  try{db=window.claude?await window.claude.use('db'):null}catch(e){db=null}
+  if(!db){$('#banner').innerHTML='<div class="banner">Saving is off here. Open this page in Claude and sign in so your jobs, stock and bookings are kept.</div>';renderBody();return}
+  const timer=setTimeout(()=>{$('#banner').innerHTML='<div class="banner">Can\'t reach saved data yet. What you see may be out of date.</div>'},10000);
+  const done=k=>{S.ready[k]=1;clearTimeout(timer);$('#banner').innerHTML='';if(!S.sheet)renderBody();else renderTabs()};
+  const err=e=>{$('#banner').innerHTML='<div class="banner">Couldn\'t load saved data ('+esc((e&&e.code)||'error')+').</div>'};
+  for(const c of ['parts','jobs','bookings','cars','stor']){
+    db.collection(c).onSnapshot(snap=>{const m={};snap.docs.forEach(d=>m[d.id]=d.data());S[c]=m;done(c)},err);
+  }
+  db.doc('settings/business').onSnapshot(s=>{S.settings=s.exists?s.data():{};done('settings')},err);
+})();
+</script>

@@ -369,11 +369,14 @@ class ShopTools:
 
     # Scheduling ----------------------------------------------------------
     def _busy_count(self, start: datetime, end: datetime) -> int:
+        """Bays in use between start and end: appointments here, plus bookings made in the staff app."""
+        from .staff import staff_busy_count  # here to avoid a circular import
+
         row = self.conn.execute(
             "SELECT COUNT(*) FROM appointments WHERE status='scheduled' AND start_at < ? AND end_at > ?",
             (end.isoformat(timespec="minutes"), start.isoformat(timespec="minutes")),
         ).fetchone()
-        return row[0]
+        return row[0] + staff_busy_count(self.conn, start, end, self.cfg.booking_hours)
 
     def check_availability(self, date: str, duration_hours: float | None = None) -> dict:
         duration_hours = duration_hours or self.cfg.booking_hours

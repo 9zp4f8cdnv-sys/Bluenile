@@ -85,6 +85,18 @@ CREATE TABLE IF NOT EXISTS invoices (
     created_at     TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+-- Staff app documents (see bluenile/staff.py)
+CREATE TABLE IF NOT EXISTS app_changes (rev INTEGER PRIMARY KEY AUTOINCREMENT, collection TEXT, id TEXT);
+CREATE TABLE IF NOT EXISTS app_docs (
+    collection TEXT NOT NULL,
+    id         TEXT NOT NULL,
+    data       TEXT,
+    rev        INTEGER NOT NULL,
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (collection, id)
+);
+CREATE INDEX IF NOT EXISTS app_docs_rev ON app_docs(rev);
+
 CREATE TABLE IF NOT EXISTS payments (
     id           INTEGER PRIMARY KEY,
     invoice_id   INTEGER NOT NULL REFERENCES invoices(id),

@@ -80,13 +80,34 @@ when one is set, the site shows a rego box that fills in the car for the custome
 
 ```bash
 python build_website.py   # builds website/index.html; lists any missing contact details
-python web_server.py      # serves the site + booking API on :8000 (PORT to change)
+STAFF_PASSWORD='choose-one' python web_server.py   # site + booking API + staff app on :8000
 ```
 
 Run `web_server.py` behind HTTPS on any small server. To host the page
 somewhere else (Netlify, your current host) and the API separately, set
 `SHOP_BOOKING_API=https://your-api-host` before building. If the booking API
 can't be reached, the checkout tells customers to call instead.
+
+## Staff app (jobs, bookings, stock, cars)
+
+The shop's staff app (`staff_app/`) runs on the same server at `/staff/`, and
+its data now lives in the workshop database, so every phone sees the same
+jobs, bookings, stock and cars (changes show on other phones within a few
+seconds). Sign in with the shared staff password (`STAFF_PASSWORD`, set on the
+server, never in the repo; the staff app is off without it). Add it to each
+iPhone's Home Screen from Safari as before.
+
+Linked to the rest of the system:
+- **Online bookings appear in the app's Bookings**, with customer, rego,
+  car, services and anything that needs a quote.
+- **Cancelling or no-showing** an online booking in the app frees that time online.
+- **Bookings made in the app block** those times for online booking (each is
+  assumed to take the booking length, 2 hours).
+- **Tyres and wheels in the app's stock** (qty above 0) show on the website
+  when a customer picks their size, priced with GST added (the app's prices are
+  entered before GST; set `STAFF_PRICES_EX_GST=0` if they already include it).
+  Customers can add them to their booking; the server checks the quantity.
+- **Business details** in the app start from `bluenile/shop_details.json`.
 
 ## Setup
 

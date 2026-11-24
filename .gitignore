@@ -1,0 +1,7 @@
+shop.db
+.bluenile.json
+invoices/
+outputs/
+__pycache__/
+.pytest_cache/
+.venv/

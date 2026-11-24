@@ -95,8 +95,10 @@ CREATE TABLE IF NOT EXISTS payments (
 """
 
 
-def connect(path: str | Path | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(str(path or DEFAULT_DB_PATH))
+def connect(path: str | Path | None = None, *, check_same_thread: bool = True) -> sqlite3.Connection:
+    # The phone server hands a call's connection between worker threads, one at a
+    # time, so it passes check_same_thread=False.
+    conn = sqlite3.connect(str(path or DEFAULT_DB_PATH), check_same_thread=check_same_thread, timeout=10)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     conn.executescript(SCHEMA)

@@ -1,24 +1,30 @@
 """Builds the shop's public website from the same data the agent uses:
 the price list (bluenile/price_list.json) and the shop settings (SHOP_* env vars).
 
-Re-run `python build_website.py` after changing prices or details, so the
-website and the agent never disagree on a price.
+The page is a booking storefront (bluenile/site_template.html): customers add
+services to a booking cart, pick a live time slot and confirm. Bookings go to
+the API in bluenile/web.py (run web_server.py), which writes them into the
+workshop database. Re-run `python build_website.py` after changing prices or
+details, so the website and the agent never disagree on a price.
 
 Rules for what goes public:
-- Only confirmed prices are shown. Unconfirmed or missing ones say "Call for a quote".
-- Only `web_note` is shown; `notes` is internal (it records what was hard to read).
+- Only confirmed prices are shown. Unconfirmed or missing ones say "Price on quote".
+- Only `description` and `web_note` are shown; `notes` is internal.
 - Missing contact details are left out, and the build lists them as warnings.
 """
 
 from __future__ import annotations
 
 import json
+import os
 from datetime import date
 from html import escape as e
 from pathlib import Path
 
 from .tools import ShopConfig
+from .web import fixed_price_cents
 
+TEMPLATE = Path(__file__).with_name("site_template.html")
 DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 
 # Public names for the service tiers on the price list.
@@ -28,11 +34,19 @@ TIER_LABELS = {
     "Standard service - very big cars": ("Very big cars", "4WDs, utes, vans and people movers"),
 }
 
-CATEGORY_INTROS = {
-    "Essential services": "Everyday jobs that keep your car safe and on the road.",
-    "Flushes and fluids": "Fresh fluids protect your brakes, steering, cooling system and transmission.",
-    "Filters, wipers, lights and extras": "Quick add-ons we can do while your car is in.",
+GROUPS = {  # price list category -> (tab key, tab label)
+    "Essential services": ("essentials", "Essentials"),
+    "Flushes and fluids": ("fluids", "Flushes & fluids"),
+    "Filters, wipers, lights and extras": ("extras", "Filters, wipers & extras"),
 }
+
+SHORT_NAMES = {
+    "RWC (roadworthy certificate)": "Roadworthy (RWC)",
+    "Pre / post purchase inspection": "Pre-purchase inspection",
+    "Rotate and balance tyres": "Rotate & balance",
+}
+
+DEFAULT_QTY = {"Cheap wipers": 2, "Expensive wipers": 2}
 
 
 def _dollars(v: float) -> str:
@@ -40,7 +54,7 @@ def _dollars(v: float) -> str:
 
 
 def web_price(item: dict) -> str | None:
-    """The price as shown publicly, or None for 'call for a quote'."""
+    """The price as shown publicly, or None for 'price on quote'."""
     if not item.get("confirmed"):
         return None
     lo, hi, unit = item.get("price_min"), item.get("price_max"), item.get("unit")
@@ -68,11 +82,15 @@ def opening_hours(cfg: ShopConfig) -> list[tuple[str, str]]:
             rows[-1][0].append(d)
         else:
             rows.append(([d], hours))
-    out = []
-    for days, hours in rows:
-        label = DAY_NAMES[days[0]] if len(days) == 1 else f"{DAY_NAMES[days[0]]} – {DAY_NAMES[days[-1]]}"
-        out.append((label, hours))
-    return out
+    return [(DAY_NAMES[days[0]] if len(days) == 1 else f"{DAY_NAMES[days[0]]} – {DAY_NAMES[days[-1]]}", hours)
+            for days, hours in rows]
+
+
+def _days_open(cfg: ShopConfig) -> str:
+    days = sorted(cfg.open_days)
+    if days and days == list(range(days[0], days[-1] + 1)):
+        return f"Open {DAY_NAMES[days[0]][:3]}–{DAY_NAMES[days[-1]][:3]}"
+    return "Open " + ", ".join(DAY_NAMES[d][:3] for d in days)
 
 
 def missing_details(cfg: ShopConfig) -> list[str]:
@@ -85,234 +103,115 @@ def missing_details(cfg: ShopConfig) -> list[str]:
 
 
 def _tel(phone: str) -> str:
-    return "tel:" + "".join(ch for ch in phone if ch.isdigit() or ch == "+")
+    return "".join(ch for ch in phone if ch.isdigit() or ch == "+")
 
 
-def render(cfg: ShopConfig, prices: dict) -> str:
+def public_service(s: dict) -> dict:
+    """Only the fields the public page may see."""
+    fixed = fixed_price_cents(s)
+    label = web_price(s)
+    from_cents = None
+    if fixed is None and label and s.get("price_min") is not None:
+        from_cents = round(s["price_min"] * 100)
+    tier = TIER_LABELS.get(s["name"])
+    group, group_label = GROUPS.get(s["category"], ("extras", s["category"]))
+    return {
+        "name": s["name"],
+        "display": f"Standard service ({tier[0]})" if tier else s["name"],
+        "short": SHORT_NAMES.get(s["name"]),
+        "group": group,
+        "group_label": group_label,
+        "description": s.get("description", ""),
+        "web_note": s.get("web_note"),
+        "fixed_cents": fixed,
+        "from_cents": from_cents,
+        "price_label": None if fixed is not None else label,
+        "unit": s.get("unit"),
+        "hours": s.get("hours", 1),
+        "tier": tier[0] if tier else None,
+        "tier_blurb": tier[1] if tier else None,
+        "default_qty": DEFAULT_QTY.get(s["name"], 1),
+    }
+
+
+def _faq(cfg: ShopConfig, services: dict) -> list[list[str]]:
+    labour = services.get("Diagnostic / labour")
+    labour_price = web_price(labour) if labour else None
+    faq = []
+    if cfg.tax_inclusive:
+        faq.append([f"Do your prices include {cfg.tax_name}?", f"Yes. Every price on this site includes {cfg.tax_name}."])
+    faq += [
+        ["What does “Price on quote” mean?",
+         "Some jobs depend on your car. Add them to your booking and we'll call you with the price before we start."],
+        ["Which standard service size is my car?",
+         " ".join(f"{t}: {b.lower()}." for t, b in TIER_LABELS.values())
+         + " If you're not sure, pick the closest and we'll check when you drop it off."],
+        ["How do I get a price for tyres?",
+         "Choose your tyre size in the Tyres section and add it to your booking. We'll call you with a fitted price."],
+        ["My job isn't listed. Can I still book?",
+         "Yes. Add Diagnostic / labour" + (f" ({labour_price})" if labour_price else "")
+         + " and tell us what's wrong in the notes, or give us a call."],
+        ["Can I change or cancel my booking?",
+         f"Yes, just call us{' on ' + cfg.phone if cfg.phone else ''}."],
+    ]
+    return faq
+
+
+def render(cfg: ShopConfig, prices: dict, api_base: str | None = None) -> str:
     services = prices["services"]
+    by_name = {s["name"]: s for s in services}
     tiers = [s for s in services if s["name"] in TIER_LABELS]
-    from_price = min((s["price_min"] for s in tiers if s.get("confirmed") and s.get("price_min")), default=None)
-    gst = cfg.tax_name if cfg.tax_inclusive else None
+    from_cents = min((fixed_price_cents(s) for s in tiers if fixed_price_cents(s) is not None), default=None)
+    gst_line = (f"All prices include {cfg.tax_name}." if cfg.tax_inclusive
+                else f"{cfg.tax_name} is added to these prices.")
     as_of = date.fromisoformat(prices["as_of"]).strftime("%-d %B %Y") if prices.get("as_of") else ""
-
-    call_btn = (f'<a class="btn btn-primary" href="{_tel(cfg.phone)}">Call {e(cfg.phone)}</a>'
-                if cfg.phone else "")
-    top_call = f'<a class="top-call" href="{_tel(cfg.phone)}">{e(cfg.phone)}</a>' if cfg.phone else ""
-
-    # Service tier cards
-    cards = []
-    for s in tiers:
-        title, blurb = TIER_LABELS[s["name"]]
-        price = web_price(s)
-        cards.append(f"""
-        <div class="tier">
-          <h3>{e(title)}</h3>
-          <p class="tier-blurb">{e(blurb)}</p>
-          <p class="tier-price">{e(price) if price else "Call for a quote"}</p>
-        </div>""")
-
-    # Price tables by category, in list order
-    categories: dict[str, list[dict]] = {}
+    seen_groups = []
     for s in services:
-        if s["name"] in TIER_LABELS:
-            continue
-        categories.setdefault(s["category"], []).append(s)
-    tables = []
-    for cat, items in categories.items():
-        rows = []
-        for s in items:
-            price = web_price(s)
-            note = f'<span class="note">{e(s["web_note"])}</span>' if s.get("web_note") else ""
-            price_html = e(price) if price else '<span class="quote">Call for a quote</span>'
-            rows.append(f'<tr><td>{e(s["name"])}{note}</td><td class="price">{price_html}</td></tr>')
-        intro = CATEGORY_INTROS.get(cat, "")
-        tables.append(f"""
-      <div class="price-group">
-        <h3>{e(cat)}</h3>
-        {f'<p class="muted">{e(intro)}</p>' if intro else ''}
-        <table><tbody>{''.join(rows)}</tbody></table>
-      </div>""")
+        if s["name"] not in TIER_LABELS:
+            g = GROUPS.get(s["category"], ("extras", s["category"]))
+            if g not in seen_groups:
+                seen_groups.append(g)
 
-    hours_rows = "".join(f"<tr><th>{e(d)}</th><td>{e(h)}</td></tr>" for d, h in opening_hours(cfg))
-    contact = []
-    if cfg.phone:
-        contact.append(f'<li><span>Phone</span><a href="{_tel(cfg.phone)}">{e(cfg.phone)}</a></li>')
-    if cfg.email:
-        contact.append(f'<li><span>Email</span><a href="mailto:{e(cfg.email)}">{e(cfg.email)}</a></li>')
-    if cfg.address:
-        contact.append(f'<li><span>Address</span>{e(cfg.address)}</li>')
-    contact_html = "".join(contact) or '<li class="muted">Contact details coming soon.</li>'
-    map_link = (f'<a class="btn btn-ghost" href="https://www.google.com/maps/search/?api=1&amp;query='
-                f'{e(cfg.address.replace(" ", "+"))}">Get directions</a>') if cfg.address else ""
-    labour = _dollars(cfg.labor_rate_cents / 100)
-    gst_line = f"All prices include {e(gst)}." if gst else f"{e(cfg.tax_name)} is added to these prices."
-
-    return f"""<!doctype html>
-<html lang="en-AU">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{e(cfg.name)} | Car servicing and repairs</title>
-<meta name="description" content="{e(cfg.name)}: car servicing{f' from {_dollars(from_price)}' if from_price else ''}, roadworthy certificates, wheel alignments, A/C regas, flushes and more. Clear prices{', GST included' if gst else ''}.">
-<style>
-:root {{
-  --bg: #f6f7f9; --surface: #ffffff; --ink: #14202e; --muted: #5a6776; --line: #e2e6eb;
-  --brand: #0d4f8b; --brand-ink: #ffffff; --accent: #f2a516; --accent-ink: #1b1300; --hero: #0b2a47;
-}}
-@media (prefers-color-scheme: dark) {{
-  :root {{
-    --bg: #0f151c; --surface: #17202a; --ink: #e8edf2; --muted: #9aa8b6; --line: #273340;
-    --brand: #4b9be0; --brand-ink: #06121e; --accent: #f2b53a; --accent-ink: #1b1300; --hero: #0a1d31;
-  }}
-}}
-* {{ box-sizing: border-box; }}
-html {{ scroll-behavior: smooth; }}
-body {{ margin: 0; background: var(--bg); color: var(--ink);
-  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
-a {{ color: var(--brand); }}
-.wrap {{ max-width: 1040px; margin: 0 auto; padding: 0 20px; }}
-header.top {{ position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }}
-.top .wrap {{ display: flex; align-items: center; gap: 16px; height: 60px; }}
-.logo {{ font-weight: 800; font-size: 1.1rem; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }}
-.logo span {{ color: var(--brand); }}
-nav {{ display: flex; gap: 18px; margin-left: auto; }}
-nav a {{ color: var(--muted); text-decoration: none; font-weight: 500; }}
-nav a:hover {{ color: var(--ink); }}
-.top-call {{ font-weight: 700; text-decoration: none; white-space: nowrap; }}
-.hero {{ background: var(--hero); color: #fff; padding: 72px 0 64px; }}
-.hero h1 {{ font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; margin: 0 0 16px; letter-spacing: -0.02em; max-width: 16ch; }}
-.hero p {{ font-size: 1.15rem; color: #c9d6e3; margin: 0 0 28px; max-width: 46ch; }}
-.hero .from {{ color: var(--accent); font-weight: 700; }}
-.btns {{ display: flex; flex-wrap: wrap; gap: 12px; }}
-.btn {{ display: inline-block; padding: 12px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; }}
-.btn-primary {{ background: var(--accent); color: var(--accent-ink); }}
-.btn-ghost {{ border: 1.5px solid currentColor; color: inherit; }}
-.hero .btn-ghost {{ color: #fff; }}
-section {{ padding: 56px 0; }}
-section h2 {{ font-size: 1.75rem; margin: 0 0 8px; letter-spacing: -0.01em; }}
-.muted {{ color: var(--muted); margin: 0 0 20px; }}
-.tiers {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }}
-.tier {{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }}
-.tier h3 {{ margin: 0 0 4px; font-size: 1.15rem; }}
-.tier-blurb {{ color: var(--muted); margin: 0 0 16px; font-size: 0.95rem; }}
-.tier-price {{ font-size: 2rem; font-weight: 800; margin: 0; color: var(--brand); }}
-.price-groups {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }}
-.price-group {{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }}
-.price-group h3 {{ margin: 0 0 4px; }}
-table {{ width: 100%; border-collapse: collapse; }}
-td, th {{ padding: 10px 0; border-top: 1px solid var(--line); vertical-align: top; text-align: left; }}
-td.price {{ text-align: right; font-weight: 700; padding-left: 12px; width: 42%; }}
-.note {{ display: block; color: var(--muted); font-size: 0.85rem; }}
-.quote {{ color: var(--muted); font-weight: 500; white-space: nowrap; }}
-.fine {{ color: var(--muted); font-size: 0.9rem; margin-top: 20px; }}
-.visit {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }}
-.card {{ background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }}
-.card h3 {{ margin: 0 0 12px; }}
-.hours th {{ font-weight: 500; color: var(--muted); padding-right: 12px; }}
-.contact {{ list-style: none; margin: 0 0 16px; padding: 0; }}
-.contact li {{ padding: 10px 0; border-top: 1px solid var(--line); display: flex; gap: 12px; }}
-.contact li span {{ color: var(--muted); min-width: 70px; }}
-.cta {{ background: var(--brand); color: var(--brand-ink); text-align: center; }}
-.cta h2 {{ margin-bottom: 8px; }}
-.cta p {{ margin: 0 0 22px; opacity: 0.9; }}
-footer {{ padding: 28px 0; color: var(--muted); font-size: 0.9rem; }}
-footer .wrap {{ display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }}
-@media (max-width: 720px) {{
-  nav {{ display: none; }}
-  .top-call {{ margin-left: auto; }}
-  .hero {{ padding: 48px 0 44px; }}
-  section {{ padding: 40px 0; }}
-}}
-</style>
-</head>
-<body>
-<header class="top">
-  <div class="wrap">
-    <a class="logo" href="#">{_logo(cfg.name)}</a>
-    <nav><a href="#servicing">Servicing</a><a href="#prices">Prices</a><a href="#visit">Hours &amp; contact</a></nav>
-    {top_call}
-  </div>
-</header>
-
-<main>
-<section class="hero">
-  <div class="wrap">
-    <h1>Car servicing and repairs, priced up front.</h1>
-    <p>{f'Standard service from <span class="from">{_dollars(from_price)}</span>. ' if from_price else ''}{gst_line}
-    Roadworthies, wheel alignments, A/C regas, flushes and more.</p>
-    <div class="btns">
-      {call_btn}
-      <a class="btn btn-ghost" href="#prices">See all prices</a>
-    </div>
-  </div>
-</section>
-
-<section id="servicing">
-  <div class="wrap">
-    <h2>Standard service</h2>
-    <p class="muted">One fixed price, based on the size of your car.</p>
-    <div class="tiers">{''.join(cards)}
-    </div>
-  </div>
-</section>
-
-<section id="prices">
-  <div class="wrap">
-    <h2>Prices</h2>
-    <p class="muted">{gst_line} Labour and diagnostics are {labour} per hour.</p>
-    <div class="price-groups">{''.join(tables)}
-    </div>
-    <p class="fine">Prices current as of {e(as_of)}. Some jobs vary by vehicle; we'll confirm the price when you book.</p>
-  </div>
-</section>
-
-<section id="visit">
-  <div class="wrap">
-    <h2>Hours &amp; contact</h2>
-    <div class="visit">
-      <div class="card">
-        <h3>Opening hours</h3>
-        <table class="hours"><tbody>{hours_rows}</tbody></table>
-      </div>
-      <div class="card">
-        <h3>Get in touch</h3>
-        <ul class="contact">{contact_html}</ul>
-        <div class="btns">{map_link}</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="cta">
-  <div class="wrap">
-    <h2>Book your car in</h2>
-    <p>{'Call us and we\'ll find a time that suits.' if cfg.phone else 'Online booking coming soon.'}</p>
-    <div class="btns" style="justify-content:center">{call_btn}</div>
-  </div>
-</section>
-</main>
-
-<footer>
-  <div class="wrap">
-    <span>&copy; {date.today().year} {e(cfg.name)}{f' · ABN {e(cfg.abn)}' if cfg.abn else ''}</span>
-    <span>{gst_line}</span>
-  </div>
-</footer>
-</body>
-</html>
-"""
+    data = {
+        "shop": {
+            "name": cfg.name, "phone": cfg.phone, "tel": _tel(cfg.phone), "email": cfg.email,
+            "address": cfg.address, "abn": cfg.abn, "gst_line": gst_line, "tax_inclusive": cfg.tax_inclusive,
+            "tax_name": cfg.tax_name, "labour_cents": cfg.labor_rate_cents,
+            "hours": opening_hours(cfg), "days_open": _days_open(cfg),
+            "price_note": f"incl. {cfg.tax_name}" if cfg.tax_inclusive else f"+ {cfg.tax_name}",
+        },
+        "as_of": as_of,
+        "api": (api_base if api_base is not None else os.environ.get("SHOP_BOOKING_API", "")).rstrip("/"),
+        "groups": [{"key": k, "label": label} for k, label in seen_groups],
+        "services": [public_service(s) for s in services],
+        "tyre_suggest": (prices.get("tyres") or {}).get("suggest_with", []),
+        "faq": _faq(cfg, by_name),
+    }
+    # Safe inside <script>: no "</script>" or "<!--" can appear in the JSON.
+    data_json = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
+    description = (f"{cfg.name}: book car servicing online"
+                   + (f" from {_dollars(from_cents / 100)}" if from_cents else "")
+                   + ". Roadworthies, wheel alignments, A/C regas, tyres, flushes and more. "
+                   + gst_line)
+    html = TEMPLATE.read_text(encoding="utf-8")
+    return (html.replace("__TITLE__", e(f"{cfg.name} | Car servicing, tyres & online booking"))
+                .replace("__DESCRIPTION__", e(description))
+                .replace("__NAME__", e(cfg.name))
+                .replace("__DATA__", data_json))
 
 
-def _logo(name: str) -> str:
-    """Bold the first word in the brand colour: 'Bluenile Auto Repair' -> <span>Bluenile</span> Auto Repair."""
-    first, _, rest = name.partition(" ")
-    return f"<span>{e(first)}</span> {e(rest)}".strip()
+def page_data(html: str) -> dict:
+    """Read the embedded data back out of a built page (used by tests and checks)."""
+    marker = '<script type="application/json" id="shop-data">'
+    start = html.index(marker) + len(marker)
+    return json.loads(html[start:html.index("</script>", start)])
 
 
-def build(cfg: ShopConfig | None = None, out_dir: Path = Path("website")) -> tuple[Path, list[str]]:
+def build(cfg: ShopConfig | None = None, out_dir: Path = Path("website"),
+          api_base: str | None = None) -> tuple[Path, list[str]]:
     cfg = cfg or ShopConfig()
     prices = json.loads(Path(cfg.price_list).read_text(encoding="utf-8"))
     out_dir.mkdir(parents=True, exist_ok=True)
     path = out_dir / "index.html"
-    path.write_text(render(cfg, prices), encoding="utf-8")
+    path.write_text(render(cfg, prices, api_base), encoding="utf-8")
     return path, missing_details(cfg)

@@ -1,11 +1,15 @@
 import json
 
 from bluenile.tools import ShopConfig
-from bluenile.website import build, opening_hours, render, web_price
+from bluenile.website import build, opening_hours, page_data, render, web_price
 
 
 def prices():
     return json.loads(ShopConfig().price_list.read_text())
+
+
+def services(page):
+    return {s["name"]: s for s in page_data(page)["services"]}
 
 
 def test_web_price_rules():
@@ -17,32 +21,48 @@ def test_web_price_rules():
     assert web_price({"confirmed": True, "price_min": None, "price_max": None}) is None
 
 
-def test_page_shows_confirmed_prices_and_hides_internal_notes():
+def test_public_data_has_confirmed_prices_only():
+    s = services(render(ShopConfig(), prices()))
+    assert s["Standard service - normal cars"]["fixed_cents"] == 24900
+    assert s["Standard service - large cars and EU"]["display"] == "Standard service (Large & European cars)"
+    assert s["RWC (roadworthy certificate)"]["fixed_cents"] == 9700
+    assert s["Diagnostic / labour"]["fixed_cents"] == 13000
+    # ranges show a label and a "from" amount, never a fixed price
+    assert s["Cabin filter"]["fixed_cents"] is None and s["Cabin filter"]["price_label"] == "$49–$69"
+    assert s["Cabin filter"]["from_cents"] == 4900
+    # unconfirmed: no price at all on the page
+    for name in ["Rotate and balance tyres", "Brake pads machining", "Engine flush", "Brake service", "Headlight polish"]:
+        assert s[name]["fixed_cents"] is None and s[name]["price_label"] is None and s[name]["from_cents"] is None, name
+
+
+def test_internal_notes_never_published():
     page = render(ShopConfig(), prices())
-    for text in ["$249", "$299", "$329", "RWC (roadworthy certificate)", "$97", "$130 per hour",
-                 "All prices include GST.", "Flush only. We don&#x27;t offer a transmission service for VW."]:
-        assert text in page, text
-    # unconfirmed entries are not priced publicly
-    assert "$73" not in page and "$425" not in page and "$350" not in page
-    assert page.count("Call for a quote") >= 9
-    for internal in ["not legible", "unclear", "not yet confirmed", "Shown as"]:
+    for internal in ["not legible", "unclear", "not yet confirmed", "Shown as", "confirmed\""]:
         assert internal not in page, internal
+    assert "Flush only. We don't offer a transmission service for VW." in json.dumps(page_data(page), ensure_ascii=False)
 
 
-def test_missing_contact_details_are_left_out(tmp_path):
+def test_missing_contact_details_reported(tmp_path):
     path, missing = build(ShopConfig(phone="", address="", email="", abn=""), tmp_path)
-    page = path.read_text()
-    assert "tel:" not in page and "Contact details coming soon." in page
-    assert len(missing) == 4
+    assert page_data(path.read_text())["shop"]["phone"] == "" and len(missing) == 4
 
 
 def test_contact_details_and_escaping(tmp_path):
     cfg = ShopConfig(name="Joe's <Garage>", phone="(03) 9000 0000", address="1 Main St", email="a@b.com", abn="12 345")
-    path, missing = build(cfg, tmp_path)
+    path, missing = build(cfg, tmp_path, api_base="https://book.example.com/")
     page = path.read_text()
     assert missing == []
-    assert 'href="tel:0390000000"' in page and "mailto:a@b.com" in page and "ABN 12 345" in page
+    data = page_data(page)
+    assert data["shop"]["tel"] == "0390000000" and data["shop"]["abn"] == "12 345"
+    assert data["api"] == "https://book.example.com"
     assert "<Garage>" not in page and "&lt;Garage&gt;" in page
+
+
+def test_script_breakout_is_impossible(tmp_path):
+    cfg = ShopConfig(name="</script><script>alert(1)</script>")
+    page = render(cfg, prices())
+    assert page.count("</script>") == 2  # the data block and the app script only
+    assert page_data(page)["shop"]["name"] == cfg.name
 
 
 def test_opening_hours_grouping():

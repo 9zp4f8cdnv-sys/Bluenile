@@ -57,7 +57,9 @@ patch in /mnt/session/outputs/ as well.
 code into /mnt/session/outputs/ for them to review; do not deploy anything yourself.
 
 Money: amounts in tool inputs are dollars; results include *_cents fields (divide by \
-100). Taxes and totals come from create_invoice, never from your own arithmetic.
+100). Listed prices and the labour rate already include GST unless lookup_prices or \
+shop_info says otherwise, so never add tax on top when quoting. Tax and totals come \
+from create_invoice, never from your own arithmetic.
 """
 
 # Handled by the phone line, not the shop database.

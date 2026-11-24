@@ -11,7 +11,7 @@ MONDAY = "2026-11-30"
 
 @pytest.fixture
 def shop(tmp_path):
-    cfg = ShopConfig(labor_rate_cents=12000, tax_rate=0.10, tax_labor=False, bays=1,
+    cfg = ShopConfig(labor_rate_cents=12000, tax_rate=0.10, tax_inclusive=False, tax_labor=False, bays=1,
                      open_hour=8, close_hour=12, invoice_dir=tmp_path / "invoices")
     return ShopTools(connect(tmp_path / "shop.db"), cfg)
 
@@ -135,3 +135,27 @@ def test_price_list_file_is_consistent():
         lo, hi = s["price_min"], s["price_max"]
         if lo is not None and hi is not None:
             assert lo <= hi
+
+
+def test_defaults_are_gst_inclusive_at_130_an_hour():
+    cfg = ShopConfig()
+    assert cfg.labor_rate_cents == 13000 and cfg.tax_rate == 0.10
+    assert cfg.tax_inclusive and cfg.tax_labor and cfg.tax_name == "GST"
+
+
+def test_gst_inclusive_invoice(tmp_path):
+    cfg = ShopConfig(invoice_dir=tmp_path, abn="12 345 678 901", bays=1)
+    shop = ShopTools(connect(tmp_path / "shop.db"), cfg)
+    c, v = make_customer(shop)
+    wo = call(shop, "create_work_order", customer_id=c["id"], vehicle_id=v["id"], complaint="Service due")
+    call(shop, "add_work_order_line", work_order_id=wo["id"], kind="labor", description="Diagnostic", quantity=1.5)
+    call(shop, "add_work_order_line", work_order_id=wo["id"], kind="fee", description="Standard service", quantity=1, unit_price=249)
+    inv = call(shop, "create_invoice", work_order_id=wo["id"])
+    # 1.5 h x $130 = $195 + $249 = $444 total; GST inside it = 444 / 11 = $40.36
+    assert inv["total_cents"] == 44400 and inv["tax_cents"] == 4036 and inv["subtotal_cents"] == 40364
+    page = (tmp_path / "invoice-00001.html").read_text()
+    assert "Tax Invoice #1" in page and "ABN 12 345 678 901" in page
+    assert "Total (incl. GST)" in page and "$444.00" in page and "Includes GST of" in page and "$40.36" in page
+    assert call(shop, "lookup_prices", query="rwc")["tax_note"] == "Prices include GST."
+    paid = call(shop, "record_payment", invoice_id=inv["id"], amount=444, method="card")
+    assert paid["status"] == "paid"

@@ -13,7 +13,7 @@
     {"category": "Essential services", "name": "Pre / post purchase inspection", "price_min": 100, "price_max": 150, "confirmed": true},
     {"category": "Essential services", "name": "A/C regas", "price_min": 150, "price_max": 150, "confirmed": true},
     {"category": "Essential services", "name": "Headlight polish", "price_min": 130, "price_max": 150, "confirmed": false, "notes": "Shown as $130 and $150 in different places"},
-    {"category": "Essential services", "name": "Diagnostic / labour", "price_min": 130, "price_max": 260, "unit": "per hour", "confirmed": false, "notes": "$130 per hour, maximum $260"},
+    {"category": "Essential services", "name": "Diagnostic / labour", "price_min": 130, "price_max": 130, "unit": "per hour", "confirmed": true, "notes": "$130 per hour. The list also showed a $260 maximum (not yet confirmed)"},
     {"category": "Essential services", "name": "Brake service", "price_min": null, "price_max": null, "confirmed": false, "notes": "Price not legible"},
     {"category": "Essential services", "name": "Brake pads machining", "price_min": 425, "price_max": 425, "confirmed": false},
 

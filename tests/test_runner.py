@@ -2,8 +2,8 @@ from types import SimpleNamespace as NS
 
 import pytest
 
-import run_agent
 from bluenile.db import connect
+from bluenile.session import SessionRunner
 from bluenile.tools import ShopConfig, ShopTools
 
 
@@ -19,7 +19,10 @@ class FakeEvents:
 def runner(tmp_path):
     client = NS(beta=NS(sessions=NS(events=FakeEvents())))
     tools = ShopTools(connect(tmp_path / "db"), ShopConfig(invoice_dir=tmp_path))
-    return run_agent.SessionRunner(client, "sesn_1", tools, "staff")
+    texts = []
+    r = SessionRunner(client, "sesn_1", tools, "staff", on_text=texts.append)
+    r.texts = texts
+    return r
 
 
 def sent(r):
@@ -36,20 +39,35 @@ def test_custom_tool_result_sent_and_dedup(runner):
     assert out["is_error"] is False and '"name": "Al"' in out["content"][0]["text"]
 
 
+def test_agent_text_goes_to_callback(runner):
+    runner.handle(NS(id="m1", type="agent.message", content=[NS(type="text", text="Hello")]))
+    assert runner.texts == ["Hello"]
+
+
 def test_tool_error_returned_as_error(runner):
     runner.handle(NS(id="e2", type="agent.custom_tool_use", name="get_invoice", input={"invoice_id": 9}))
     assert sent(runner)[0]["is_error"] is True
 
 
-def test_caller_blocked_and_confirm_declined(runner, monkeypatch):
+def test_caller_blocked_and_confirm_declined(runner):
     runner.mode = "caller"
     runner.handle(NS(id="e3", type="agent.custom_tool_use", name="record_payment",
                      input={"invoice_id": 1, "amount": 5, "method": "cash"}))
     assert "staff-only" in sent(runner)[-1]["content"][0]["text"]
-    runner.mode = "staff"
-    monkeypatch.setattr(run_agent, "ask_yes_no", lambda p: False)
+    runner.mode = "staff"  # default confirm callback denies
     runner.handle(NS(id="e4", type="agent.custom_tool_use", name="cancel_appointment", input={"appointment_id": 1}))
-    assert "declined" in sent(runner)[-1]["content"][0]["text"]
+    assert "didn't approve" in sent(runner)[-1]["content"][0]["text"]
+
+
+def test_builtin_tool_needing_approval_is_denied_when_unattended(runner):
+    runner.handle(NS(id="t1", type="agent.tool_use", name="bash", input={"command": "rm -rf /"},
+                     evaluated_permission="ask"))
+    assert sent(runner)[-1] == {"type": "user.tool_confirmation", "tool_use_id": "t1", "result": "deny"}
+
+
+def test_call_control_without_phone_is_simulated(runner):
+    runner.handle(NS(id="c1", type="agent.custom_tool_use", name="end_call", input={}))
+    assert "simulated" in sent(runner)[-1]["content"][0]["text"]
 
 
 def test_idle_ends_turn_only_when_not_requires_action(runner):

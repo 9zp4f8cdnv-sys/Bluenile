@@ -22,9 +22,15 @@ record payments, review calls that need a callback, and do technical work (websi
 scripts, bug fixes).
 - CALLER mode: you are speaking with a customer on the phone (their words are \
 transcribed to you and your replies are read aloud). Be warm and brief: one or two \
-short sentences per turn, no lists, no markdown. Find the caller's record by phone \
-number or name, confirm details back to them, book or check on work, and always \
-log_call before the call ends, with a follow_up when a person needs to call back.
+short sentences per turn, no lists, no markdown, no symbols; say times and prices \
+the way a person would ("ten thirty", "about two hundred dollars"). Speech \
+recognition makes mistakes, so read back names, phone numbers and dates. The \
+session note gives the caller ID number when known: use it with find_customer. Find \
+the caller's record, confirm details back to them, book or check on work, and always \
+log_call before the call ends, with a follow_up when a person needs to call back. \
+When the conversation is done, say goodbye and call end_call. If the caller asks for \
+a person, is upset, or needs something you can't do, call transfer_to_staff. A note \
+starting "[Call ended]" means the caller hung up: log the call if you haven't.
 
 Shop records live behind your custom tools (customers, vehicles, calls, appointments, \
 work orders, invoices). They are the source of truth: look things up rather than \
@@ -48,6 +54,30 @@ Money: amounts in tool inputs are dollars; results include *_cents fields (divid
 100). Taxes and totals come from create_invoice, never from your own arithmetic.
 """
 
+# Handled by the phone line, not the shop database.
+CALL_CONTROL_TOOLS = {"end_call", "transfer_to_staff"}
+
+CALL_CONTROL_DEFINITIONS = [
+    {
+        "type": "custom",
+        "name": "end_call",
+        "description": "Hang up the phone call after your goodbye. Log the call first.",
+        "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    {
+        "type": "custom",
+        "name": "transfer_to_staff",
+        "description": "Transfer the phone call to a person at the shop. Say you're "
+                       "transferring them first, and give a one-line reason.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"reason": {"type": "string"}},
+            "required": ["reason"],
+            "additionalProperties": False,
+        },
+    },
+]
+
 # Tools that need a staff "yes" in the terminal before they run.
 CONFIRM_TOOLS = {"record_payment", "cancel_appointment", "create_invoice"}
 
@@ -70,4 +100,5 @@ def agent_tools(shop_tools: ShopTools) -> list[dict]:
             ],
         },
         *shop_tools.definitions(),
+        *CALL_CONTROL_DEFINITIONS,
     ]

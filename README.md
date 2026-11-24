@@ -13,7 +13,7 @@ reads and changes them only through the tools in `bluenile/tools.py`.
 
 | Area | Tools |
 | --- | --- |
-| Phone calls | `log_call`, `list_calls` (callbacks needed), plus caller mode with a phone-friendly voice |
+| Phone calls | A real Twilio phone line (`phone_server.py`), `log_call`, `list_calls` (callbacks needed), `end_call`, `transfer_to_staff` |
 | Customers & vehicles | `find_customer` (name, phone, plate, VIN), `save_customer`, `add_vehicle` |
 | Scheduling | `check_availability` (hours × bays), `book_appointment`, `cancel_appointment`, `list_appointments` |
 | Work orders | `create_work_order`, `add_work_order_line` (labor/parts/fees), `update_work_order`, `get_work_order`, `list_work_orders` |
@@ -71,11 +71,53 @@ session transcripts are kept in your Anthropic Console until you delete them;
 anything a tool returns (customer names, phone numbers) is part of that
 transcript. The model is `claude-opus-5-5`.
 
-## Real phone lines
+## Phone line (Twilio)
 
-Caller mode is text: you type what the caller says. To put it on a real number,
-connect a telephony provider's speech-to-text and text-to-speech to
-`SessionRunner.turn()` in `run_agent.py`, one session per call.
+`phone_server.py` answers real calls on a Twilio number. Twilio turns the
+caller's speech into text and reads the agent's replies aloud, so no other
+speech service is needed. Each call gets its own agent session.
+
+**What callers get:** an instant greeting; the agent looks them up by caller ID,
+books or checks on work, and logs the call with a follow-up when staff need to
+call back. Asking for a person (or anything the agent can't handle) transfers
+the call to `SHOP_TRANSFER_NUMBER`. If the agent needs more than a few seconds,
+the caller hears "One moment please." If a caller hangs up first, the agent
+still logs the call.
+
+**What callers can't do:** invoice, take payments, edit work orders, or cancel
+appointments. The agent logs a follow-up for staff instead.
+
+### Setup
+
+1. Buy a voice-capable number in the [Twilio Console](https://console.twilio.com).
+2. Run the server where Twilio can reach it over HTTPS (a small VPS, or
+   `ngrok http 8080` while testing):
+   ```bash
+   export TWILIO_AUTH_TOKEN=...               # Console > Account info; used to verify requests
+   export PUBLIC_BASE_URL=https://your-host   # the exact public URL Twilio calls
+   export SHOP_TRANSFER_NUMBER=+15551234567   # optional: the shop's desk phone
+   python phone_server.py                     # port 8080; set PORT to change
+   ```
+3. On the number's configuration page in Twilio, under Voice:
+   - **A call comes in** → Webhook, `https://your-host/voice/incoming`, HTTP POST
+   - **Call status changes** → `https://your-host/voice/status`, HTTP POST
+4. Call the number.
+
+Optional settings: `TWILIO_VOICE` (default `Polly.Joanna-Neural`) and
+`TWILIO_LANGUAGE` (default `en-US`).
+
+Notes:
+- Requests without a valid Twilio signature are rejected (403). If every call
+  fails with 403, `PUBLIC_BASE_URL` doesn't match the URL set in Twilio.
+- Call state is kept in memory: run one server process (threads are fine), and a
+  restart drops calls in progress.
+- Twilio bills per minute for the call and for speech recognition, on top of
+  the agent's session costs. Calls are transcribed by Twilio and the transcript
+  is stored in the agent session's history.
+- `python run_agent.py --mode caller` is still the quickest way to try out
+  phone conversations by typing.
+- After pulling this change, run `python setup_agent.py` again to publish the
+  new `end_call` and `transfer_to_staff` tools to your agent.
 
 ## Tests
 

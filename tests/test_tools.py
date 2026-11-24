@@ -33,7 +33,8 @@ def test_definitions_are_valid_custom_tools(shop):
     assert len(names) == len(set(names))
     for d in defs[1:]:
         assert d["type"] == "custom" and d["input_schema"]["type"] == "object"
-        assert set(d["input_schema"]["required"]) <= set(d["input_schema"]["properties"])
+        assert set(d["input_schema"].get("required", [])) <= set(d["input_schema"]["properties"])
+    assert {"end_call", "transfer_to_staff"} <= set(names)
 
 
 def test_find_customer_by_phone_digits_and_plate(shop):

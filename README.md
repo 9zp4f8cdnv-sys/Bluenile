@@ -14,10 +14,11 @@ reads and changes them only through the tools in `bluenile/tools.py`.
 | Area | Tools |
 | --- | --- |
 | Phone calls | A real Twilio phone line (`phone_server.py`), `log_call`, `list_calls` (callbacks needed), `end_call`, `transfer_to_staff` |
+| Price quotes | `lookup_prices` (your service price list, with unconfirmed prices flagged) |
 | Customers & vehicles | `find_customer` (name, phone, plate, VIN), `save_customer`, `add_vehicle` |
 | Scheduling | `check_availability` (hours × bays), `book_appointment`, `cancel_appointment`, `list_appointments` |
 | Work orders | `create_work_order`, `add_work_order_line` (labor/parts/fees), `update_work_order`, `get_work_order`, `list_work_orders` |
-| Invoices & payments | `create_invoice` (tax, totals, printable HTML in `invoices/`), `record_payment`, `get_invoice` |
+| Invoices & payments | `create_invoice` (GST-inclusive totals, printable tax invoice in `invoices/`), `record_payment`, `get_invoice` |
 | Websites, bug fixes, new agents | The container's bash and file tools; results land in `outputs/<session>/` |
 
 Guardrails:
@@ -28,6 +29,16 @@ Guardrails:
 - Container commands are checked by the server (`auto` permission policy); any it
   flags are shown to you for approval.
 - Web search/fetch are off, and the container can reach package registries only.
+
+## Prices
+
+The agent quotes only from `bluenile/price_list.json` (via `lookup_prices`); it
+never makes up prices. Entries with `"confirmed": false` (unclear in the source
+photo) are quoted as a guide only, with a follow-up logged for a service writer
+to confirm. Anything not on the list gets a follow-up instead of a quote.
+
+To change a price, edit the JSON file (no setup re-run needed) and set
+`"confirmed": true` once it's checked. To use a file elsewhere, set `SHOP_PRICE_LIST`.
 
 ## Setup
 
@@ -41,9 +52,11 @@ Shop settings come from environment variables:
 
 | Variable | Default |
 | --- | --- |
-| `SHOP_NAME`, `SHOP_ADDRESS`, `SHOP_PHONE` | `Bluenile Auto Repair`, empty, empty |
-| `SHOP_LABOR_RATE` (dollars/hour) | `120` |
-| `SHOP_TAX_RATE`, `SHOP_TAX_LABOR` (`1` to tax labor) | `0.0825`, `0` |
+| `SHOP_NAME`, `SHOP_ADDRESS`, `SHOP_PHONE`, `SHOP_ABN` | `Bluenile Auto Repair`, empty, empty, empty |
+| `SHOP_LABOR_RATE` (dollars/hour, incl. GST) | `130` |
+| `SHOP_TAX_NAME`, `SHOP_TAX_RATE` | `GST`, `0.10` |
+| `SHOP_TAX_INCLUSIVE` (`1`: prices include GST; `0`: tax added on top) | `1` |
+| `SHOP_TAX_LABOR` (`0` to exempt labour from tax) | `1` |
 | `SHOP_OPEN_HOUR`, `SHOP_CLOSE_HOUR`, `SHOP_BAYS` | `8`, `17`, `3` (open Mon–Sat) |
 | `BLUENILE_DB`, `SHOP_INVOICE_DIR` | `shop.db`, `invoices` |
 
@@ -60,7 +73,7 @@ GITHUB_TOKEN=... python run_agent.py --repo https://github.com/you/shop-site   #
 
 Example staff requests:
 - "Who still needs a callback?"
-- "Open a work order for the Civic: grinding when braking. Add 1.5 h labor and a $64.99 pad set, then invoice it."
+- "Open a work order for the Civic: grinding when braking. Add 1.5 h labour and a $64.99 pad set, then invoice it."
 - "Record a $251.49 card payment on invoice 1."
 - "Build a one-page website for the shop with hours, services and our phone number."
 

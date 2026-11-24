@@ -12,6 +12,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -30,15 +31,21 @@ class ShopConfig:
     name: str = os.environ.get("SHOP_NAME", "Bluenile Auto Repair")
     address: str = os.environ.get("SHOP_ADDRESS", "")
     phone: str = os.environ.get("SHOP_PHONE", "")
-    labor_rate_cents: int = int(float(os.environ.get("SHOP_LABOR_RATE", "120")) * 100)
-    tax_rate: float = float(os.environ.get("SHOP_TAX_RATE", "0.0825"))
-    tax_labor: bool = os.environ.get("SHOP_TAX_LABOR", "0") == "1"
+    abn: str = os.environ.get("SHOP_ABN", "")
+    labor_rate_cents: int = int(float(os.environ.get("SHOP_LABOR_RATE", "130")) * 100)
+    # Default: Australian GST, 10%, already included in every price (parts and labour).
+    # For tax added on top instead, set SHOP_TAX_INCLUSIVE=0.
+    tax_name: str = os.environ.get("SHOP_TAX_NAME", "GST")
+    tax_rate: float = float(os.environ.get("SHOP_TAX_RATE", "0.10"))
+    tax_inclusive: bool = os.environ.get("SHOP_TAX_INCLUSIVE", "1") == "1"
+    tax_labor: bool = os.environ.get("SHOP_TAX_LABOR", "1") == "1"
     open_hour: int = int(os.environ.get("SHOP_OPEN_HOUR", "8"))
     close_hour: int = int(os.environ.get("SHOP_CLOSE_HOUR", "17"))
     bays: int = int(os.environ.get("SHOP_BAYS", "3"))
     # Monday=0 ... Sunday=6
     open_days: tuple[int, ...] = field(default=(0, 1, 2, 3, 4, 5))
     invoice_dir: Path = Path(os.environ.get("SHOP_INVOICE_DIR", "invoices"))
+    price_list: Path = Path(os.environ.get("SHOP_PRICE_LIST", Path(__file__).with_name("price_list.json")))
 
 
 def _money(cents: int) -> str:
@@ -50,6 +57,39 @@ def _parse_dt(value: str) -> datetime:
         return datetime.fromisoformat(value)
     except ValueError as e:
         raise ToolError(f"Invalid date/time {value!r}; use ISO format like 2026-12-01T09:00") from e
+
+
+# Words callers use -> words on the price list.
+_SYNONYMS = {
+    "tire": "tyre", "tires": "tyres", "aircon": "a/c", "ac": "a/c", "air-con": "a/c",
+    "conditioning": "a/c", "roadworthy": "rwc", "rego": "rwc", "oil": "standard",
+    "logbook": "standard", "bulb": "globe", "headlight": "headlight", "brakes": "brake",
+    "flat": "puncture", "alignment": "alignment", "wiper": "wipers", "gearbox": "transmission",
+    "trans": "transmission", "diagnosis": "diagnostic", "labor": "labour", "radiator": "coolant",
+    "filter": "filter", "filters": "filter", "inspection": "inspection",
+}
+
+
+_STOPWORDS = set("""a an and the for of to in on at is are be do does did you your my me i we can could
+would how much what whats what's cost costs price prices pricing quote charge get need new please change
+with car cars vehicle just about some""".split())
+
+
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+(?:/[a-z0-9]+)?", text.lower())
+
+
+def _quote(item: dict) -> str:
+    lo, hi, unit = item.get("price_min"), item.get("price_max"), item.get("unit")
+    if lo is None and hi is None:
+        return "no price on the list"
+    if hi is None:
+        text = f"from ${lo:g}"
+    elif lo is None or lo == hi:
+        text = f"${hi:g}"
+    else:
+        text = f"${lo:g} to ${hi:g}"
+    return f"{text} {unit}" if unit else text
 
 
 def _obj(props: dict, required: list[str]) -> dict:
@@ -229,6 +269,14 @@ class ShopTools:
             self.get_invoice,
         )
         self._add(
+            "lookup_prices",
+            "Search the shop's service price list (services, flushes, filters, wipers, etc.). "
+            "Leave query empty to get the whole list. Each result has a quote and a confirmed "
+            "flag; unconfirmed or missing prices must be checked by staff before you quote them as final.",
+            _obj({"query": S}, []),
+            self.lookup_prices,
+        )
+        self._add(
             "shop_info",
             "Shop name, hours, labor rate and tax settings.",
             _obj({}, []),
@@ -404,14 +452,24 @@ class ShopTools:
 
     def _totals(self, work_order_id: int) -> dict:
         lines = self._all("SELECT * FROM work_order_lines WHERE work_order_id = ? ORDER BY id", work_order_id)
-        subtotal = taxable = 0
+        lines_total = taxable = 0
         for ln in lines:
             ln["line_total_cents"] = round(ln["quantity"] * ln["unit_price_cents"])
-            subtotal += ln["line_total_cents"]
+            lines_total += ln["line_total_cents"]
             if ln["kind"] != "labor" or self.cfg.tax_labor:
                 taxable += ln["line_total_cents"]
-        tax = round(taxable * self.cfg.tax_rate)
-        return {"lines": lines, "subtotal_cents": subtotal, "tax_cents": tax, "total_cents": subtotal + tax}
+        rate = self.cfg.tax_rate
+        if self.cfg.tax_inclusive:
+            # Prices already include tax: the total is the sum of the lines, and the
+            # tax inside it is rate/(1+rate) of the taxable part (1/11 for 10% GST).
+            tax = round(taxable * rate / (1 + rate))
+            total = lines_total
+        else:
+            tax = round(taxable * rate)
+            total = lines_total + tax
+        # subtotal_cents is always the amount before tax, so subtotal + tax = total.
+        return {"lines": lines, "subtotal_cents": total - tax, "tax_cents": tax, "total_cents": total,
+                "prices_include_tax": self.cfg.tax_inclusive}
 
     def get_work_order(self, work_order_id: int) -> dict:
         wo = self._require("work_orders", work_order_id)
@@ -481,6 +539,34 @@ class ShopTools:
         inv["balance_due"] = _money(inv["balance_due_cents"])
         return inv
 
+    def _price_list(self) -> dict:
+        try:
+            return json.loads(Path(self.cfg.price_list).read_text(encoding="utf-8"))
+        except FileNotFoundError as e:
+            raise ToolError("The shop has no price list set up; ask staff for prices") from e
+
+    def lookup_prices(self, query: str = "") -> dict:
+        data = self._price_list()
+        words = [_SYNONYMS.get(w, w) for w in _words(query) if w not in _STOPWORDS]
+        scored = []
+        for item in data["services"]:
+            name = _words(item["name"])
+            rest = _words(f'{item.get("category", "")} {item.get("notes", "")}')
+            # A query word matches a list word it is a prefix of ("brake" ~ "brakes").
+            score = sum(2 if any(t.startswith(w) for t in name) else 1 if any(t.startswith(w) for t in rest) else 0
+                        for w in words)
+            if not words or score:
+                scored.append((score, item))
+        best = max((sc for sc, _ in scored), default=0)
+        results = [{**item, "quote": _quote(item)} for sc, item in scored if sc == best]
+        return {
+            "as_of": data.get("as_of"),
+            "tax_note": (f"Prices include {self.cfg.tax_name}." if self.cfg.tax_inclusive
+                         else f"{self.cfg.tax_name} is added on top of these prices."),
+            "results": results,
+            "note": None if results else "Not on the price list: take details and log a follow_up for a quote.",
+        }
+
     def shop_info(self) -> dict:
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
         return {
@@ -488,7 +574,9 @@ class ShopTools:
             "hours": f"{', '.join(days[d] for d in self.cfg.open_days)} "
                      f"{self.cfg.open_hour}:00-{self.cfg.close_hour}:00",
             "labor_rate": _money(self.cfg.labor_rate_cents) + "/hr",
-            "tax_rate": self.cfg.tax_rate, "tax_applies_to_labor": self.cfg.tax_labor,
+            "tax": f"{self.cfg.tax_name} {self.cfg.tax_rate:.0%}, "
+                   + ("included in prices" if self.cfg.tax_inclusive else "added on top of prices"),
+            "tax_applies_to_labor": self.cfg.tax_labor,
             "bays": self.cfg.bays,
         }
 
@@ -502,21 +590,36 @@ class ShopTools:
             for ln in wo["lines"]
         )
         vehicle = " ".join(str(x) for x in (v["year"], v["make"], v["model"]) if x)
-        doc = f"""<!doctype html><html><head><meta charset="utf-8"><title>Invoice {invoice_id}</title>
+        tax = self.cfg.tax_name
+        title = "Tax Invoice" if self.cfg.tax_inclusive and tax == "GST" else "Invoice"
+        if self.cfg.tax_inclusive:
+            totals = (
+                f"<tr class=tot><td colspan=4 class=n><b>Total (incl. {e(tax)})</b></td>"
+                f"<td class=n><b>{_money(wo['total_cents'])}</b></td></tr>"
+                f"<tr class=tot><td colspan=4 class=n>Includes {e(tax)} of</td>"
+                f"<td class=n>{_money(wo['tax_cents'])}</td></tr>"
+            )
+        else:
+            totals = (
+                f"<tr class=tot><td colspan=4 class=n>Subtotal</td><td class=n>{_money(wo['subtotal_cents'])}</td></tr>"
+                f"<tr class=tot><td colspan=4 class=n>{e(tax)} ({self.cfg.tax_rate:.2%})</td>"
+                f"<td class=n>{_money(wo['tax_cents'])}</td></tr>"
+                f"<tr class=tot><td colspan=4 class=n><b>Total</b></td><td class=n><b>{_money(wo['total_cents'])}</b></td></tr>"
+            )
+        doc = f"""<!doctype html><html><head><meta charset="utf-8"><title>{title} {invoice_id}</title>
 <style>body{{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;color:#222}}
 table{{width:100%;border-collapse:collapse}}td,th{{padding:6px;border-bottom:1px solid #ddd;text-align:left}}
 .n{{text-align:right}}.tot td{{border:none}}h1{{margin-bottom:0}}</style></head><body>
-<h1>{e(self.cfg.name)}</h1><p>{e(self.cfg.address)} {e(self.cfg.phone)}</p>
-<h2>Invoice #{invoice_id}</h2>
-<p><b>Date:</b> {datetime.now():%Y-%m-%d} &nbsp; <b>Work order:</b> #{wo['id']}</p>
+<h1>{e(self.cfg.name)}</h1><p>{e(self.cfg.address)} {e(self.cfg.phone)}
+{f"<br>ABN {e(self.cfg.abn)}" if self.cfg.abn else ""}</p>
+<h2>{title} #{invoice_id}</h2>
+<p><b>Date:</b> {datetime.now():%d %b %Y} &nbsp; <b>Work order:</b> #{wo['id']}</p>
 <p><b>Customer:</b> {e(c['name'])} {e(c['phone'] or '')}<br>
 <b>Vehicle:</b> {e(vehicle)} {e(v['plate'] or '')} {('VIN ' + e(v['vin'])) if v['vin'] else ''}
-{f"<br><b>Mileage:</b> {v['mileage']:,}" if v['mileage'] else ''}</p>
+{f"<br><b>Odometer:</b> {v['mileage']:,}" if v['mileage'] else ''}</p>
 <p><b>Customer concern:</b> {e(wo['complaint'])}</p>
 <table><tr><th>Type</th><th>Description</th><th class=n>Qty</th><th class=n>Price</th><th class=n>Total</th></tr>{rows}
-<tr class=tot><td colspan=4 class=n>Subtotal</td><td class=n>{_money(wo['subtotal_cents'])}</td></tr>
-<tr class=tot><td colspan=4 class=n>Tax ({self.cfg.tax_rate:.2%})</td><td class=n>{_money(wo['tax_cents'])}</td></tr>
-<tr class=tot><td colspan=4 class=n><b>Total</b></td><td class=n><b>{_money(wo['total_cents'])}</b></td></tr>
+{totals}
 </table><p>Thank you for your business!</p></body></html>"""
         self.cfg.invoice_dir.mkdir(parents=True, exist_ok=True)
         path = self.cfg.invoice_dir / f"invoice-{invoice_id:05d}.html"

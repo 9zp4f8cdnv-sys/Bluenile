@@ -5,31 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>__TITLE__</title>
 <meta name="description" content="__DESCRIPTION__">
-<meta name="theme-color" content="#0b1b33">
+<meta name="theme-color" content="#0B2E6B">
+<link rel="icon" href="__FAVICON__">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #f4f6fb; --surface: #ffffff; --surface-2: #eef2f8; --ink: #0d1726; --muted: #5b6b80; --line: #e3e8f0;
-  --brand: #1f5fe0; --brand-2: #00a3c4; --brand-soft: #e6eefc; --brand-ink: #ffffff;
-  --cta: #ffb020; --cta-ink: #1d1300; --ok: #12805c; --ok-soft: #e3f5ee; --warn: #9a5b00; --warn-soft: #fff3dc;
-  --hero-1: #0b1b33; --hero-2: #12325f; --shadow: 0 1px 2px rgba(13,23,38,.06), 0 8px 24px rgba(13,23,38,.06);
+  --bg: #f5f7fa; --surface: #ffffff; --surface-2: #eef1f6; --ink: #0d0f14; --muted: #5a6475; --line: #e2e6ed;
+  --brand: #0b2e6b; --brand-2: #38bdf8; --brand-soft: #e4ebf7; --brand-ink: #ffffff;
+  --cta: #ffb81c; --cta-ink: #0d0f14; --ok: #12805c; --ok-soft: #e3f5ee; --warn: #9a5b00; --warn-soft: #fff3dc;
+  --hero-1: #0d0f14; --hero-2: #0b2e6b; --shadow: 0 1px 2px rgba(13,23,38,.06), 0 8px 24px rgba(13,23,38,.06);
   --radius: 16px;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0a111c; --surface: #111b2a; --surface-2: #172335; --ink: #e8eef6; --muted: #98a8bd; --line: #223047;
-    --brand: #5b93ff; --brand-2: #3cc6e0; --brand-soft: #16284a; --brand-ink: #06101f;
-    --cta: #ffbb3d; --cta-ink: #1d1300; --ok: #4fd1a1; --ok-soft: #0f2a22; --warn: #ffc566; --warn-soft: #2d2410;
-    --hero-1: #060d18; --hero-2: #0f2546; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
+    --bg: #0d0f14; --surface: #151a24; --surface-2: #1b2230; --ink: #f5f7fa; --muted: #9aa6b8; --line: #262f40;
+    --brand: #38bdf8; --brand-2: #7dd3fc; --brand-soft: #10263f; --brand-ink: #06101f;
+    --cta: #ffb81c; --cta-ink: #0d0f14; --ok: #4fd1a1; --ok-soft: #0f2a22; --warn: #ffc566; --warn-soft: #2d2410;
+    --hero-1: #0a0c10; --hero-2: #0b2e6b; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.25);
   }
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--bg); color: var(--ink);
-  font: 16px/1.55 "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
+  font: 16px/1.55 Montserrat, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; -webkit-font-smoothing: antialiased; }
 a { color: var(--brand); }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -41,9 +42,15 @@ button { cursor: pointer; }
 .top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 20px; height: 68px; }
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
-.logo-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
-  background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; line-height: 1.15; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
+
+.logo svg { display: block; flex: none; }
+.wordmark { display: grid; gap: 3px; }
+.wordmark b { font: 26px/0.95 Anton, Impact, sans-serif; letter-spacing: .02em; color: var(--brand); font-weight: 400; }
+@media (prefers-color-scheme: dark) { .wordmark b { color: #f5f7fa; } }
+.wordmark i { justify-self: start; font: italic 800 9.5px/1 Montserrat, sans-serif; letter-spacing: .09em; padding: 3px 7px;
+  background: var(--cta); color: var(--cta-ink); transform: skewX(-8deg); }
+h1, .section-head h2 { font-family: Anton, Impact, sans-serif; font-weight: 400; letter-spacing: .01em; }
 .top nav { display: flex; gap: 22px; margin-left: 12px; }
 .top nav a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: .95rem; }
 .top nav a:hover { color: var(--ink); }
@@ -60,8 +67,8 @@ button { cursor: pointer; }
 .hero .wrap { display: grid; grid-template-columns: 1.15fr .85fr; gap: 40px; align-items: center; }
 .eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 6px 12px; border-radius: 999px;
   background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); font-size: .85rem; font-weight: 600; }
-.hero h1 { font-size: clamp(2.2rem, 5vw, 3.6rem); line-height: 1.04; letter-spacing: -.035em; margin: 18px 0 16px; }
-.hero h1 em { font-style: normal; background: linear-gradient(90deg, #8fd8ff, #ffd27a); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero h1 { font-size: clamp(2.6rem, 6vw, 4.4rem); line-height: 1; margin: 18px 0 16px; text-transform: uppercase; }
+.hero h1 em { font-style: normal; color: var(--cta); }
 .hero p.lead { font-size: 1.15rem; color: #c7d4e6; margin: 0 0 26px; max-width: 48ch; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 13px 20px; border-radius: 12px;
   font-weight: 700; text-decoration: none; border: 0; }
@@ -86,7 +93,7 @@ button { cursor: pointer; }
 /* Sections */
 section { padding: 64px 0; }
 .section-head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 22px; }
-.section-head h2 { font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -.025em; margin: 0; }
+.section-head h2 { font-size: clamp(1.8rem, 3.4vw, 2.6rem); margin: 0; text-transform: uppercase; }
 .section-head p { margin: 6px 0 0; color: var(--muted); }
 
 /* Standard service picker */
@@ -224,6 +231,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 }
 @media (max-width: 640px) {
   .top-phone, .cart-btn .lbl { display: none; }
+  .wordmark b { font-size: 21px; } .wordmark i { font-size: 8px; } .logo svg { width: 38px; height: 38px; }
   .hero { padding: 40px 0 48px; }
   section { padding: 44px 0; }
   .search { margin-left: 0; flex: 1 1 100%; }
@@ -239,9 +247,9 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 
 <header class="top">
   <div class="wrap">
-    <a class="logo" href="#top" aria-label="Home">
-      <span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg></span>
-      <span id="shop-name">__NAME__</span>
+    <a class="logo" href="#top" aria-label="__NAME__, home">
+      __EMBLEM__
+      <span class="wordmark" aria-hidden="true"><b>BLUE NILE</b><i>AUTO TYRES &amp; WHEELS</i></span>
     </a>
     <nav aria-label="Main">
       <a href="#servicing">Servicing</a><a href="#shop">All services</a><a href="#tyres">Tyres</a><a href="#visit">Contact</a>
@@ -260,8 +268,8 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   <section class="hero">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Book online · Upfront prices</span>
-        <h1>Car servicing, <em>sorted in a few taps.</em></h1>
+        <span class="eyebrow">Upfront quotes. No surprises.</span>
+        <h1>Tyres, wheels <em>&amp; servicing</em>__IN_SUBURB__</h1>
         <p class="lead" id="hero-lead"></p>
         <div class="btns">
           <a class="btn btn-cta" href="#servicing">Book a service</a>
@@ -475,7 +483,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
     document.title = D.shop.name + ' | Car servicing, tyres & online booking';
     if (D.shop.phone) { const a = $('#top-phone'); a.hidden = false; a.href = 'tel:' + D.shop.tel; a.textContent = D.shop.phone; }
     const cheapest = Math.min(...tiers.filter(t => t.fixed_cents != null).map(t => t.fixed_cents));
-    $('#hero-lead').innerHTML = `Pick your services, see the price and lock in a time online. Standard service from <b style="color:#ffd27a">${money(cheapest)}</b>. ${esc(D.shop.gst_line)}`;
+    $('#hero-lead').innerHTML = `Pick your services, see the price and book a time online. Standard service from <b style="color:var(--cta)">${money(cheapest)}</b>. ${esc(D.shop.gst_line)}`;
     $('#hero-chips').innerHTML = [D.shop.gst_line.replace(/\.$/, ''), 'Live booking times', `Labour ${money(D.shop.labour_cents)}/hr`, D.shop.days_open]
       .map(t => `<span>${check}${esc(t)}</span>`).join('');
     $('#gst-tag').textContent = D.shop.tax_inclusive ? D.shop.tax_name + ' included' : D.shop.tax_name + ' added at checkout';
@@ -508,6 +516,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
     const c = [];
     if (D.shop.phone) c.push(['Phone', `<a href="tel:${esc(D.shop.tel)}">${esc(D.shop.phone)}</a>`]);
     if (D.shop.email) c.push(['Email', `<a href="mailto:${esc(D.shop.email)}">${esc(D.shop.email)}</a>`]);
+    if (D.shop.website) c.push(['Web', `<a href="https://${esc(D.shop.website)}">${esc(D.shop.website)}</a>`]);
     if (D.shop.address) c.push(['Address', esc(D.shop.address)]);
     $('#contact').innerHTML = c.length ? c.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('') : '<tr><td>Contact details coming soon.</td></tr>';
     $('#contact-btns').innerHTML = (D.shop.phone ? `<a class="btn btn-dark" href="tel:${esc(D.shop.tel)}">Call us</a>` : '') +

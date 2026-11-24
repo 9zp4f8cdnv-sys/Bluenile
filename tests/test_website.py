@@ -67,7 +67,7 @@ def test_script_breakout_is_impossible(tmp_path):
 
 
 def test_opening_hours_grouping():
-    assert opening_hours(ShopConfig()) == [("Monday – Saturday", "8:00am – 5:00pm"), ("Sunday", "Closed")]
+    assert opening_hours(ShopConfig()) == [("Monday – Saturday", "8:00am – 6:00pm"), ("Sunday", "Closed")]
     weekdays = ShopConfig(open_days=(0, 1, 2, 3, 4), open_hour=7, close_hour=18)
     assert opening_hours(weekdays) == [("Monday – Friday", "7:00am – 6:00pm"), ("Saturday – Sunday", "Closed")]
 
@@ -80,3 +80,18 @@ def test_page_carries_vehicle_rules_and_no_size_labels():
     assert "Toyota" in data["makes"]
     for label in ["Large &amp; European cars", "Large & European cars", "Pick your car size"]:
         assert label not in page
+
+
+def test_branding_and_contact():
+    from bluenile.brand import emblem_svg
+    from bluenile.website import suburb_of
+    page = render(ShopConfig(), prices())
+    assert "BLUE NILE" in page and "AUTO TYRES &amp; WHEELS" in page
+    assert 'rel="icon" href="data:image/svg+xml,' in page
+    assert "in Rocklea</h1>" in page
+    shop = page_data(page)["shop"]
+    assert shop["email"] == "bluenileautotyres@gmail.com" and shop["website"] == "bluenileautotyres.com.au"
+    assert suburb_of("746 Beaudesert Road, Rocklea QLD 4106") == "Rocklea QLD" and suburb_of("") == ""
+    a, b = emblem_svg(), emblem_svg()
+    assert a != b  # unique ids so several emblems can share a page
+    assert 'aria-hidden="true"' in emblem_svg(label="")

@@ -154,8 +154,19 @@ def test_gst_inclusive_invoice(tmp_path):
     # 1.5 h x $130 = $195 + $249 = $444 total; GST inside it = 444 / 11 = $40.36
     assert inv["total_cents"] == 44400 and inv["tax_cents"] == 4036 and inv["subtotal_cents"] == 40364
     page = (tmp_path / "invoice-00001.html").read_text()
-    assert "Tax Invoice #1" in page and "ABN 12 345 678 901" in page
+    assert "<h1>Tax Invoice</h1>" in page and "ABN 12 345 678 901" in page and "Blue Nile emblem" in page
     assert "Total (incl. GST)" in page and "$444.00" in page and "Includes GST of" in page and "$40.36" in page
     assert call(shop, "lookup_prices", query="rwc")["tax_note"] == "Prices include GST."
     paid = call(shop, "record_payment", invoice_id=inv["id"], amount=444, method="card")
     assert paid["status"] == "paid"
+
+
+def test_settings_come_from_details_file_and_env_overrides(monkeypatch):
+    from bluenile.tools import setting
+    monkeypatch.delenv("SHOP_PHONE", raising=False)
+    assert setting("SHOP_PHONE") == "0434 609 834"
+    assert setting("SHOP_ABN") == "11 621 473 514"
+    assert setting("SHOP_EMAIL") == "bluenileautotyres@gmail.com"
+    assert setting("SHOP_NOT_IN_FILE", "none") == "none"
+    monkeypatch.setenv("SHOP_PHONE", "(07) 0000 0000")
+    assert setting("SHOP_PHONE") == "(07) 0000 0000"

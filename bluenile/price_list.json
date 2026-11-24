@@ -1,6 +1,6 @@
 {
   "as_of": "2026-11-20",
-  "note": "Edit this file to change prices. Set \"confirmed\": true once a price has been checked against the original list. price_min/price_max are dollars; null means not known.",
+  "note": "Edit this file to change prices. notes is for staff and the agent; web_note is shown on the public website. Set \"confirmed\": true once a price has been checked against the original list. price_min/price_max are dollars; null means not known.",
   "services": [
     {"category": "Vehicle service", "name": "Standard service - normal cars", "price_min": 249, "price_max": 249, "confirmed": true},
     {"category": "Vehicle service", "name": "Standard service - large cars and EU", "price_min": 299, "price_max": 299, "confirmed": true},
@@ -25,14 +25,14 @@
     {"category": "Flushes and fluids", "name": "CO2 test (coolant pressure test)", "price_min": 65, "price_max": 65, "confirmed": true},
     {"category": "Flushes and fluids", "name": "Transmission flush", "price_min": 200, "price_max": null, "confirmed": false, "notes": "From $200; EU cars up to $224 (unclear)"},
     {"category": "Flushes and fluids", "name": "Transmission service", "price_min": 400, "price_max": 700, "confirmed": false, "notes": "Range unclear"},
-    {"category": "Flushes and fluids", "name": "VW transmission flush", "price_min": 800, "price_max": 800, "confirmed": true, "notes": "Flush only; no transmission service offered for VW"},
+    {"category": "Flushes and fluids", "name": "VW transmission flush", "price_min": 800, "price_max": 800, "confirmed": true, "notes": "Flush only; no transmission service offered for VW", "web_note": "Flush only. We don't offer a transmission service for VW."},
 
     {"category": "Filters, wipers, lights and extras", "name": "Cheap wipers", "price_min": 25, "price_max": 25, "unit": "each ($50 a pair)", "confirmed": true},
     {"category": "Filters, wipers, lights and extras", "name": "Expensive wipers", "price_min": 40, "price_max": 40, "unit": "each ($80 a pair)", "confirmed": true},
     {"category": "Filters, wipers, lights and extras", "name": "Light (globe)", "price_min": 40, "price_max": 40, "confirmed": true},
     {"category": "Filters, wipers, lights and extras", "name": "MAF (mass air flow sensor)", "price_min": 60, "price_max": 60, "confirmed": true},
     {"category": "Filters, wipers, lights and extras", "name": "A/C sanitiser", "price_min": 65, "price_max": 65, "confirmed": true},
-    {"category": "Filters, wipers, lights and extras", "name": "Cabin filter", "price_min": 49, "price_max": 69, "confirmed": true, "notes": "Most vehicles"},
-    {"category": "Filters, wipers, lights and extras", "name": "Air filter", "price_min": 49, "price_max": 69, "confirmed": true, "notes": "Most vehicles"}
+    {"category": "Filters, wipers, lights and extras", "name": "Cabin filter", "price_min": 49, "price_max": 69, "confirmed": true, "notes": "Most vehicles", "web_note": "Most vehicles"},
+    {"category": "Filters, wipers, lights and extras", "name": "Air filter", "price_min": 49, "price_max": 69, "confirmed": true, "notes": "Most vehicles", "web_note": "Most vehicles"}
   ]
 }

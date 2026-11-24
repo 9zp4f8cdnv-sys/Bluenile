@@ -31,6 +31,7 @@ class ShopConfig:
     name: str = os.environ.get("SHOP_NAME", "Bluenile Auto Repair")
     address: str = os.environ.get("SHOP_ADDRESS", "")
     phone: str = os.environ.get("SHOP_PHONE", "")
+    email: str = os.environ.get("SHOP_EMAIL", "")
     abn: str = os.environ.get("SHOP_ABN", "")
     labor_rate_cents: int = int(float(os.environ.get("SHOP_LABOR_RATE", "130")) * 100)
     # Default: Australian GST, 10%, already included in every price (parts and labour).

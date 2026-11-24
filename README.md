@@ -19,6 +19,7 @@ reads and changes them only through the tools in `bluenile/tools.py`.
 | Scheduling | `check_availability` (hours × bays), `book_appointment`, `cancel_appointment`, `list_appointments` |
 | Work orders | `create_work_order`, `add_work_order_line` (labor/parts/fees), `update_work_order`, `get_work_order`, `list_work_orders` |
 | Invoices & payments | `create_invoice` (GST-inclusive totals, printable tax invoice in `invoices/`), `record_payment`, `get_invoice` |
+| Public website | `build_website.py` builds it from the price list and shop settings |
 | Websites, bug fixes, new agents | The container's bash and file tools; results land in `outputs/<session>/` |
 
 Guardrails:
@@ -40,6 +41,20 @@ to confirm. Anything not on the list gets a follow-up instead of a quote.
 To change a price, edit the JSON file (no setup re-run needed) and set
 `"confirmed": true` once it's checked. To use a file elsewhere, set `SHOP_PRICE_LIST`.
 
+## Website
+
+`python build_website.py` builds the shop's public website into
+`website/index.html` from the same data the agent uses: the price list and
+the `SHOP_*` settings. Re-run it whenever prices, hours or contact details
+change, so the website and the agent always quote the same prices.
+
+- Only confirmed prices are shown; unconfirmed ones say "Call for a quote".
+- Only `web_note` text from the price list is public (`notes` stays internal).
+- Contact details that aren't set are left off, and the build lists them.
+- It's a single self-contained HTML file (phone-friendly, dark mode, no
+  external scripts): upload it to any static host such as Netlify, Cloudflare
+  Pages or your current web host.
+
 ## Setup
 
 ```bash
@@ -52,7 +67,7 @@ Shop settings come from environment variables:
 
 | Variable | Default |
 | --- | --- |
-| `SHOP_NAME`, `SHOP_ADDRESS`, `SHOP_PHONE`, `SHOP_ABN` | `Bluenile Auto Repair`, empty, empty, empty |
+| `SHOP_NAME`, `SHOP_ADDRESS`, `SHOP_PHONE`, `SHOP_EMAIL`, `SHOP_ABN` | `Bluenile Auto Repair`, empty, empty, empty, empty |
 | `SHOP_LABOR_RATE` (dollars/hour, incl. GST) | `130` |
 | `SHOP_TAX_NAME`, `SHOP_TAX_RATE` | `GST`, `0.10` |
 | `SHOP_TAX_INCLUSIVE` (`1`: prices include GST; `0`: tax added on top) | `1` |

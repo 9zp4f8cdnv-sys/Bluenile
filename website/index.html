@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bluenile Auto Repair | Car servicing and repairs</title>
+<meta name="description" content="Bluenile Auto Repair: car servicing from $249, roadworthy certificates, wheel alignments, A/C regas, flushes and more. Clear prices, GST included.">
+<style>
+:root {
+  --bg: #f6f7f9; --surface: #ffffff; --ink: #14202e; --muted: #5a6776; --line: #e2e6eb;
+  --brand: #0d4f8b; --brand-ink: #ffffff; --accent: #f2a516; --accent-ink: #1b1300; --hero: #0b2a47;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f151c; --surface: #17202a; --ink: #e8edf2; --muted: #9aa8b6; --line: #273340;
+    --brand: #4b9be0; --brand-ink: #06121e; --accent: #f2b53a; --accent-ink: #1b1300; --hero: #0a1d31;
+  }
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--brand); }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 0 20px; }
+header.top { position: sticky; top: 0; z-index: 10; background: var(--surface); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 16px; height: 60px; }
+.logo { font-weight: 800; font-size: 1.1rem; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; }
+.logo span { color: var(--brand); }
+nav { display: flex; gap: 18px; margin-left: auto; }
+nav a { color: var(--muted); text-decoration: none; font-weight: 500; }
+nav a:hover { color: var(--ink); }
+.top-call { font-weight: 700; text-decoration: none; white-space: nowrap; }
+.hero { background: var(--hero); color: #fff; padding: 72px 0 64px; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3.1rem); line-height: 1.1; margin: 0 0 16px; letter-spacing: -0.02em; max-width: 16ch; }
+.hero p { font-size: 1.15rem; color: #c9d6e3; margin: 0 0 28px; max-width: 46ch; }
+.hero .from { color: var(--accent); font-weight: 700; }
+.btns { display: flex; flex-wrap: wrap; gap: 12px; }
+.btn { display: inline-block; padding: 12px 20px; border-radius: 8px; font-weight: 700; text-decoration: none; }
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-ghost { border: 1.5px solid currentColor; color: inherit; }
+.hero .btn-ghost { color: #fff; }
+section { padding: 56px 0; }
+section h2 { font-size: 1.75rem; margin: 0 0 8px; letter-spacing: -0.01em; }
+.muted { color: var(--muted); margin: 0 0 20px; }
+.tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 24px; }
+.tier { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+.tier h3 { margin: 0 0 4px; font-size: 1.15rem; }
+.tier-blurb { color: var(--muted); margin: 0 0 16px; font-size: 0.95rem; }
+.tier-price { font-size: 2rem; font-weight: 800; margin: 0; color: var(--brand); }
+.price-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.price-group { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+.price-group h3 { margin: 0 0 4px; }
+table { width: 100%; border-collapse: collapse; }
+td, th { padding: 10px 0; border-top: 1px solid var(--line); vertical-align: top; text-align: left; }
+td.price { text-align: right; font-weight: 700; padding-left: 12px; width: 42%; }
+.note { display: block; color: var(--muted); font-size: 0.85rem; }
+.quote { color: var(--muted); font-weight: 500; white-space: nowrap; }
+.fine { color: var(--muted); font-size: 0.9rem; margin-top: 20px; }
+.visit { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 22px; }
+.card h3 { margin: 0 0 12px; }
+.hours th { font-weight: 500; color: var(--muted); padding-right: 12px; }
+.contact { list-style: none; margin: 0 0 16px; padding: 0; }
+.contact li { padding: 10px 0; border-top: 1px solid var(--line); display: flex; gap: 12px; }
+.contact li span { color: var(--muted); min-width: 70px; }
+.cta { background: var(--brand); color: var(--brand-ink); text-align: center; }
+.cta h2 { margin-bottom: 8px; }
+.cta p { margin: 0 0 22px; opacity: 0.9; }
+footer { padding: 28px 0; color: var(--muted); font-size: 0.9rem; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-content: space-between; }
+@media (max-width: 720px) {
+  nav { display: none; }
+  .top-call { margin-left: auto; }
+  .hero { padding: 48px 0 44px; }
+  section { padding: 40px 0; }
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <a class="logo" href="#"><span>Bluenile</span> Auto Repair</a>
+    <nav><a href="#servicing">Servicing</a><a href="#prices">Prices</a><a href="#visit">Hours &amp; contact</a></nav>
+    
+  </div>
+</header>
+
+<main>
+<section class="hero">
+  <div class="wrap">
+    <h1>Car servicing and repairs, priced up front.</h1>
+    <p>Standard service from <span class="from">$249</span>. All prices include GST.
+    Roadworthies, wheel alignments, A/C regas, flushes and more.</p>
+    <div class="btns">
+      
+      <a class="btn btn-ghost" href="#prices">See all prices</a>
+    </div>
+  </div>
+</section>
+
+<section id="servicing">
+  <div class="wrap">
+    <h2>Standard service</h2>
+    <p class="muted">One fixed price, based on the size of your car.</p>
+    <div class="tiers">
+        <div class="tier">
+          <h3>Normal cars</h3>
+          <p class="tier-blurb">Hatchbacks, sedans and small SUVs</p>
+          <p class="tier-price">$249</p>
+        </div>
+        <div class="tier">
+          <h3>Large &amp; European cars</h3>
+          <p class="tier-blurb">Large sedans, wagons, SUVs and European makes</p>
+          <p class="tier-price">$299</p>
+        </div>
+        <div class="tier">
+          <h3>Very big cars</h3>
+          <p class="tier-blurb">4WDs, utes, vans and people movers</p>
+          <p class="tier-price">$329</p>
+        </div>
+    </div>
+  </div>
+</section>
+
+<section id="prices">
+  <div class="wrap">
+    <h2>Prices</h2>
+    <p class="muted">All prices include GST. Labour and diagnostics are $130 per hour.</p>
+    <div class="price-groups">
+      <div class="price-group">
+        <h3>Essential services</h3>
+        <p class="muted">Everyday jobs that keep your car safe and on the road.</p>
+        <table><tbody><tr><td>Puncture repair</td><td class="price">$50</td></tr><tr><td>Wheel alignment</td><td class="price">$90</td></tr><tr><td>RWC (roadworthy certificate)</td><td class="price">$97</td></tr><tr><td>Rotate and balance tyres</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>Pre / post purchase inspection</td><td class="price">$100–$150</td></tr><tr><td>A/C regas</td><td class="price">$150</td></tr><tr><td>Headlight polish</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>Diagnostic / labour</td><td class="price">$130 per hour</td></tr><tr><td>Brake service</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>Brake pads machining</td><td class="price"><span class="quote">Call for a quote</span></td></tr></tbody></table>
+      </div>
+      <div class="price-group">
+        <h3>Flushes and fluids</h3>
+        <p class="muted">Fresh fluids protect your brakes, steering, cooling system and transmission.</p>
+        <table><tbody><tr><td>Power steering flush</td><td class="price">$97</td></tr><tr><td>Brake fluid flush</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>Coolant flush</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>Differential flush - normal cars</td><td class="price">$150</td></tr><tr><td>Engine flush</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>CO2 test (coolant pressure test)</td><td class="price">$65</td></tr><tr><td>Transmission flush</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>Transmission service</td><td class="price"><span class="quote">Call for a quote</span></td></tr><tr><td>VW transmission flush<span class="note">Flush only. We don&#x27;t offer a transmission service for VW.</span></td><td class="price">$800</td></tr></tbody></table>
+      </div>
+      <div class="price-group">
+        <h3>Filters, wipers, lights and extras</h3>
+        <p class="muted">Quick add-ons we can do while your car is in.</p>
+        <table><tbody><tr><td>Cheap wipers</td><td class="price">$25 each ($50 a pair)</td></tr><tr><td>Expensive wipers</td><td class="price">$40 each ($80 a pair)</td></tr><tr><td>Light (globe)</td><td class="price">$40</td></tr><tr><td>MAF (mass air flow sensor)</td><td class="price">$60</td></tr><tr><td>A/C sanitiser</td><td class="price">$65</td></tr><tr><td>Cabin filter<span class="note">Most vehicles</span></td><td class="price">$49–$69</td></tr><tr><td>Air filter<span class="note">Most vehicles</span></td><td class="price">$49–$69</td></tr></tbody></table>
+      </div>
+    </div>
+    <p class="fine">Prices current as of 20 November 2026. Some jobs vary by vehicle; we'll confirm the price when you book.</p>
+  </div>
+</section>
+
+<section id="visit">
+  <div class="wrap">
+    <h2>Hours &amp; contact</h2>
+    <div class="visit">
+      <div class="card">
+        <h3>Opening hours</h3>
+        <table class="hours"><tbody><tr><th>Monday – Saturday</th><td>8:00am – 5:00pm</td></tr><tr><th>Sunday</th><td>Closed</td></tr></tbody></table>
+      </div>
+      <div class="card">
+        <h3>Get in touch</h3>
+        <ul class="contact"><li class="muted">Contact details coming soon.</li></ul>
+        <div class="btns"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta">
+  <div class="wrap">
+    <h2>Book your car in</h2>
+    <p>Online booking coming soon.</p>
+    <div class="btns" style="justify-content:center"></div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>&copy; 2026 Bluenile Auto Repair</span>
+    <span>All prices include GST.</span>
+  </div>
+</footer>
+</body>
+</html>

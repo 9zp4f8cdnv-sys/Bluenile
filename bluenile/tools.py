@@ -12,6 +12,7 @@ from __future__ import annotations
 import html
 import json
 import os
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -39,6 +40,7 @@ class ShopConfig:
     # Monday=0 ... Sunday=6
     open_days: tuple[int, ...] = field(default=(0, 1, 2, 3, 4, 5))
     invoice_dir: Path = Path(os.environ.get("SHOP_INVOICE_DIR", "invoices"))
+    price_list: Path = Path(os.environ.get("SHOP_PRICE_LIST", Path(__file__).with_name("price_list.json")))
 
 
 def _money(cents: int) -> str:
@@ -50,6 +52,39 @@ def _parse_dt(value: str) -> datetime:
         return datetime.fromisoformat(value)
     except ValueError as e:
         raise ToolError(f"Invalid date/time {value!r}; use ISO format like 2026-12-01T09:00") from e
+
+
+# Words callers use -> words on the price list.
+_SYNONYMS = {
+    "tire": "tyre", "tires": "tyres", "aircon": "a/c", "ac": "a/c", "air-con": "a/c",
+    "conditioning": "a/c", "roadworthy": "rwc", "rego": "rwc", "oil": "standard",
+    "logbook": "standard", "bulb": "globe", "headlight": "headlight", "brakes": "brake",
+    "flat": "puncture", "alignment": "alignment", "wiper": "wipers", "gearbox": "transmission",
+    "trans": "transmission", "diagnosis": "diagnostic", "labor": "labour", "radiator": "coolant",
+    "filter": "filter", "filters": "filter", "inspection": "inspection",
+}
+
+
+_STOPWORDS = set("""a an and the for of to in on at is are be do does did you your my me i we can could
+would how much what whats what's cost costs price prices pricing quote charge get need new please change
+with car cars vehicle just about some""".split())
+
+
+def _words(text: str) -> list[str]:
+    return re.findall(r"[a-z0-9]+(?:/[a-z0-9]+)?", text.lower())
+
+
+def _quote(item: dict) -> str:
+    lo, hi, unit = item.get("price_min"), item.get("price_max"), item.get("unit")
+    if lo is None and hi is None:
+        return "no price on the list"
+    if hi is None:
+        text = f"from ${lo:g}"
+    elif lo is None or lo == hi:
+        text = f"${hi:g}"
+    else:
+        text = f"${lo:g} to ${hi:g}"
+    return f"{text} {unit}" if unit else text
 
 
 def _obj(props: dict, required: list[str]) -> dict:
@@ -227,6 +262,14 @@ class ShopTools:
             "Get an invoice with its payments and balance due.",
             _obj({"invoice_id": I}, ["invoice_id"]),
             self.get_invoice,
+        )
+        self._add(
+            "lookup_prices",
+            "Search the shop's service price list (services, flushes, filters, wipers, etc.). "
+            "Leave query empty to get the whole list. Each result has a quote and a confirmed "
+            "flag; unconfirmed or missing prices must be checked by staff before you quote them as final.",
+            _obj({"query": S}, []),
+            self.lookup_prices,
         )
         self._add(
             "shop_info",
@@ -480,6 +523,32 @@ class ShopTools:
         inv["total"] = _money(inv["total_cents"])
         inv["balance_due"] = _money(inv["balance_due_cents"])
         return inv
+
+    def _price_list(self) -> dict:
+        try:
+            return json.loads(Path(self.cfg.price_list).read_text(encoding="utf-8"))
+        except FileNotFoundError as e:
+            raise ToolError("The shop has no price list set up; ask staff for prices") from e
+
+    def lookup_prices(self, query: str = "") -> dict:
+        data = self._price_list()
+        words = [_SYNONYMS.get(w, w) for w in _words(query) if w not in _STOPWORDS]
+        scored = []
+        for item in data["services"]:
+            name = _words(item["name"])
+            rest = _words(f'{item.get("category", "")} {item.get("notes", "")}')
+            # A query word matches a list word it is a prefix of ("brake" ~ "brakes").
+            score = sum(2 if any(t.startswith(w) for t in name) else 1 if any(t.startswith(w) for t in rest) else 0
+                        for w in words)
+            if not words or score:
+                scored.append((score, item))
+        best = max((sc for sc, _ in scored), default=0)
+        results = [{**item, "quote": _quote(item)} for sc, item in scored if sc == best]
+        return {
+            "as_of": data.get("as_of"),
+            "results": results,
+            "note": None if results else "Not on the price list: take details and log a follow_up for a quote.",
+        }
 
     def shop_info(self) -> dict:
         days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]

@@ -101,3 +101,37 @@ def test_calls_and_bad_input(shop):
         shop.run("nope", {})
     with pytest.raises(ToolError, match="Bad arguments"):
         shop.run("find_customer", {"wrong": 1})
+
+
+def test_lookup_prices(shop):
+    full = call(shop, "lookup_prices")
+    assert full["as_of"] == "2026-11-20" and len(full["results"]) > 20
+
+    svc = call(shop, "lookup_prices", query="service")["results"]
+    assert "Standard service - normal cars" in [r["name"] for r in svc]
+
+    tyres = call(shop, "lookup_prices", query="rotate and balance tires")["results"]
+    assert tyres[0]["name"] == "Rotate and balance tyres" and tyres[0]["confirmed"] is False
+
+    brake = [r for r in call(shop, "lookup_prices", query="brake service")["results"] if r["name"] == "Brake service"]
+    assert brake and brake[0]["quote"] == "no price on the list"
+
+    assert call(shop, "lookup_prices", query="aircon regas")["results"][0]["quote"] == "$150"
+    assert call(shop, "lookup_prices", query="pre purchase inspection")["results"][0]["quote"] == "$100 to $150"
+    assert call(shop, "lookup_prices", query="transmission flush")["results"][0]["quote"] == "from $200"
+    assert call(shop, "lookup_prices", query="cheap wipers")["results"][0]["quote"] == "$25 each ($50 a pair)"
+
+    missing = call(shop, "lookup_prices", query="turbo rebuild")
+    assert missing["results"] == [] and "follow_up" in missing["note"]
+
+
+def test_price_list_file_is_consistent():
+    from bluenile.tools import ShopConfig as C
+    data = json.loads(C().price_list.read_text())
+    names = [s["name"] for s in data["services"]]
+    assert len(names) == len(set(names))
+    for s in data["services"]:
+        assert isinstance(s["confirmed"], bool)
+        lo, hi = s["price_min"], s["price_max"]
+        if lo is not None and hi is not None:
+            assert lo <= hi

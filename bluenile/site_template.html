@@ -41,7 +41,8 @@ button { cursor: pointer; }
 .top { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--surface) 88%, transparent);
   backdrop-filter: saturate(1.4) blur(12px); border-bottom: 1px solid var(--line); }
 .top .wrap { display: flex; align-items: center; gap: 20px; height: 68px; }
-.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.1rem; line-height: 1.15; color: var(--ink); text-decoration: none; letter-spacing: -.02em; }
+.logo-mark { flex: none; }
 .logo-mark { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
   background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
 .top nav { display: flex; gap: 22px; margin-left: 12px; }
@@ -224,6 +225,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 }
 @media (max-width: 640px) {
   .top-phone, .cart-btn .lbl { display: none; }
+  .logo { font-size: .98rem; }
   .hero { padding: 40px 0 48px; }
   section { padding: 44px 0; }
   .search { margin-left: 0; flex: 1 1 100%; }

@@ -1,8 +1,11 @@
 {
-  "note": "The shop's details. These are used on the website, invoices and by the agent. An environment variable with the same name overrides a value here.",
-  "SHOP_NAME": "Bluenile Auto Repair",
+  "note": "The shop's details. These are used on the website, invoices, the phone line and by the agent. Hours are 24-hour clock (18 = 6pm). SHOP_TRANSFER_NUMBER is where the phone line puts callers who ask for a person, in international format. An environment variable with the same name overrides a value here.",
+  "SHOP_NAME": "Blue Nile Auto Tyres and Wheels",
   "SHOP_PHONE": "0434 609 834",
   "SHOP_ADDRESS": "746 Beaudesert Road, Rocklea QLD 4106",
   "SHOP_ABN": "11 621 473 514",
-  "SHOP_EMAIL": ""
+  "SHOP_EMAIL": "",
+  "SHOP_OPEN_HOUR": "8",
+  "SHOP_CLOSE_HOUR": "18",
+  "SHOP_TRANSFER_NUMBER": "+61434609834"
 }

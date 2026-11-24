@@ -115,9 +115,9 @@ def test_rate_limit(client, monkeypatch):
 def test_every_booking_is_two_hours(client):
     j = client.post("/api/bookings", json=booking(items=[{"name": "Light (globe)", "qty": 1}], tyres=None)).get_json()
     assert j["end"] == "2026-11-25T11:00"
-    # and availability only offers starts with 2 h left before closing (5pm)
+    # and availability only offers starts with 2 h left before closing (6pm)
     slots = client.get("/api/availability?date=2026-11-26&hours=1").get_json()["free_slots"]
-    assert slots[-1] == "2026-11-26T15:00"
+    assert slots[-1] == "2026-11-26T16:00"
 
 
 @pytest.mark.parametrize("sent,make,model,expected,price", [

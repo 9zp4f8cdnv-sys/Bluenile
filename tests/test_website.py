@@ -67,7 +67,7 @@ def test_script_breakout_is_impossible(tmp_path):
 
 
 def test_opening_hours_grouping():
-    assert opening_hours(ShopConfig()) == [("Monday – Saturday", "8:00am – 5:00pm"), ("Sunday", "Closed")]
+    assert opening_hours(ShopConfig()) == [("Monday – Saturday", "8:00am – 6:00pm"), ("Sunday", "Closed")]
     weekdays = ShopConfig(open_days=(0, 1, 2, 3, 4), open_hour=7, close_hour=18)
     assert opening_hours(weekdays) == [("Monday – Friday", "7:00am – 6:00pm"), ("Saturday – Sunday", "Closed")]
 

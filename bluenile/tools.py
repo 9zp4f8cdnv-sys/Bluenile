@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .db import row_to_dict
+from .brand import NILE_NAVY, ROAD_BLACK, SUN_GOLD, emblem_svg
 from .vehicles import classify as classify_vehicle_rules
 
 
@@ -47,6 +48,7 @@ class ShopConfig:
     address: str = setting("SHOP_ADDRESS", "")
     phone: str = setting("SHOP_PHONE", "")
     email: str = setting("SHOP_EMAIL", "")
+    website: str = setting("SHOP_WEBSITE", "")
     abn: str = setting("SHOP_ABN", "")
     labor_rate_cents: int = int(float(setting("SHOP_LABOR_RATE", "130")) * 100)
     # Default: Australian GST, 10%, already included in every price (parts and labour).
@@ -642,21 +644,67 @@ class ShopTools:
                 f"<td class=n>{_money(wo['tax_cents'])}</td></tr>"
                 f"<tr class=tot><td colspan=4 class=n><b>Total</b></td><td class=n><b>{_money(wo['total_cents'])}</b></td></tr>"
             )
-        doc = f"""<!doctype html><html><head><meta charset="utf-8"><title>{title} {invoice_id}</title>
-<style>body{{font-family:system-ui,sans-serif;max-width:760px;margin:32px auto;color:#222}}
-table{{width:100%;border-collapse:collapse}}td,th{{padding:6px;border-bottom:1px solid #ddd;text-align:left}}
-.n{{text-align:right}}.tot td{{border:none}}h1{{margin-bottom:0}}</style></head><body>
-<h1>{e(self.cfg.name)}</h1><p>{e(self.cfg.address)} {e(self.cfg.phone)}
-{f"<br>ABN {e(self.cfg.abn)}" if self.cfg.abn else ""}</p>
-<h2>{title} #{invoice_id}</h2>
-<p><b>Date:</b> {datetime.now():%d %b %Y} &nbsp; <b>Work order:</b> #{wo['id']}</p>
-<p><b>Customer:</b> {e(c['name'])} {e(c['phone'] or '')}<br>
-<b>Vehicle:</b> {e(vehicle)} {e(v['plate'] or '')} {('VIN ' + e(v['vin'])) if v['vin'] else ''}
-{f"<br><b>Odometer:</b> {v['mileage']:,}" if v['mileage'] else ''}</p>
-<p><b>Customer concern:</b> {e(wo['complaint'])}</p>
-<table><tr><th>Type</th><th>Description</th><th class=n>Qty</th><th class=n>Price</th><th class=n>Total</th></tr>{rows}
+        cfg = self.cfg
+        street, _, locality = cfg.address.partition(",")
+        contact_rows = "".join(
+            f"<tr><th>{k}</th><td>{e(v)}</td></tr>"
+            for k, v in (("Mobile", cfg.phone), ("Email", cfg.email), ("Web", cfg.website)) if v
+        )
+        customer = "<br>".join(e(x) for x in (c["name"], c.get("phone") or "", c.get("email") or "") if x)
+        car = "<br>".join(x for x in (
+            e(vehicle),
+            f"Rego {e(v['plate'])}" if v["plate"] else "",
+            f"VIN {e(v['vin'])}" if v["vin"] else "",
+            f"Odometer {v['mileage']:,}" if v["mileage"] else "",
+        ) if x)
+        doc = f"""<!doctype html><html lang="en-AU"><head><meta charset="utf-8"><title>{title} {invoice_id}</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Montserrat:ital,wght@0,400;0,600;0,700;1,800&display=swap" rel="stylesheet">
+<style>
+@page {{ size: A4; margin: 14mm; }}
+* {{ box-sizing: border-box; }}
+body {{ font: 14px/1.45 Montserrat, Arial, sans-serif; color: #14171f; max-width: 820px; margin: 24px auto; padding: 0 16px; }}
+.head {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }}
+.lockup {{ display: flex; align-items: center; gap: 14px; }}
+.word b {{ display: block; font: 44px/0.95 Anton, Impact, sans-serif; color: {NILE_NAVY}; letter-spacing: .01em; }}
+.word span {{ display: inline-block; margin-top: 6px; padding: 3px 10px; background: {SUN_GOLD}; color: {ROAD_BLACK};
+  font: italic 800 12px/1.2 Montserrat, Arial, sans-serif; letter-spacing: .08em; transform: skewX(-8deg); }}
+.doc h1 {{ font: 700 30px/1 Montserrat, Arial, sans-serif; margin: 4px 0 12px; text-align: right; }}
+.meta th, .meta td, .band th, .band td {{ padding: 1px 0; border: 0; vertical-align: top; }}
+.meta th {{ text-align: right; padding-right: 22px; }} .meta td {{ text-align: right; }}
+.band {{ display: flex; justify-content: space-between; gap: 24px; background: #ebedf0; padding: 18px 22px; margin: 22px 0 16px; }}
+.band th {{ text-align: right; padding-right: 22px; font-weight: 700; }}
+.boxes {{ display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }}
+.box {{ border: 1px solid #d5d9e0; padding: 12px 14px; }}
+.box h3 {{ margin: 0 0 6px; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #5b6472; }}
+.concern {{ margin: 0 0 16px; }}
+table.lines {{ width: 100%; border-collapse: collapse; }}
+.lines th {{ background: {NILE_NAVY}; color: #fff; text-align: left; padding: 8px 10px; font-weight: 600; }}
+.lines th.n {{ text-align: right; }}
+.lines td {{ padding: 8px 10px; border-bottom: 1px solid #e3e6eb; }}
+.n {{ text-align: right; }}
+.lines .tot td {{ border: 0; padding: 4px 10px; }}
+.lines .tot:first-of-type td {{ padding-top: 12px; }}
+.thanks {{ margin-top: 26px; color: #5b6472; }}
+@media print {{ body {{ margin: 0; }} }}
+</style></head><body>
+<div class="head">
+  <div class="lockup">{emblem_svg(96)}<div class="word"><b>BLUE NILE</b><span>AUTO TYRES &amp; WHEELS</span></div></div>
+  <div class="doc"><h1>{title}</h1>
+    <table class="meta"><tr><th>Date:</th><td>{datetime.now():%d/%m/%Y}</td></tr>
+    <tr><th>Job #:</th><td>{wo['id']}</td></tr><tr><th>Invoice #:</th><td>{invoice_id}</td></tr></table></div>
+</div>
+<div class="band">
+  <div><b>{e(cfg.name)}</b>{f" &nbsp; <b>ABN {e(cfg.abn)}</b>" if cfg.abn else ""}<br>{e(street.strip())}<br>{e(locality.strip())}</div>
+  <table>{contact_rows}</table>
+</div>
+<div class="boxes">
+  <div class="box"><h3>Bill to</h3>{customer}</div>
+  <div class="box"><h3>Vehicle</h3>{car}</div>
+</div>
+<p class="concern"><b>Customer concern:</b> {e(wo['complaint'])}</p>
+<table class="lines"><tr><th>Type</th><th>Description</th><th class=n>Qty</th><th class=n>Price</th><th class=n>Total</th></tr>{rows}
 {totals}
-</table><p>Thank you for your business!</p></body></html>"""
+</table><p class="thanks">Thank you for your business!</p></body></html>"""
         self.cfg.invoice_dir.mkdir(parents=True, exist_ok=True)
         path = self.cfg.invoice_dir / f"invoice-{invoice_id:05d}.html"
         path.write_text(doc, encoding="utf-8")

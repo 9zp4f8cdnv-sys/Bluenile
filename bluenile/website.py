@@ -17,11 +17,13 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import date
 from html import escape as e
 from pathlib import Path
 
 from .tools import ShopConfig
+from .brand import emblem_svg, favicon_data_uri
 from .vehicles import load_rules
 from .web import fixed_price_cents
 
@@ -97,6 +99,12 @@ def _days_open(cfg: ShopConfig) -> str:
     if days and days == list(range(days[0], days[-1] + 1)):
         return f"Open {DAY_NAMES[days[0]][:3]}–{DAY_NAMES[days[-1]][:3]}"
     return "Open " + ", ".join(DAY_NAMES[d][:3] for d in days)
+
+
+def suburb_of(address: str) -> str:
+    """'746 Beaudesert Road, Rocklea QLD 4106' -> 'Rocklea QLD'."""
+    m = re.search(r",\s*([^,]+?\s(?:QLD|NSW|VIC|SA|WA|TAS|ACT|NT))\b", address or "", re.IGNORECASE)
+    return m.group(1).strip() if m else ""
 
 
 def missing_details(cfg: ShopConfig) -> list[str]:
@@ -178,7 +186,7 @@ def render(cfg: ShopConfig, prices: dict, api_base: str | None = None, rego_look
     data = {
         "shop": {
             "name": cfg.name, "phone": cfg.phone, "tel": _tel(cfg.phone), "email": cfg.email,
-            "address": cfg.address, "abn": cfg.abn, "gst_line": gst_line, "tax_inclusive": cfg.tax_inclusive,
+            "address": cfg.address, "abn": cfg.abn, "website": cfg.website, "gst_line": gst_line, "tax_inclusive": cfg.tax_inclusive,
             "tax_name": cfg.tax_name, "labour_cents": cfg.labor_rate_cents,
             "hours": opening_hours(cfg), "days_open": _days_open(cfg),
             "price_note": f"incl. {cfg.tax_name}" if cfg.tax_inclusive else f"+ {cfg.tax_name}",
@@ -196,7 +204,8 @@ def render(cfg: ShopConfig, prices: dict, api_base: str | None = None, rego_look
     }
     # Safe inside <script>: no "</script>" or "<!--" can appear in the JSON.
     data_json = json.dumps(data, ensure_ascii=False).replace("<", "\\u003c")
-    description = (f"{cfg.name}: book car servicing online"
+    suburb = suburb_of(cfg.address)
+    description = (f"{cfg.name}{', ' + suburb if suburb else ''}: tyres, wheels and car servicing. Book online"
                    + (f" from {_dollars(from_cents / 100)}" if from_cents else "")
                    + ". Roadworthies, wheel alignments, A/C regas, tyres, flushes and more. "
                    + gst_line)
@@ -204,6 +213,9 @@ def render(cfg: ShopConfig, prices: dict, api_base: str | None = None, rego_look
     return (html.replace("__TITLE__", e(f"{cfg.name} | Car servicing, tyres & online booking"))
                 .replace("__DESCRIPTION__", e(description))
                 .replace("__NAME__", e(cfg.name))
+                .replace("__EMBLEM__", emblem_svg(46, label=""))
+                .replace("__IN_SUBURB__", e(f" in {suburb.rsplit(' ', 1)[0]}") if suburb else "")
+                .replace("__FAVICON__", favicon_data_uri())
                 .replace("__DATA__", data_json))
 
 

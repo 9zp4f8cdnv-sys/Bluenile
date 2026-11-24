@@ -96,7 +96,9 @@ export ANTHROPIC_API_KEY=sk-ant-...     # or run `ant auth login`
 python setup_agent.py                   # once: creates the environment + agent, saves IDs to .bluenile.json
 ```
 
-The shop's name, phone, address, email and ABN are in `bluenile/shop_details.json`.
+The shop's name, phone, address, email, website and ABN are in `bluenile/shop_details.json`.
+The Blue Nile emblem and colours (from the shop's logo system) are in `bluenile/brand.py`;
+the website and tax invoices use them.
 Any setting can also be given as an environment variable, which overrides the file:
 
 | Variable | Default |

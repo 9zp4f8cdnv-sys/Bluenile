@@ -159,3 +159,13 @@ def test_gst_inclusive_invoice(tmp_path):
     assert call(shop, "lookup_prices", query="rwc")["tax_note"] == "Prices include GST."
     paid = call(shop, "record_payment", invoice_id=inv["id"], amount=444, method="card")
     assert paid["status"] == "paid"
+
+
+def test_settings_come_from_details_file_and_env_overrides(monkeypatch):
+    from bluenile.tools import setting
+    monkeypatch.delenv("SHOP_PHONE", raising=False)
+    assert setting("SHOP_PHONE") == "0434 609 834"
+    assert setting("SHOP_ABN") == "11 621 473 514"
+    assert setting("SHOP_EMAIL", "none") == "none"  # empty in the file -> default
+    monkeypatch.setenv("SHOP_PHONE", "(07) 0000 0000")
+    assert setting("SHOP_PHONE") == "(07) 0000 0000"

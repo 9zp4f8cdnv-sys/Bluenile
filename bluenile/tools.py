@@ -27,29 +27,43 @@ class ToolError(Exception):
     """Input the agent should correct (unknown id, bad date, ...)."""
 
 
+_DETAILS_FILE = Path(__file__).with_name("shop_details.json")
+
+
+def setting(key: str, default: str = "") -> str:
+    """A shop setting: the environment variable if set, else bluenile/shop_details.json, else the default."""
+    if key in os.environ:
+        return os.environ[key]
+    try:
+        value = json.loads(_DETAILS_FILE.read_text(encoding="utf-8")).get(key)
+    except FileNotFoundError:
+        value = None
+    return value if value not in (None, "") else default
+
+
 @dataclass
 class ShopConfig:
-    name: str = os.environ.get("SHOP_NAME", "Bluenile Auto Repair")
-    address: str = os.environ.get("SHOP_ADDRESS", "")
-    phone: str = os.environ.get("SHOP_PHONE", "")
-    email: str = os.environ.get("SHOP_EMAIL", "")
-    abn: str = os.environ.get("SHOP_ABN", "")
-    labor_rate_cents: int = int(float(os.environ.get("SHOP_LABOR_RATE", "130")) * 100)
+    name: str = setting("SHOP_NAME", "Bluenile Auto Repair")
+    address: str = setting("SHOP_ADDRESS", "")
+    phone: str = setting("SHOP_PHONE", "")
+    email: str = setting("SHOP_EMAIL", "")
+    abn: str = setting("SHOP_ABN", "")
+    labor_rate_cents: int = int(float(setting("SHOP_LABOR_RATE", "130")) * 100)
     # Default: Australian GST, 10%, already included in every price (parts and labour).
     # For tax added on top instead, set SHOP_TAX_INCLUSIVE=0.
-    tax_name: str = os.environ.get("SHOP_TAX_NAME", "GST")
-    tax_rate: float = float(os.environ.get("SHOP_TAX_RATE", "0.10"))
-    tax_inclusive: bool = os.environ.get("SHOP_TAX_INCLUSIVE", "1") == "1"
-    tax_labor: bool = os.environ.get("SHOP_TAX_LABOR", "1") == "1"
-    open_hour: int = int(os.environ.get("SHOP_OPEN_HOUR", "8"))
-    close_hour: int = int(os.environ.get("SHOP_CLOSE_HOUR", "17"))
-    bays: int = int(os.environ.get("SHOP_BAYS", "3"))
+    tax_name: str = setting("SHOP_TAX_NAME", "GST")
+    tax_rate: float = float(setting("SHOP_TAX_RATE", "0.10"))
+    tax_inclusive: bool = setting("SHOP_TAX_INCLUSIVE", "1") == "1"
+    tax_labor: bool = setting("SHOP_TAX_LABOR", "1") == "1"
+    open_hour: int = int(setting("SHOP_OPEN_HOUR", "8"))
+    close_hour: int = int(setting("SHOP_CLOSE_HOUR", "17"))
+    bays: int = int(setting("SHOP_BAYS", "3"))
     # Every booking reserves a bay for this long, whatever the job.
-    booking_hours: float = float(os.environ.get("SHOP_BOOKING_HOURS", "2"))
+    booking_hours: float = float(setting("SHOP_BOOKING_HOURS", "2"))
     # Monday=0 ... Sunday=6
     open_days: tuple[int, ...] = field(default=(0, 1, 2, 3, 4, 5))
-    invoice_dir: Path = Path(os.environ.get("SHOP_INVOICE_DIR", "invoices"))
-    price_list: Path = Path(os.environ.get("SHOP_PRICE_LIST", Path(__file__).with_name("price_list.json")))
+    invoice_dir: Path = Path(setting("SHOP_INVOICE_DIR", "invoices"))
+    price_list: Path = Path(setting("SHOP_PRICE_LIST", Path(__file__).with_name("price_list.json")))
 
 
 def _money(cents: int) -> str:

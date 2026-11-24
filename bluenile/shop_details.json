@@ -1,0 +1,8 @@
+{
+  "note": "The shop's details. These are used on the website, invoices and by the agent. An environment variable with the same name overrides a value here.",
+  "SHOP_NAME": "Bluenile Auto Repair",
+  "SHOP_PHONE": "0434 609 834",
+  "SHOP_ADDRESS": "746 Beaudesert Road, Rocklea QLD 4106",
+  "SHOP_ABN": "11 621 473 514",
+  "SHOP_EMAIL": ""
+}

@@ -33,6 +33,7 @@ from twilio.request_validator import RequestValidator
 from twilio.twiml.voice_response import Gather, VoiceResponse
 
 from .session import MODE_NOTES, SessionRunner
+from .tools import setting
 
 log = logging.getLogger("bluenile.phone")
 
@@ -47,10 +48,10 @@ ENDED_STATUSES = {"completed", "busy", "failed", "no-answer", "canceled"}
 class PhoneConfig:
     auth_token: str = field(default_factory=lambda: os.environ.get("TWILIO_AUTH_TOKEN", ""))
     public_base_url: str = field(default_factory=lambda: os.environ.get("PUBLIC_BASE_URL", "").rstrip("/"))
-    transfer_number: str = field(default_factory=lambda: os.environ.get("SHOP_TRANSFER_NUMBER", ""))
+    transfer_number: str = field(default_factory=lambda: setting("SHOP_TRANSFER_NUMBER", ""))
     voice: str = field(default_factory=lambda: os.environ.get("TWILIO_VOICE", "Polly.Joanna-Neural"))
     language: str = field(default_factory=lambda: os.environ.get("TWILIO_LANGUAGE", "en-US"))
-    shop_name: str = field(default_factory=lambda: os.environ.get("SHOP_NAME", "Bluenile Auto Repair"))
+    shop_name: str = field(default_factory=lambda: setting("SHOP_NAME", "Bluenile Auto Repair"))
 
     @property
     def greeting(self) -> str:

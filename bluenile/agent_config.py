@@ -39,8 +39,9 @@ booked or charged. Don't promise completion times that aren't in a work order no
 
 Prices: quote only from lookup_prices, never from memory, and never invent part \
 prices, diagnoses or repair estimates. Give a listed price as the price, a range as a \
-range, and say it depends on the vehicle where the list does (e.g. service price by car \
-size: ask the vehicle). If a result has "confirmed": false or no price, tell the caller \
+range. The standard service price depends on the vehicle: ask for the make and model \
+(never ask the customer to pick a size) and use classify_vehicle to get the price. \
+Appointments are booked for shop_info's booking_length_hours unless staff say otherwise. If a result has "confirmed": false or no price, tell the caller \
 it's a guide only and a service writer will confirm, and log a follow_up. For work not \
 on the list, or a fault that needs diagnosing, collect the vehicle and symptoms, offer a \
 diagnostic booking, and log a follow_up. When staff add a listed service to a work \

@@ -98,13 +98,15 @@ section { padding: 64px 0; }
 .tag { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: .78rem; font-weight: 700; background: var(--ok-soft); color: var(--ok); }
 .tag.warn { background: var(--warn-soft); color: var(--warn); }
 .service-hero .right { padding: 26px 30px; display: grid; gap: 12px; align-content: center; }
-.size-opt { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 14px 16px;
-  border: 1.5px solid var(--line); border-radius: 14px; cursor: pointer; }
-.size-opt:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); }
-.size-opt input { accent-color: var(--brand); width: 18px; height: 18px; }
-.size-opt b { display: block; }
-.size-opt small { color: var(--muted); }
-.size-opt .p { font-size: 1.35rem; font-weight: 800; }
+.from-price { font-size: 2.6rem; font-weight: 800; letter-spacing: -.03em; margin: 14px 0 4px; }
+.from-price small { font-size: .95rem; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.car-result { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 16px 18px;
+  border: 1.5px solid var(--brand); background: var(--brand-soft); border-radius: 14px; }
+.car-result b { display: block; }
+.car-result small { color: var(--muted); }
+.car-result .p { font-size: 1.6rem; font-weight: 800; white-space: nowrap; }
+.car-hint { color: var(--muted); font-size: .9rem; margin: 0; }
+.rego-row { display: grid; grid-template-columns: 1fr 110px auto; gap: 10px; align-items: end; }
 
 /* Catalogue */
 .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 20px; }
@@ -278,17 +280,27 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   <section id="servicing">
     <div class="wrap">
       <div class="section-head">
-        <div><h2>Standard service</h2><p>One fixed price, set by the size of your car.</p></div>
+        <div><h2>Standard service</h2><p>A fixed price for your car. Tell us what you drive and see it straight away.</p></div>
       </div>
       <div class="service-hero">
         <div class="left">
           <span class="tag" id="gst-tag">GST included</span>
-          <h3>Pick your car size</h3>
-          <p>Not sure which size? Choose the closest, and we'll check when you drop it off.</p>
+          <div class="from-price" id="svc-from"></div>
+          <p>The price depends on your vehicle, so we work it out from your car's make and model. No guessing sizes.</p>
         </div>
-        <form class="right" id="size-form">
-          <div id="size-opts" role="radiogroup" aria-label="Car size"></div>
-          <button class="btn btn-cta btn-block" type="submit" id="size-add">Add service to booking</button>
+        <form class="right" id="car-form" novalidate>
+          <div class="rego-row" id="rego-row" hidden>
+            <label class="f">Rego<input id="car-rego" autocomplete="off" style="text-transform:uppercase" maxlength="10"></label>
+            <label class="f">State<select id="car-state"><option>VIC</option><option>NSW</option><option>QLD</option><option>SA</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></label>
+            <button type="button" class="btn btn-dark" id="car-find">Find my car</button>
+          </div>
+          <div class="two">
+            <label class="f">Make<input id="car-make" list="makes" placeholder="e.g. Toyota" autocomplete="off"></label>
+            <label class="f">Model<input id="car-model" placeholder="e.g. Corolla" autocomplete="off"></label>
+          </div>
+          <datalist id="makes"></datalist>
+          <div id="car-result" aria-live="polite"><p class="car-hint">Enter your make and model to see your price.</p></div>
+          <button class="btn btn-cta btn-block" type="submit" id="car-add" disabled>Add service to booking</button>
         </form>
       </div>
     </div>
@@ -420,9 +432,25 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(cart)); } catch (e) {} };
   const inCart = n => cart.items.some(i => i.name === n);
   const tiers = D.services.filter(s => s.tier);
+  // Same rules as bluenile/vehicles.py classify(): first matching rule wins.
+  const R = D.vehicle_rules;
+  const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const ALIAS = Object.fromEntries(Object.entries(R.make_aliases || {}).map(([k, v]) => [norm(k), norm(v)]));
+  const makeKey = m => ALIAS[norm(m)] || norm(m);
+  function classify(make, model) {
+    const mk = makeKey(make), md = norm(model);
+    for (const rule of R.rules) {
+      const models = {};
+      for (const [k, v] of Object.entries(rule.models || {})) models[makeKey(k)] = v;
+      for (const prefix of models[mk] || []) if (norm(prefix) === '' || md.startsWith(norm(prefix))) return rule.tier;
+      if ((rule.makes || []).map(makeKey).includes(mk)) return rule.tier;
+    }
+    return R.default;
+  }
+  const carName = v => v ? [v.year, v.make, v.model].filter(Boolean).join(' ') : '';
   function add(name) {
     const s = byName[name]; if (!s) return;
-    if (s.tier) cart.items = cart.items.filter(i => !byName[i.name].tier); // one service size at a time
+    if (s.tier) cart.items = cart.items.filter(i => !byName[i.name].tier); // one standard service at a time
     const it = cart.items.find(i => i.name === name);
     if (it) it.qty = Math.min(it.qty + 1, 4); else cart.items.push({ name, qty: s.default_qty || 1 });
     save(); renderAll(); pulse();
@@ -459,10 +487,12 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       const s = byName[n]; if (!s) return '';
       return `<button class="quick-item" data-add="${esc(n)}"><b>${esc(s.short || s.name)}</b><small>${esc(priceLabel(s))}</small></button>`;
     }).join('');
-    // tiers
-    $('#size-opts').innerHTML = tiers.map((t, i) => `
-      <label class="size-opt"><input type="radio" name="size" value="${esc(t.name)}" ${i === 0 ? 'checked' : ''}>
-        <span><b>${esc(t.tier)}</b><small>${esc(t.tier_blurb)}</small></span><span class="p">${esc(priceLabel(t))}</span></label>`).join('');
+    // standard service: priced from the car
+    $('#svc-from').innerHTML = `<small>from</small> ${money(cheapest)}`;
+    $('#makes').innerHTML = (D.makes || []).map(m => `<option value="${esc(m)}">`).join('');
+    $('#rego-row').hidden = !D.rego_lookup;
+    if (cart.vehicle) { $('#car-make').value = cart.vehicle.make || ''; $('#car-model').value = cart.vehicle.model || ''; $('#car-rego').value = cart.vehicle.rego || ''; }
+    showCar();
     // tyres
     const opt = (arr, sel) => arr.map(v => `<option ${v == sel ? 'selected' : ''}>${v}</option>`).join('');
     const range = (a, b, st) => Array.from({ length: Math.floor((b - a) / st) + 1 }, (_, i) => a + i * st);
@@ -519,7 +549,8 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       const s = byName[i.name];
       const lp = s.fixed_cents != null ? `<span class="lp">${money(s.fixed_cents * i.qty)}</span>` : `<span class="lp q">${esc(s.price_label || 'On quote')}</span>`;
       const qty = s.tier ? '<span></span>' : `<span class="qty"><button type="button" data-dec="${esc(i.name)}" aria-label="Fewer">−</button><span>${i.qty}</span><button type="button" data-inc="${esc(i.name)}" aria-label="More">+</button></span>`;
-      return `<div class="line"><b>${esc(dn(s.name))}</b>${lp}${qty}<button class="rm" data-rm="${esc(i.name)}">Remove</button></div>`;
+      const label = s.tier && cart.vehicle ? `${dn(s.name)} · ${carName(cart.vehicle)}` : dn(s.name);
+      return `<div class="line"><b>${esc(label)}</b>${lp}${qty}<button class="rm" data-rm="${esc(i.name)}">Remove</button></div>`;
     });
     if (cart.tyres) {
       const y = cart.tyres;
@@ -546,9 +577,9 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
 
   // ---------- checkout ----------
   const co = { step: 0, date: '', slot: '', slots: [], vehicle: {}, customer: {}, notes: '', offline: false, result: null };
+  co.vehicle = Object.assign({}, cart.vehicle || {});
   const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
   const plusDays = n => { const d = new Date(); d.setDate(d.getDate() + n); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
-  const hours = () => Math.max(1, ...cart.items.map(i => byName[i.name].hours || 1));
   const fmtSlot = s => new Date(s).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' });
   const fmtDate = d => new Date(d + 'T00:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'long' });
   const field = (id, label, val, attrs = '') => `<label class="f">${label}<input id="${id}" value="${esc(val || '')}" ${attrs}></label>`;
@@ -596,7 +627,7 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
   async function loadSlots() {
     const area = $('#slot-area'); area.innerHTML = '<p style="color:var(--muted);margin:0">Checking free times…</p>';
     try {
-      const r = await fetch(`${D.api}/api/availability?date=${co.date}&hours=${hours()}`, { headers: { Accept: 'application/json' } });
+      const r = await fetch(`${D.api}/api/availability?date=${co.date}`, { headers: { Accept: 'application/json' } });
       if (!r.ok) throw new Error();
       const j = await r.json(); co.slots = j.free_slots || [];
       if (!j.open) { area.innerHTML = '<p style="margin:0">We\'re closed that day. Please pick another date.</p>'; return; }
@@ -614,6 +645,18 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
       co.vehicle = { rego: $('#v-rego').value.trim().toUpperCase(), make: $('#v-make').value.trim(), model: $('#v-model').value.trim(), year: $('#v-year').value.trim() };
       if (!co.vehicle.make || !co.vehicle.model) return err('Please add the make and model.');
       if (co.vehicle.year && !/^(19|20)\d\d$/.test(co.vehicle.year)) return err('Year should look like 2018.');
+      // the standard service price follows the car entered here
+      const svc = cart.items.find(i => byName[i.name].tier);
+      if (svc) {
+        const tier = classify(co.vehicle.make, co.vehicle.model);
+        if (tier !== svc.name) {
+          const before = byName[svc.name].fixed_cents, after = byName[tier].fixed_cents;
+          svc.name = tier;
+          cart.vehicle = Object.assign({}, co.vehicle); save(); renderAll();
+          return err(`Standard service for a ${carName(co.vehicle)} is ${money(after)} (was ${money(before)}). Press Next to continue.`);
+        }
+      }
+      cart.vehicle = Object.assign({}, co.vehicle); save();
       co.step = 1;
     } else if (co.step === 1) {
       if (!co.slot) return err(co.offline ? 'Please call us to book.' : 'Please pick a time.');
@@ -653,7 +696,38 @@ dialog::backdrop { background: rgba(5,10,20,.55); }
     else if (t.dataset.slot) { co.slot = t.dataset.slot; document.querySelectorAll('.slot').forEach(b => b.setAttribute('aria-pressed', String(b === t))); err(''); }
   });
   $('#q').addEventListener('input', renderGrid);
-  $('#size-form').addEventListener('submit', e => { e.preventDefault(); add(new FormData(e.target).get('size')); openCart(true); });
+  function showCar() {
+    const make = $('#car-make').value.trim(), model = $('#car-model').value.trim();
+    const btn = $('#car-add');
+    if (!make || !model) {
+      $('#car-result').innerHTML = '<p class="car-hint">Enter your make and model to see your price.</p>';
+      btn.disabled = true; return;
+    }
+    const t = byName[classify(make, model)];
+    $('#car-result').innerHTML = `<div class="car-result"><span><small>Standard service for your</small><b>${esc(carName({ make, model }))}</b></span><span class="p">${esc(priceLabel(t))}</span></div>`;
+    btn.disabled = false;
+  }
+  let carTimer;
+  ['#car-make', '#car-model'].forEach(sel => $(sel).addEventListener('input', () => { clearTimeout(carTimer); carTimer = setTimeout(showCar, 150); }));
+  $('#car-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = { make: $('#car-make').value.trim(), model: $('#car-model').value.trim(), rego: $('#car-rego').value.trim().toUpperCase() };
+    if (!v.make || !v.model) return;
+    cart.vehicle = Object.assign({}, cart.vehicle || {}, v); co.vehicle = Object.assign({}, cart.vehicle);
+    add(classify(v.make, v.model)); openCart(true);
+  });
+  $('#car-find').addEventListener('click', async () => {
+    const rego = $('#car-rego').value.trim(); if (!rego) return;
+    $('#car-result').innerHTML = '<p class="car-hint">Looking up your rego…</p>';
+    try {
+      const r = await fetch(`${D.api}/api/vehicle?rego=${encodeURIComponent(rego)}&state=${$('#car-state').value}`);
+      const j = await r.json();
+      if (!r.ok) throw new Error(j.error);
+      $('#car-make').value = j.make || ''; $('#car-model').value = j.model || '';
+      cart.vehicle = Object.assign({}, cart.vehicle || {}, { rego: rego.toUpperCase(), year: j.year ? String(j.year) : '' });
+      showCar();
+    } catch (e) { $('#car-result').innerHTML = `<p class="car-hint">${esc(e.message || "We couldn't find that rego")}. Please enter your make and model.</p>`; }
+  });
   const showTyre = () => $('#t-show').textContent = `${$('#t-width').value}/${$('#t-profile').value} R${$('#t-rim').value}`;
   ['#t-width', '#t-profile', '#t-rim'].forEach(s => $(s).addEventListener('change', showTyre));
   $('#tyre-form').addEventListener('submit', e => { e.preventDefault();

@@ -55,7 +55,7 @@ def test_booking_lands_in_workshop_system(client):
     # $249 service + 2 x $25 wipers are fixed; brake service, cabin filter range and tyres need quotes
     assert j["total_cents"] == 24900 + 5000
     assert set(j["quote_items"]) == {"Brake service", "Cabin filter", "4 x tyres 205/55R16"}
-    assert j["start"] == "2026-11-25T09:00" and j["end"] == "2026-11-25T11:00"  # standard service books 2 h
+    assert j["start"] == "2026-11-25T09:00" and j["end"] == "2026-11-25T11:00"  # every booking is 2 h
 
     t = ShopTools(connect(client.db), client.cfg)
     wo = t.get_work_order(j["work_order_id"])
@@ -110,3 +110,41 @@ def test_rate_limit(client, monkeypatch):
     for i in range(web.RATE_LIMIT[0]):
         client.post("/api/bookings", json={"items": []})
     assert client.post("/api/bookings", json=booking()).status_code == 429
+
+
+def test_every_booking_is_two_hours(client):
+    j = client.post("/api/bookings", json=booking(items=[{"name": "Light (globe)", "qty": 1}], tyres=None)).get_json()
+    assert j["end"] == "2026-11-25T11:00"
+    # and availability only offers starts with 2 h left before closing (5pm)
+    slots = client.get("/api/availability?date=2026-11-26&hours=1").get_json()["free_slots"]
+    assert slots[-1] == "2026-11-26T15:00"
+
+
+@pytest.mark.parametrize("sent,make,model,expected,price", [
+    ("Standard service - very big cars", "Mazda", "3", "Standard service - normal cars", 24900),
+    ("Standard service - normal cars", "Toyota", "LandCruiser 200", "Standard service - very big cars", 32900),
+    ("Standard service - normal cars", "VW", "Golf", "Standard service - large cars and EU", 29900),
+])
+def test_service_price_comes_from_the_vehicle(client, sent, make, model, expected, price):
+    b = booking(items=[{"name": sent, "qty": 1}], tyres=None, vehicle={"make": make, "model": model})
+    j = client.post("/api/bookings", json=b).get_json()
+    assert j["priced_items"] == [{"name": expected, "qty": 1, "unit_cents": price}]
+    t = ShopTools(connect(client.db), client.cfg)
+    assert "Service price from make/model" in t.get_work_order(j["work_order_id"])["notes"]
+
+
+def test_classify_endpoint(client):
+    j = client.get("/api/classify?make=Ford&model=Ranger XLT").get_json()
+    assert j["tier"] == "Standard service - very big cars" and j["quote"] == "$329"
+    assert client.get("/api/classify?make=").status_code == 400
+
+
+def test_rego_lookup_needs_a_provider(client, tmp_path):
+    assert client.get("/api/vehicle?rego=ABC123").status_code == 404
+    found = {"ABC123": {"make": "Toyota", "model": "HiLux", "year": 2020}}
+    app = web.create_web_app(lambda: ShopTools(connect(client.db), client.cfg), tmp_path / "site",
+                             now=lambda: NOW, rego_lookup=lambda rego, state: dict(found[rego]) if rego in found else None)
+    c = app.test_client()
+    j = c.get("/api/vehicle?rego=abc 123&state=VIC").get_json()
+    assert j["model"] == "HiLux" and j["tier"] == "Standard service - very big cars"
+    assert c.get("/api/vehicle?rego=ZZZ999").status_code == 404

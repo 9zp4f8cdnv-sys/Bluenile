@@ -1,0 +1,66 @@
+{
+  "note": "Which standard service price applies to which vehicle. Rules are checked top to bottom and the first match wins; anything that matches nothing gets the default. A model matches if the customer's model starts with it (\"landcruiser\" matches \"LandCruiser 200 GXL\"). Make names are matched after the aliases are applied. This is a starting list; edit it to suit the shop. Staff can still change the size at drop-off.",
+  "default": "Standard service - normal cars",
+  "make_aliases": {
+    "vw": "volkswagen", "volkswagon": "volkswagen", "mercedes": "mercedes-benz", "merc": "mercedes-benz",
+    "benz": "mercedes-benz", "landrover": "land rover",
+    "alfa": "alfa romeo", "chevy": "chevrolet", "holden special vehicles": "hsv", "mini cooper": "mini"
+  },
+  "rules": [
+    {
+      "tier": "Standard service - very big cars",
+      "label": "very big vehicles (4WDs, utes, vans and people movers)",
+      "models": {
+        "toyota": ["landcruiser", "land cruiser", "prado", "hilux", "hiace", "tarago", "fortuner", "sequoia", "tundra", "coaster", "granvia"],
+        "ford": ["ranger", "everest", "transit", "f-150", "f150", "f-250", "f250", "e-series"],
+        "nissan": ["patrol", "navara", "pathfinder", "urvan", "nv350", "titan"],
+        "mitsubishi": ["triton", "pajero", "express", "delica"],
+        "isuzu": ["d-max", "dmax", "mu-x", "mux"],
+        "holden": ["colorado", "trailblazer", "rodeo"],
+        "mazda": ["bt-50", "bt50"],
+        "ram": [""],
+        "chevrolet": ["silverado"],
+        "gmc": [""],
+        "hyundai": ["iload", "staria", "imax"],
+        "kia": ["carnival"],
+        "volkswagen": ["amarok", "transporter", "multivan", "caravelle", "crafter"],
+        "mercedes-benz": ["sprinter", "vito", "valente", "x-class", "g-class", "g wagon", "g-wagon", "gls"],
+        "ldv": ["t60", "g10", "deliver", "v80", "mifa", "d90", "eterron", "terron"],
+        "gwm": ["cannon", "ute"],
+        "great wall": [""],
+        "ssangyong": ["musso", "rexton"],
+        "jeep": ["wrangler", "grand cherokee", "gladiator"],
+        "land rover": ["defender", "discovery", "range rover"],
+        "range rover": [""],
+        "renault": ["trafic", "master"],
+        "peugeot": ["expert", "boxer"],
+        "iveco": [""],
+        "fiat": ["ducato"]
+      }
+    },
+    {
+      "tier": "Standard service - large cars and EU",
+      "label": "large and European vehicles",
+      "makes": ["volkswagen", "audi", "bmw", "mercedes-benz", "volvo", "peugeot", "renault", "citroen", "skoda",
+                "porsche", "land rover", "jaguar", "mini", "fiat", "alfa romeo", "cupra", "seat", "saab", "opel",
+                "smart", "abarth", "polestar", "lamborghini", "ferrari", "maserati", "bentley", "rolls-royce",
+                "aston martin", "mclaren"],
+      "models": {
+        "toyota": ["camry", "aurion", "kluger", "avalon", "crown"],
+        "holden": ["commodore", "statesman", "caprice", "captiva", "acadia"],
+        "ford": ["falcon", "territory", "mondeo", "endura", "mustang"],
+        "hsv": [""],
+        "mazda": ["cx-9", "cx9", "cx-8", "cx8", "cx-90", "cx-70", "mazda6", "6"],
+        "hyundai": ["santa fe", "palisade", "genesis"],
+        "genesis": [""],
+        "kia": ["sorento", "stinger", "telluride"],
+        "nissan": ["maxima", "murano"],
+        "subaru": ["outback", "liberty", "levorg"],
+        "lexus": ["gs", "ls", "rx", "gx", "lx"],
+        "chrysler": ["300"],
+        "chrysler-jeep": [""],
+        "tesla": ["model s", "model x"]
+      }
+    }
+  ]
+}

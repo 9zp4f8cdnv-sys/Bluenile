@@ -1,7 +1,8 @@
 """Online booking API, and the server that hosts the public website.
 
     GET  /                      the website (website/index.html)
-    GET  /api/availability      ?date=YYYY-MM-DD&hours=N -> free start times
+    GET  /api/availability      ?date=YYYY-MM-DD -> free start times
+    GET  /api/classify          ?make=&model= -> which standard service price applies
     POST /api/bookings          JSON booking from the website's checkout
 
 A booking goes straight into the workshop database: the customer is matched
@@ -28,9 +29,9 @@ from typing import Callable
 from flask import Flask, Response, abort, g, jsonify, request, send_from_directory
 
 from .tools import ShopConfig, ShopTools, ToolError
+from .vehicles import RegoLookup, classify
 
 MAX_QTY = 4
-MAX_HOURS = 4
 BOOKING_HORIZON_DAYS = 60
 MIN_NOTICE = timedelta(hours=1)
 RATE_LIMIT = (5, 3600)  # bookings per IP per window (seconds)
@@ -74,7 +75,7 @@ def load_catalog(cfg: ShopConfig) -> dict:
     return json.loads(Path(cfg.price_list).read_text(encoding="utf-8"))
 
 
-def parse_booking(payload: dict, catalog: dict, now: datetime) -> dict:
+def parse_booking(payload: dict, catalog: dict, now: datetime, booking_hours: float = 2) -> dict:
     """Validate a checkout payload. Returns a normalised booking or raises BookingError."""
     if not isinstance(payload, dict):
         raise BookingError("Invalid booking")
@@ -138,9 +139,17 @@ def parse_booking(payload: dict, catalog: dict, now: datetime) -> dict:
     if start > now + timedelta(days=BOOKING_HORIZON_DAYS):
         raise BookingError("Bookings open up to 60 days ahead")
 
-    hours = max([i["service"].get("hours", 1) for i in items] + [1])
+    # The standard service price is set by the vehicle, not by what the browser sent.
+    size_note = None
+    tier_names = {s["name"] for s in catalog["services"] if s.get("category") == "Vehicle service"}
+    if any(i["service"]["name"] in tier_names for i in items):
+        result = classify(v["make"], v["model"])
+        items = [i for i in items if i["service"]["name"] not in tier_names]
+        items.insert(0, {"service": services[result["tier"]], "qty": 1})
+        size_note = f"Service price from make/model: {result['reason']}."
+
     return {"items": items, "tyres": tyres, "vehicle": v, "customer": c, "start": start,
-            "hours": min(hours, MAX_HOURS), "notes": _text(payload, "notes", 1000)}
+            "hours": booking_hours, "notes": _text(payload, "notes", 1000), "size_note": size_note}
 
 
 def place_booking(tools: ShopTools, booking: dict) -> dict:
@@ -187,11 +196,12 @@ def place_booking(tools: ShopTools, booking: dict) -> dict:
         kind = "labor" if s.get("unit") == "per hour" else "fee"
         tools.add_work_order_line(work_order_id=wo["id"], kind=kind, description=s["name"],
                                   quantity=qty, unit_price=cents / 100)
+    note = "Booked online."
+    if booking.get("size_note"):
+        note += " " + booking["size_note"]
     if quotes:
-        tools.update_work_order(work_order_id=wo["id"], notes="Booked online. Quote needed, call the customer: "
-                                + "; ".join(label for *_, label in quotes))
-    else:
-        tools.update_work_order(work_order_id=wo["id"], notes="Booked online.")
+        note += " Quote needed, call the customer: " + "; ".join(label for *_, label in quotes)
+    tools.update_work_order(work_order_id=wo["id"], notes=note)
     tools.conn.commit()
 
     total = sum(cents * qty for _, qty, cents, _ in priced)
@@ -225,7 +235,8 @@ class RateLimiter:
 
 
 def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path("website"),
-                   now: Callable[[], datetime] = datetime.now) -> Flask:
+                   now: Callable[[], datetime] = datetime.now, rego_lookup: RegoLookup | None = None) -> Flask:
+    """rego_lookup: optional provider that turns a number plate into make/model (see vehicles.py)."""
     app = Flask(__name__)
     limiter = RateLimiter(*RATE_LIMIT)
     site_dir = site_dir.resolve()
@@ -252,16 +263,36 @@ def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path
         tools = get_tools()
         try:
             day = date.fromisoformat(request.args.get("date", ""))
-            hours = float(request.args.get("hours", "1"))
         except ValueError:
             return jsonify(error="Use date=YYYY-MM-DD"), 400
         today = now()
         if day < today.date() or day > today.date() + timedelta(days=BOOKING_HORIZON_DAYS):
             return jsonify(date=day.isoformat(), open=False, free_slots=[])
-        result = tools.check_availability(date=day.isoformat(), duration_hours=min(max(hours, 1), MAX_HOURS))
+        result = tools.check_availability(date=day.isoformat(), duration_hours=tools.cfg.booking_hours)
         earliest = today + MIN_NOTICE
         result["free_slots"] = [s for s in result["free_slots"] if datetime.fromisoformat(s) >= earliest]
         return jsonify(result)
+
+    @app.get("/api/classify")
+    def classify_route():
+        make, model = request.args.get("make", "")[:40], request.args.get("model", "")[:40]
+        if not make.strip():
+            return jsonify(error="make is required"), 400
+        return jsonify(get_tools().classify_vehicle(make, model))
+
+    @app.get("/api/vehicle")
+    def vehicle_lookup():
+        if rego_lookup is None:
+            return jsonify(error="Rego lookup isn't set up; please enter make and model"), 404
+        rego = _plate(request.args.get("rego", ""))[:10]
+        state = request.args.get("state", "").upper()[:3]
+        if not rego:
+            return jsonify(error="rego is required"), 400
+        found = rego_lookup(rego, state)
+        if not found:
+            return jsonify(error="We couldn't find that rego"), 404
+        found.update(get_tools().classify_vehicle(found.get("make", ""), found.get("model", "")))
+        return jsonify(found)
 
     @app.post("/api/bookings")
     def bookings():
@@ -269,7 +300,8 @@ def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path
             return jsonify(error="Too many bookings from this connection. Please call us."), 429
         tools = get_tools()
         try:
-            booking = parse_booking(request.get_json(silent=True), load_catalog(tools.cfg), now())
+            booking = parse_booking(request.get_json(silent=True), load_catalog(tools.cfg), now(),
+                                    tools.cfg.booking_hours)
             result = place_booking(tools, booking)
         except BookingError as e:
             tools.conn.rollback()

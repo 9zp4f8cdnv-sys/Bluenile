@@ -125,6 +125,25 @@ Linked to the rest of the system:
   Customers can add them to their booking; the server checks the quantity.
 - **Business details** in the app start from `bluenile/shop_details.json`.
 
+## Going live on Render
+
+`render.yaml` sets up the website, online booking and staff app on
+[Render](https://render.com) (about US$7/month for the server plus a small
+amount for the 1 GB disk that keeps bookings, customers, stock and invoices).
+
+1. Sign up at render.com with your GitHub account.
+2. **New > Blueprint**, pick this repository (branch `main`).
+3. Enter a **STAFF_PASSWORD** when asked: staff use it at `/staff`.
+4. Create. The first deploy takes a few minutes; Render gives you a
+   `https://bluenile-….onrender.com` address with booking working.
+5. To use bluenileautotyres.com.au: in the service's **Settings > Custom
+   Domains**, add the domain and follow the DNS records Render shows, at
+   whoever the domain is registered with.
+
+Every push to `main` redeploys. The server runs as one process (the sign-in
+and booking limits are kept in memory), in Render's Singapore region, the
+closest to Brisbane.
+
 ## Setup
 
 ```bash

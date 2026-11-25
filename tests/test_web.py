@@ -182,3 +182,7 @@ def test_bad_part_requests(client, req, msg):
 def test_requests_alone_are_a_valid_booking(client):
     r = client.post("/api/bookings", json=booking(items=[], tyres=None, requests=[{"cat": "battery", "fields": {}}]))
     assert r.status_code == 201 and r.get_json()["quote_items"] == ["Battery: Battery and charging test"]
+
+
+def test_health_check(client):
+    assert client.get("/healthz").get_json() == {"ok": True}

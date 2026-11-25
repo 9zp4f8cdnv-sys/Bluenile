@@ -335,6 +335,11 @@ def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path
             abort(404, "Run build_website.py first")
         return send_from_directory(site_dir, "index.html")
 
+    @app.get("/healthz")
+    def healthz():
+        get_tools().conn.execute("SELECT 1")  # the database is reachable
+        return jsonify(ok=True)
+
     @app.get("/api/availability")
     def availability():
         tools = get_tools()

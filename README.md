@@ -144,6 +144,20 @@ Every push to `main` redeploys. The server runs as one process (the sign-in
 and booking limits are kept in memory), in Render's Singapore region, the
 closest to Brisbane.
 
+## Shop assistant (works now, no API key)
+
+`assistant/blue-nile-assistant.html` is a page published in Claude
+(https://claude.ai/artifact/TJaoMeJarB3zL7rX3gCLob). Staff chat with it to
+book jobs, quote from the price list, price a service from the car, find
+and add customers and vehicles, log calls and call-backs, make GST tax
+invoices (downloadable) and record payments. It runs on the signed-in
+person's own Claude account and keeps its records with the page. A
+"Customer on the phone" mode answers like a receptionist and can't invoice
+or take payments.
+
+`python build_assistant.py` rebuilds it from the price list, vehicle rules
+and shop details; republish it afterwards.
+
 ## Setup
 
 ```bash

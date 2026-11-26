@@ -24,7 +24,8 @@ from pathlib import Path
 
 from .tools import ShopConfig
 from .brand import emblem_svg, favicon_data_uri
-from .vehicles import load_rules
+from .vehicles import load_rules, load_specs
+from .web import load_parts_menu
 from .web import fixed_price_cents
 
 TEMPLATE = Path(__file__).with_name("site_template.html")
@@ -158,7 +159,8 @@ def _faq(cfg: ShopConfig, services: dict) -> list[list[str]]:
         ["How is the standard service price worked out?",
          "From your car's make and model. Enter them and you'll see the price for your car straight away."],
         ["How do I get a price for tyres?",
-         "Choose your tyre size in the Tyres section and add it to your booking. We'll call you with a fitted price."],
+         "Choose your tyre size in the Tyres & wheels section. Tyres we have in stock show with their price; "
+         "for anything else, ask for a quote and we'll call you with a fitted price."],
         ["My job isn't listed. Can I still book?",
          "Yes. Add Diagnostic / labour" + (f" ({labour_price})" if labour_price else "")
          + " and tell us what's wrong in the notes, or give us a call."],
@@ -193,6 +195,8 @@ def render(cfg: ShopConfig, prices: dict, api_base: str | None = None, rego_look
             "booking_hours": cfg.booking_hours,
         },
         "vehicle_rules": load_rules(),
+        "vehicle_specs": load_specs().get("vehicles", []),
+        "parts_menu": load_parts_menu()["categories"],
         "makes": COMMON_MAKES,
         "rego_lookup": rego_lookup,
         "as_of": as_of,

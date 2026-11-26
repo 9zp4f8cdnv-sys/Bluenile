@@ -63,6 +63,22 @@ uses (the price list and `SHOP_*` settings), so the two always agree on prices.
   the price list are public (`notes` stays internal).
 - Every booking reserves a bay for 2 hours (`SHOP_BOOKING_HOURS`).
 
+### "Your car" panel
+
+When a customer enters their make, model and (optionally) year, the site shows
+a panel built for that car: an illustration of its body type, the standard
+service price for it, and a card per category (engine oil, brakes, filters,
+battery, cooling and A/C, wipers and lights, tyres, other parts) with drop-down
+lists of options and brands. Choices linked to the price list (A/C regas,
+wipers, filters...) are added at that price; the rest become quote items for
+staff, and brand preferences go into the work order notes. Edit the lists in
+`bluenile/parts_menu.json`.
+
+Which part fits which car is deliberately not guessed. Add checked specs (oil
+grade and capacity, tyre sizes) to `bluenile/vehicle_specs.json`; matching cars
+then show them as "recommended" and the oil grade is pre-selected. A licensed
+parts catalogue could fill this automatically later.
+
 ### Standard service price by vehicle
 
 Customers never pick a size. The standard service price ($249 / $299 / $329)
@@ -80,13 +96,67 @@ when one is set, the site shows a rego box that fills in the car for the custome
 
 ```bash
 python build_website.py   # builds website/index.html; lists any missing contact details
-python web_server.py      # serves the site + booking API on :8000 (PORT to change)
+STAFF_PASSWORD='choose-one' python web_server.py   # site + booking API + staff app on :8000
 ```
 
 Run `web_server.py` behind HTTPS on any small server. To host the page
 somewhere else (Netlify, your current host) and the API separately, set
 `SHOP_BOOKING_API=https://your-api-host` before building. If the booking API
 can't be reached, the checkout tells customers to call instead.
+
+## Staff app (jobs, bookings, stock, cars)
+
+The shop's staff app (`staff_app/`) runs on the same server at `/staff/`, and
+its data now lives in the workshop database, so every phone sees the same
+jobs, bookings, stock and cars (changes show on other phones within a few
+seconds). Sign in with the shared staff password (`STAFF_PASSWORD`, set on the
+server, never in the repo; the staff app is off without it). Add it to each
+iPhone's Home Screen from Safari as before.
+
+Linked to the rest of the system:
+- **Online bookings appear in the app's Bookings**, with customer, rego,
+  car, services and anything that needs a quote.
+- **Cancelling or no-showing** an online booking in the app frees that time online.
+- **Bookings made in the app block** those times for online booking (each is
+  assumed to take the booking length, 2 hours).
+- **Tyres and wheels in the app's stock** (qty above 0) show on the website
+  when a customer picks their size, priced with GST added (the app's prices are
+  entered before GST; set `STAFF_PRICES_EX_GST=0` if they already include it).
+  Customers can add them to their booking; the server checks the quantity.
+- **Business details** in the app start from `bluenile/shop_details.json`.
+
+## Going live on Render
+
+`render.yaml` sets up the website, online booking and staff app on
+[Render](https://render.com) (about US$7/month for the server plus a small
+amount for the 1 GB disk that keeps bookings, customers, stock and invoices).
+
+1. Sign up at render.com with your GitHub account.
+2. **New > Blueprint**, pick this repository (branch `main`).
+3. Enter a **STAFF_PASSWORD** when asked: staff use it at `/staff`.
+4. Create. The first deploy takes a few minutes; Render gives you a
+   `https://bluenile-….onrender.com` address with booking working.
+5. To use bluenileautotyres.com.au: in the service's **Settings > Custom
+   Domains**, add the domain and follow the DNS records Render shows, at
+   whoever the domain is registered with.
+
+Every push to `main` redeploys. The server runs as one process (the sign-in
+and booking limits are kept in memory), in Render's Singapore region, the
+closest to Brisbane.
+
+## Shop assistant (works now, no API key)
+
+`assistant/blue-nile-assistant.html` is a page published in Claude
+(https://claude.ai/artifact/TJaoMeJarB3zL7rX3gCLob). Staff chat with it to
+book jobs, quote from the price list, price a service from the car, find
+and add customers and vehicles, log calls and call-backs, make GST tax
+invoices (downloadable) and record payments. It runs on the signed-in
+person's own Claude account and keeps its records with the page. A
+"Customer on the phone" mode answers like a receptionist and can't invoice
+or take payments.
+
+`python build_assistant.py` rebuilds it from the price list, vehicle rules
+and shop details; republish it afterwards.
 
 ## Setup
 

@@ -3,6 +3,7 @@
     GET  /                      the website (website/index.html)
     GET  /api/availability      ?date=YYYY-MM-DD -> free start times
     GET  /api/classify          ?make=&model= -> which standard service price applies
+    GET  /api/stock             tyres and wheels in stock (from the staff app), GST included
     POST /api/bookings          JSON booking from the website's checkout
 
 A booking goes straight into the workshop database: the customer is matched
@@ -29,9 +30,59 @@ from typing import Callable
 from flask import Flask, Response, abort, g, jsonify, request, send_from_directory
 
 from .tools import ShopConfig, ShopTools, ToolError
+from . import staff
 from .vehicles import RegoLookup, classify
 
 MAX_QTY = 4
+MAX_STOCK_QTY = 8
+MAX_REQUESTS = 12
+PARTS_MENU_FILE = Path(__file__).with_name("parts_menu.json")
+
+
+def load_parts_menu() -> dict:
+    return json.loads(PARTS_MENU_FILE.read_text(encoding="utf-8"))
+
+
+def parse_requests(raw_list, menu: dict, services: dict) -> tuple[list[dict], list[str], list[str]]:
+    """Customer picks from the 'Your car' drop-downs.
+
+    Returns (extra priced items, quote labels, preference notes). Only values that are in
+    parts_menu.json are accepted; 'Other parts' takes free text.
+    """
+    if not isinstance(raw_list, list) or len(raw_list) > MAX_REQUESTS:
+        raise BookingError("Too many part requests")
+    cats = {c["key"]: c for c in menu["categories"]}
+    items, quotes, prefs = [], [], []
+    for raw in raw_list:
+        cat = cats.get(raw.get("cat")) if isinstance(raw, dict) else None
+        if cat is None:
+            raise BookingError("Unknown part request")
+        if cat.get("free_text"):
+            text = _text(raw, "text", 120, required=True)
+            quotes.append(f"{cat['label']}: {text}")
+            continue
+        fields = raw.get("fields") or {}
+        if not isinstance(fields, dict):
+            raise BookingError("Part request is incomplete")
+        chosen = {}
+        for f in cat["fields"]:
+            value = fields.get(f["key"], f["options"][0])
+            if value not in f["options"]:
+                raise BookingError(f"{cat['label']}: {f['label']} isn't one of the choices")
+            chosen[f["key"]] = value
+        part = chosen.get("part")
+        linked = (cat.get("price_link") or {}).get(part) if part else None
+        extras = [v for k, v in chosen.items() if k != "part" and v not in ("No preference",)]
+        if linked and linked in services:
+            items.append({"service": services[linked], "qty": 1})
+            if extras:
+                prefs.append(f"{part}: {', '.join(extras)}")
+        else:
+            bits = ([part] if part else []) + [
+                f"{f['label'].lower()} {chosen[f['key']]}" if f["key"] in ("qty", "grade") else chosen[f["key"]]
+                for f in cat["fields"] if f["key"] != "part" and chosen[f["key"]] != "No preference"]
+            quotes.append(f"{cat['label']}: " + (", ".join(bits) if bits else "as recommended"))
+    return items, quotes, prefs
 BOOKING_HORIZON_DAYS = 60
 MIN_NOTICE = timedelta(hours=1)
 RATE_LIMIT = (5, 3600)  # bookings per IP per window (seconds)
@@ -75,7 +126,8 @@ def load_catalog(cfg: ShopConfig) -> dict:
     return json.loads(Path(cfg.price_list).read_text(encoding="utf-8"))
 
 
-def parse_booking(payload: dict, catalog: dict, now: datetime, booking_hours: float = 2) -> dict:
+def parse_booking(payload: dict, catalog: dict, now: datetime, booking_hours: float = 2,
+                  stock: dict | None = None, menu: dict | None = None) -> dict:
     """Validate a checkout payload. Returns a normalised booking or raises BookingError."""
     if not isinstance(payload, dict):
         raise BookingError("Invalid booking")
@@ -92,6 +144,21 @@ def parse_booking(payload: dict, catalog: dict, now: datetime, booking_hours: fl
             raise BookingError("Quantity must be between 1 and 4")
         items.append({"service": services[raw["name"]], "qty": qty})
 
+    stock_items = []
+    for raw in payload.get("stock") or []:
+        item = (stock or {}).get(raw.get("sku")) if isinstance(raw, dict) else None
+        if item is None:
+            raise BookingError("Some tyres or wheels in your booking are no longer in stock", status=409)
+        qty = raw.get("qty", 1)
+        if not isinstance(qty, int) or not 1 <= qty <= MAX_STOCK_QTY:
+            raise BookingError("Quantity must be between 1 and 8")
+        if qty > item["available"]:
+            raise BookingError(f"We only have {item['available']} of {item['name']} in stock", status=409)
+        stock_items.append({"item": item, "qty": qty})
+
+    extra_items, request_quotes, prefs = parse_requests(payload.get("requests") or [], menu or {"categories": []}, services)
+    items += extra_items
+
     tyres = None
     if payload.get("tyres"):
         t = payload["tyres"]
@@ -102,7 +169,7 @@ def parse_booking(payload: dict, catalog: dict, now: datetime, booking_hours: fl
         if not (125 <= tyres["width"] <= 355 and 25 <= tyres["profile"] <= 85
                 and 12 <= tyres["rim"] <= 24 and 1 <= tyres["qty"] <= 6):
             raise BookingError("Tyre size doesn't look right")
-    if not items and not tyres:
+    if not items and not tyres and not stock_items and not request_quotes:
         raise BookingError("Add at least one service")
 
     vehicle = payload.get("vehicle") or {}
@@ -148,8 +215,9 @@ def parse_booking(payload: dict, catalog: dict, now: datetime, booking_hours: fl
         items.insert(0, {"service": services[result["tier"]], "qty": 1})
         size_note = f"Service price from make/model: {result['reason']}."
 
-    return {"items": items, "tyres": tyres, "vehicle": v, "customer": c, "start": start,
-            "hours": booking_hours, "notes": _text(payload, "notes", 1000), "size_note": size_note}
+    return {"items": items, "stock": stock_items, "tyres": tyres, "vehicle": v, "customer": c, "start": start,
+            "hours": booking_hours, "notes": _text(payload, "notes", 1000), "size_note": size_note,
+            "requests": request_quotes, "prefs": prefs}
 
 
 def place_booking(tools: ShopTools, booking: dict) -> dict:
@@ -169,19 +237,25 @@ def place_booking(tools: ShopTools, booking: dict) -> dict:
         vehicle = tools.add_vehicle(customer_id=customer["id"], make=v["make"], model=v["model"],
                                     year=v["year"], plate=v["rego"] or None)
 
-    priced, quotes = [], []
+    priced, quotes = [], []  # priced: (name, kind, qty, unit cents, label); quotes: labels
     for it in booking["items"]:
         s, qty = it["service"], it["qty"]
         cents = fixed_price_cents(s)
         label = s["name"] + (f" x{qty}" if qty > 1 else "")
-        (priced if cents is not None else quotes).append((s, qty, cents, label))
-    tyre_label = None
+        if cents is None:
+            quotes.append(label)
+        else:
+            priced.append((s["name"], "labor" if s.get("unit") == "per hour" else "fee", qty, cents, label))
+    for it in booking.get("stock", []):
+        p, qty = it["item"], it["qty"]
+        name = f"{p['kind'].title()}: {p['name']}"
+        priced.append((name, "part", qty, p["price_cents"], f"{qty} x {p['name']}"))
     if booking["tyres"]:
         t = booking["tyres"]
-        tyre_label = f"{t['qty']} x tyres {t['width']}/{t['profile']}R{t['rim']}"
-        quotes.append((None, t["qty"], None, tyre_label))
+        quotes.append(f"{t['qty']} x tyres {t['width']}/{t['profile']}R{t['rim']}")
+    quotes += booking.get("requests", [])
 
-    summary = "Online booking: " + ", ".join(label for *_, label in priced + quotes)
+    summary = "Online booking: " + ", ".join([p[4] for p in priced] + quotes)
     try:
         appt = tools.book_appointment(customer_id=customer["id"], vehicle_id=vehicle["id"],
                                       start=booking["start"].isoformat(timespec="minutes"),
@@ -192,27 +266,30 @@ def place_booking(tools: ShopTools, booking: dict) -> dict:
     complaint = booking["notes"] or summary
     wo = tools.create_work_order(customer_id=customer["id"], vehicle_id=vehicle["id"],
                                  complaint=complaint, appointment_id=appt["id"])
-    for s, qty, cents, _ in priced:
-        kind = "labor" if s.get("unit") == "per hour" else "fee"
-        tools.add_work_order_line(work_order_id=wo["id"], kind=kind, description=s["name"],
+    for name, kind, qty, cents, _ in priced:
+        tools.add_work_order_line(work_order_id=wo["id"], kind=kind, description=name,
                                   quantity=qty, unit_price=cents / 100)
     note = "Booked online."
     if booking.get("size_note"):
         note += " " + booking["size_note"]
+    if booking.get("prefs"):
+        note += " Customer preferences: " + "; ".join(booking["prefs"]) + "."
     if quotes:
-        note += " Quote needed, call the customer: " + "; ".join(label for *_, label in quotes)
+        note += " Quote needed, call the customer: " + "; ".join(quotes)
     tools.update_work_order(work_order_id=wo["id"], notes=note)
+    staff.write_online_booking(tools.conn, appt, customer, vehicle, [p[4] for p in priced], quotes,
+                               "; ".join(x for x in [booking["notes"]] + booking.get("prefs", []) if x))
     tools.conn.commit()
 
-    total = sum(cents * qty for _, qty, cents, _ in priced)
+    total = sum(cents * qty for _, _, qty, cents, _ in priced)
     return {
         "booking_id": appt["id"],
         "work_order_id": wo["id"],
         "start": appt["start_at"],
         "end": appt["end_at"],
         "total_cents": total,
-        "priced_items": [{"name": s["name"], "qty": qty, "unit_cents": cents} for s, qty, cents, _ in priced],
-        "quote_items": [label for *_, label in quotes],
+        "priced_items": [{"name": name, "qty": qty, "unit_cents": cents} for name, _, qty, cents, _ in priced],
+        "quote_items": quotes,
     }
 
 
@@ -258,6 +335,11 @@ def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path
             abort(404, "Run build_website.py first")
         return send_from_directory(site_dir, "index.html")
 
+    @app.get("/healthz")
+    def healthz():
+        get_tools().conn.execute("SELECT 1")  # the database is reachable
+        return jsonify(ok=True)
+
     @app.get("/api/availability")
     def availability():
         tools = get_tools()
@@ -272,6 +354,13 @@ def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path
         earliest = today + MIN_NOTICE
         result["free_slots"] = [s for s in result["free_slots"] if datetime.fromisoformat(s) >= earliest]
         return jsonify(result)
+
+    @app.get("/api/stock")
+    def stock_route():
+        items = staff.public_stock(get_tools().conn, get_tools().cfg).values()
+        public = [{k: v for k, v in i.items() if k != "available"} | {"max_qty": min(i["available"], MAX_STOCK_QTY)}
+                  for i in sorted(items, key=lambda i: (i["kind"], i["size"], i["price_cents"]))]
+        return jsonify(items=public, prices_include_gst=get_tools().cfg.tax_inclusive)
 
     @app.get("/api/classify")
     def classify_route():
@@ -301,7 +390,7 @@ def create_web_app(tools_factory: Callable[[], ShopTools], site_dir: Path = Path
         tools = get_tools()
         try:
             booking = parse_booking(request.get_json(silent=True), load_catalog(tools.cfg), now(),
-                                    tools.cfg.booking_hours)
+                                    tools.cfg.booking_hours, staff.public_stock(tools.conn, tools.cfg), load_parts_menu())
             result = place_booking(tools, booking)
         except BookingError as e:
             tools.conn.rollback()
